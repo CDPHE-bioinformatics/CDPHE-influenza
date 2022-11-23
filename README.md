@@ -1,7 +1,7 @@
 # CDPHE-influenza
 
 ## In development
-This repository is in active development. This document describes the Colorado Department of Public Health and Environment's workflow for the assembly and anlaysis of whole genome sequenicng data of influenza A and B ulitizin ght Terra.bio platform. 
+This repository is in active development. This document describes the Colorado Department of Public Health and Environment's workflow for the assembly and anlaysis of whole genome sequenicng data of influenza A and B ulitizin ght Terra.bio platform.
 
 ## Workflow overview
 Currently assembly is preformed using IRMA and contained in a WDL workflow that can be run on Terra.bio. THe results from IRMA are then summarized using a juypter notebook. Hopefully soon the code from the jupyter notebook will be integrated in the WDL workflow.
@@ -29,8 +29,8 @@ The workflow performs the following steps:
 The datatable should look like the following and be saved as a tsv or txt file:
 
 | entity:sample_id   |  fastq_R1   | fastq_R2 | gcp_out_bucket_path |
-| :------------- | :------------- |
-| sample_name     | gs://path_to_fastq_R1      | gs://path_to_fastq_R2 | gs://path_to_transfer_output
+|-------------------|-------------|-----------|---------------------|
+| sample_name     | gs://path_to_fastq_R1 | gs://path_to_fastq_R2 | gs://path_to_transfer_output
 
 
 #### Setting up your workspace data
