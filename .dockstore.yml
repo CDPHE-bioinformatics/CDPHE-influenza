@@ -1,5 +1,5 @@
 version: 1.0
 workflows:
- - name: 3_irma_beta_workflow
+ - name: 3_irma_beta_workflow_all_snapshot20
    subclass: WDL
    primaryDescriptorPath: /wdl/workflows/3_irma_beta_workflow.wdl
