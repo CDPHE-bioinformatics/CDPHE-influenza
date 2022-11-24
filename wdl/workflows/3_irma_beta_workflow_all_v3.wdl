@@ -5,6 +5,7 @@ workflow irma_beta_wf{
 
   input{
     String sample_name
+    File assembly_metrics_python_script
     File fastq_R1
     File fastq_R2
     File adapters_and_contaminants
@@ -38,11 +39,12 @@ workflow irma_beta_wf{
       fastq_R2 = seqyclean.fastq_R2_cleaned
   }
 
-  call get_run_parameters as run_parameters {
+  call get_assembly_metrics as assembly_metrics {
     input:
       sample_name = sample_name,
-      fastqc_version = fastqc_raw.fastqc_version,
-      fastqc_docker = fastqc_raw.fastqc_docker,
+      assembly_metrics_python_script = assembly_metrics_python_script,
+      consensus_fastas_array = irma.consensus_fastas_array,
+      tables_directory = irma.tables_directory,
 
       total_reads_R1_raw = fastqc_raw.total_reads_R1,
       total_reads_R2_raw = fastqc_raw.total_reads_R2,
@@ -50,18 +52,21 @@ workflow irma_beta_wf{
       read_length_R2_raw = fastqc_raw.read_length_R2,
       read_pairs_raw = fastqc_raw.read_pairs,
 
-      seqyclean_version = seqyclean.seqyclean_version,
-      seqyclean_docker = seqyclean.seqyclean_docker,
-
       total_reads_R1_cleaned = fastqc_cleaned.total_reads_R1,
       total_reads_R2_cleaned  = fastqc_cleaned.total_reads_R2,
       read_length_R1_cleaned  = fastqc_cleaned.read_length_R1,
       read_length_R2_cleaned  = fastqc_cleaned.read_length_R2,
       read_pairs_cleaned  = fastqc_cleaned.read_pairs,
 
+      fastqc_version = fastqc_raw.fastqc_version,
+      fastqc_docker = fastqc_raw.fastqc_docker,
+      seqyclean_version = seqyclean.seqyclean_version,
+      seqyclean_docker = seqyclean.seqyclean_docker,
       irma_version = irma.irma_version
 
   }
+
+
   call transfer_IRMA as transfer_irma {
     input:
       sample_name = sample_name,
@@ -83,7 +88,9 @@ workflow irma_beta_wf{
       bai_files_array = irma.bai_files_array,
       vcf_files_array = irma.vcf_files_array,
       tables_directory = irma.tables_directory,
-      parameters_and_outputs_tsv = run_parameters.parameters_and_outputs_tsv
+
+      assembly_metrics_tsv = assembly_metrics.assembly_metrics_tsv,
+      assembly_metrics_reordered_tsv = assembly_metrics.assembly_metrics_reorder_tsv
 }
   output {
     # output from preprcoess
@@ -111,8 +118,9 @@ workflow irma_beta_wf{
     Array[File] vcf_files_array = irma.vcf_files_array
     Array[File] tables_directory = irma.tables_directory
 
-    # output from run_parameters
-    File parameters_and_outputs_tsv = run_parameters.parameters_and_outputs_tsv
+    # output from assembly_metrics
+    File assembly_metrics_tsv = assembly_metrics.assembly_metrics_tsv
+    File assembly_metrics_reorder_tsv = assembly_metrics.assembly_metrics_reorder_tsv
 
 
   }
@@ -141,7 +149,7 @@ task fastqc {
    fastqc --outdir $PWD ~{fastq_R1} ~{fastq_R2}
 
    # pull some info from the zip file regarding number of reads and read length
-   unzip -p ~{fastq_R1_file_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ1_LEN
+   unzip -p ~{fastq_R1_file_name}_fastqc.zip */fastqc_data.txt | grep "Seqeunce length" | cut -f 2 | tee READ1_LEN
    unzip -p ~{fastq_R2_file_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ2_LEN
 
    unzip -p ~{fastq_R1_file_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
@@ -242,15 +250,11 @@ task cdc_IRMA{
 
   # rename fasta files and fasta header
   cd ~{sample_name}/
-
-  if ls | grep -q ".fasta"
-  then
   for fasta in *.fasta
   do
     sed "s/>\(.*\)/>~{sample_name}_\1/g" $fasta > "~{sample_name}_${fasta%}"
     #mv -- "$fasta" "~{sample_name}_${fasta%}"
   done
-  fi
 
   # rename bam files
   for bam in *.bam*
@@ -294,85 +298,6 @@ task cdc_IRMA{
 }
 
 
-task get_run_parameters {
-  meta {
-    description : "create a csv file of all the run parameter info that was output into the terra data table"
-  }
-
-  input {
-    String sample_name
-
-    # pull string and int outputs from preprocess tasks
-    String fastqc_version
-    String fastqc_docker
-    Int total_reads_R1_raw
-    Int total_reads_R2_raw
-    String read_length_R1_raw
-    String read_length_R2_raw
-    String read_pairs_raw
-
-    String seqyclean_version
-    String seqyclean_docker
-
-    Int total_reads_R1_cleaned
-    Int total_reads_R2_cleaned
-    String read_length_R1_cleaned
-    String read_length_R2_cleaned
-    String read_pairs_cleaned
-
-    # pull irma string outputs
-    String irma_version
-
-    String docker = "mchether/py3-bio:v1"
-    Int cpu = 2
-    Int memory = 8
-
-  }
-
-  command <<<
-    python3 <<CODE
-
-    import pandas as pd
-
-    # create dictionary and then dataframe from dictionary
-    parameter_dict = {'sample_name' :['~{sample_name}'],
-      'fastqc_version' : ['~{fastqc_version}'],
-      'fastqc_docker' : ['~{fastqc_docker}'],
-      'seqyclean_version' : ['~{seqyclean_version}'],
-      'seqyclean_docker' : ['~{seqyclean_docker}'],
-      'irma_version': ['~{irma_version}'],
-      'total_reads_R1_raw' : ['~{total_reads_R1_raw}'],
-      'total_reads_R2_raw' : ['~{total_reads_R2_raw}'],
-      'read_length_R1_raw' : ['~{read_length_R1_raw}'],
-      'read_length_R2_raw' : ['~{read_length_R2_raw}'],
-      'read_pairs_raw' : ['~{read_pairs_raw}'],
-      'total_reads_R1_cleaned': ['~{total_reads_R1_cleaned}'],
-      'total_reads_R2_cleaned' : ['~{total_reads_R2_cleaned}'],
-      'read_length_R1_cleaned': ['~{read_length_R1_cleaned}'],
-      'read_length_R2_cleaned': ['~{read_length_R2_cleaned}'],
-      'read_pairs_cleaned': ['~{read_pairs_cleaned}']
-    }
-
-    df = pd.DataFrame.from_dict(parameter_dict)
-    outfile_name = '~{sample_name}_parameters_and_outputs.tsv'
-    df.to_csv(outfile_name, sep = '\t', index = False)
-
-    CODE
-  >>>
-
-  output {
-    File parameters_and_outputs_tsv = '${sample_name}_parameters_and_outputs.tsv'
-  }
-
-  runtime {
-    docker: "~{docker}"
-    memory: "~{memory} GiB"
-    cpu: "~{cpu}"
-    disks: "local-disk 50 SSD"
-    preemptible: 0
-  }
-}
-
 task transfer_IRMA {
   meta {
     description : "transfer IRMA output to gcp bucket"
@@ -402,8 +327,10 @@ task transfer_IRMA {
     Array[File] vcf_files_array
     Array[File] tables_directory
 
-    # parameters and outputs
-    File parameters_and_outputs_tsv
+    # asembly metrics
+    File assembly_metrics_tsv
+    File assembly_metrics_reordered_tsv
+
 
     # run time info
     String docker = "theiagen/utility:1.0"
@@ -437,8 +364,9 @@ task transfer_IRMA {
   gsutil -m cp ~{sep = " " vcf_files_array} ~{out_path}/irma/~{sample_name}/vcf_files/
   gsutil -m cp ~{sep = " " tables_directory} ~{out_path}/irma/~{sample_name}/tables/
 
-  # transfer parameters and outputs
-  gsutil -m cp ~{parameters_and_outputs_tsv} ~{out_path}/summary_stats/
+  # transfer assembly metrics outputs
+  gsutil -m cp ~{assembly_metrics_tsv} ~{out_path}/summary_stats/
+  gsutil -m cp ~{assembly_metrics_reordered_tsv} ~{out_path}/summary_stats/
 
   # transfer date
   transferdate=`date`
@@ -457,4 +385,83 @@ task transfer_IRMA {
     disks: "local-disk 50 SSD"
     preemptible: 0
   }
+}
+
+
+task get_assembly_metrics {
+
+  meta {
+    descripiton : "pull together assembly metrics and perform 'subtyping'. The output will be strings which I will read into the task parameters"
+  }
+
+  input {
+    String sample_name
+    File assembly_metrics_python_script
+    Array[File] consensus_fastas_array
+    Int num_fastas = length(consensus_fastas_array)
+    Array[File] tables_directory
+
+
+    Int total_reads_R1_raw
+    Int total_reads_R2_raw
+    String read_length_R1_raw
+    String read_length_R2_raw
+    String read_pairs_raw
+
+    Int total_reads_R1_cleaned
+    Int total_reads_R2_cleaned
+    String read_length_R1_cleaned
+    String read_length_R2_cleaned
+    String read_pairs_cleaned
+
+    String fastqc_version
+    String fastqc_docker
+    String seqyclean_version
+    String seqyclean_docker
+    String irma_version
+
+    String docker = "mchether/py3-bio:v1"
+    Int cpu = 2
+    Int memory = 1
+
+  }
+
+  command <<<
+    python ~{assembly_metrics_python_script} \
+      --sample_name "~{sample_name}" \
+      --fasta_file_array ${write_lines(consensus_fastas_array)} \
+      --num_fastas ~{num_fastas} \
+      --tables_directory ${write_lines(tables_directory)} \
+      --total_reads_R1_raw ~{total_reads_R2_raw} \
+      --total_reads_R2_raw ~{total_reads_R2_raw} \
+      --read_length_R1_raw "~{read_length_R1_raw}" \
+      --read_length_R2_raw "~{read_length_R2_raw}" \
+      --read_pairs_raw "~{read_pairs_raw}" \
+      --total_reads_R1_cleaned ~{total_reads_R2_cleaned} \
+      --total_reads_R2_cleaned ~{total_reads_R2_cleaned} \
+      --read_length_R1_cleaned "~{read_length_R1_cleaned}" \
+      --read_length_R2_cleaned "~{read_length_R2_cleaned}" \
+      --read_pairs_cleaned "~{read_pairs_cleaned}" \
+      --fastqc_version "~{fastqc_version}" \
+      --fastqc_docker "~{fastqc_docker}" \
+      --seqyclean_version "~{seqyclean_version}" \
+      --seqyclean_docker "~{seqyclean_docker}" \
+      --irma_version "~{irma_version}"
+
+
+  >>>
+
+  output {
+    File assembly_metrics_tsv = "~{sample_name}_assembly_metrics.csv"
+    File assembly_metrics_reorder_tsv = "~{sample_name}_assembly_metrics_reordered.csv"
+
+  }
+
+    runtime {
+      docker: "~{docker}"
+      memory: "~{memory} GiB"
+      cpu: "~{cpu}"
+      disks: "local-disk 50 SSD"
+      preemptible: 0
+    }
 }

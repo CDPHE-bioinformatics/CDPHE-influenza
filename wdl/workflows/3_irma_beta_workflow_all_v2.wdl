@@ -38,6 +38,26 @@ workflow irma_beta_wf{
       fastq_R2 = seqyclean.fastq_R2_cleaned
   }
 
+  call get_assembly_metrics as assembly_metrics {
+    input:
+      sample_name = sample_name,
+      consensus_fastas_array = irma.consensus_fastas_array,
+      tables_directory = irma.tables_directory,
+
+      total_reads_R1_raw = fastqc_raw.total_reads_R1,
+      total_reads_R2_raw = fastqc_raw.total_reads_R2,
+      read_length_R1_raw = fastqc_raw.read_length_R1,
+      read_length_R2_raw = fastqc_raw.read_length_R2,
+      read_pairs_raw = fastqc_raw.read_pairs,
+
+      total_reads_R1_cleaned = fastqc_cleaned.total_reads_R1,
+      total_reads_R2_cleaned  = fastqc_cleaned.total_reads_R2,
+      read_length_R1_cleaned  = fastqc_cleaned.read_length_R1,
+      read_length_R2_cleaned  = fastqc_cleaned.read_length_R2,
+      read_pairs_cleaned  = fastqc_cleaned.read_pairs
+
+  }
+
   call get_run_parameters as run_parameters {
     input:
       sample_name = sample_name,
@@ -83,7 +103,9 @@ workflow irma_beta_wf{
       bai_files_array = irma.bai_files_array,
       vcf_files_array = irma.vcf_files_array,
       tables_directory = irma.tables_directory,
-      parameters_and_outputs_tsv = run_parameters.parameters_and_outputs_tsv
+
+      parameters_and_outputs_tsv = run_parameters.parameters_and_outputs_tsv,
+      assembly_metrics_tsv = assembly_metrics.assembly_metrics_tsv
 }
   output {
     # output from preprcoess
@@ -111,6 +133,8 @@ workflow irma_beta_wf{
     Array[File] vcf_files_array = irma.vcf_files_array
     Array[File] tables_directory = irma.tables_directory
 
+    # output from assembly_metrics
+    File assembly_metrics_tsv = assembly_metrics.assembly_metrics_tsv
     # output from run_parameters
     File parameters_and_outputs_tsv = run_parameters.parameters_and_outputs_tsv
 
@@ -141,7 +165,7 @@ task fastqc {
    fastqc --outdir $PWD ~{fastq_R1} ~{fastq_R2}
 
    # pull some info from the zip file regarding number of reads and read length
-   unzip -p ~{fastq_R1_file_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ1_LEN
+   unzip -p ~{fastq_R1_file_name}_fastqc.zip */fastqc_data.txt | grep "Seqeunce length" | cut -f 2 | tee READ1_LEN
    unzip -p ~{fastq_R2_file_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ2_LEN
 
    unzip -p ~{fastq_R1_file_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
@@ -242,15 +266,11 @@ task cdc_IRMA{
 
   # rename fasta files and fasta header
   cd ~{sample_name}/
-
-  if ls | grep -q ".fasta"
-  then
   for fasta in *.fasta
   do
     sed "s/>\(.*\)/>~{sample_name}_\1/g" $fasta > "~{sample_name}_${fasta%}"
     #mv -- "$fasta" "~{sample_name}_${fasta%}"
   done
-  fi
 
   # rename bam files
   for bam in *.bam*
@@ -292,6 +312,7 @@ task cdc_IRMA{
   }
 
 }
+
 
 
 task get_run_parameters {
@@ -402,8 +423,11 @@ task transfer_IRMA {
     Array[File] vcf_files_array
     Array[File] tables_directory
 
+    # asembly metrics
+    File assembly_metrics_tsv
     # parameters and outputs
     File parameters_and_outputs_tsv
+
 
     # run time info
     String docker = "theiagen/utility:1.0"
@@ -437,6 +461,8 @@ task transfer_IRMA {
   gsutil -m cp ~{sep = " " vcf_files_array} ~{out_path}/irma/~{sample_name}/vcf_files/
   gsutil -m cp ~{sep = " " tables_directory} ~{out_path}/irma/~{sample_name}/tables/
 
+  # transfer assembly metrics outputs
+  gsutil -m cp ~{assembly_metrics_tsv} ~{out_path}/summary_stats/
   # transfer parameters and outputs
   gsutil -m cp ~{parameters_and_outputs_tsv} ~{out_path}/summary_stats/
 
@@ -457,4 +483,191 @@ task transfer_IRMA {
     disks: "local-disk 50 SSD"
     preemptible: 0
   }
+}
+
+
+task get_assembly_metrics {
+
+  meta {
+    descripiton : "pull together assembly metrics and perform 'subtyping'. The output will be strings which I will read into the task parameters"
+  }
+
+  input {
+    String sample_name
+    Array[File] consensus_fastas_array
+    Int num_fastas = length(consensus_fastas_array)
+    Array[File] tables_directory
+
+    Int total_reads_R1_raw
+    Int total_reads_R2_raw
+    String read_length_R1_raw
+    String read_length_R2_raw
+    String read_pairs_raw
+
+    Int total_reads_R1_cleaned
+    Int total_reads_R2_cleaned
+    String read_length_R1_cleaned
+    String read_length_R2_cleaned
+    String read_pairs_cleaned
+
+    String docker = "mchether/py3-bio:v1"
+    Int cpu = 2
+    Int memory = 1
+
+  }
+
+  command <<<
+    python3 <<CODE
+
+    import pandas as pd
+    import re
+    from Bio import SeqIO
+
+    ######################################################
+    #### load some reference data about gene segements ###
+    # gene segments
+    flu_gene_segs = ['HA',  'NA', 'MP','NP', 'NS', 'PA', 'PB1', 'PB2']
+
+    # expected length of each gene segment
+    ref_len_dict = {'A_MP': 982,'A_NP': 1497,'A_NS': 863,'A_PA': 2151,'A_PB1': 2274,'A_PB2': 2280,
+   'A_HA_H1': 1704,'A_HA_H10': 1686,'A_HA_H11': 1698,'A_HA_H12': 1695,'A_HA_H13': 1701,'A_HA_H14': 1707,
+   'A_HA_H15': 1713,'A_HA_H16': 1698,'A_HA_H2': 1689,'A_HA_H3': 1704,'A_HA_H4': 1695,'A_HA_H5': 1707,
+   'A_HA_H6': 1704,'A_HA_H7': 1713,'A_HA_H8': 1701,'A_HA_H9': 1683,'A_NA_N1': 1413,'A_NA_N2': 1410,
+   'A_NA_N3': 1410,'A_NA_N4': 1413,'A_NA_N5': 1422,'A_NA_N6': 1413,'A_NA_N7': 1416,
+   'A_NA_N8': 1413,'A_NA_N9': 1413,'B_HA': 1758,'B_MP': 1139,'B_NA': 1408,'B_NP': 1683,
+   'B_NS': 1034,'B_PA': 2181,'B_PB1': 2263,'B_PB2': 2313}
+
+   #######################
+   #### prep dataframe ###
+   # set empty dataframe (will add some other column for fastqc stuff later)
+   col_headers = ['sample_id','flu_type','subtype',
+   'HA_expected_len','HA_seq_len','HA_mean_depth','HA_percent_coverage',
+   'NA_expected_len','NA_seq_len','NA_mean_depth','NA_percent_coverage',
+   'MP_expected_len','MP_seq_len','MP_mean_depth','MP_percent_coverage',
+   'NP_expected_len','NP_seq_len','NP_mean_depth','NP_percent_coverage',
+   'NS_expected_len','NS_seq_len','NS_mean_depth','NS_percent_coverage',
+   'PA_expected_len','PA_seq_len','PA_mean_depth','PA_percent_coverage',
+   'PB1_expected_len','PB1_seq_len','PB1_mean_depth','PB1_percent_coverage',
+   'PB2_expected_len','PB2_seq_len','PB2_mean_depth','PB2_percent_coverage']
+
+   df = pd.DataFrame(columns = col_headers)
+   df['sample_name'] = ["~{sample_name}"]
+
+   ######################################################################
+   #### check to see if fasta array is empty, if empty then get zeros ###
+   if num_fastas == 0:
+      df.at[0, 'flu_type'] = ''
+      df.at[0, 'subtype'] = ''
+      for column in df.columns:
+        if column not in ['sample_name', 'flu_type', 'subtype']:
+          df.at[0, column] = 0
+
+   #####################################################################
+   ### now determine subytpe, coverage and depth to fill in
+   else:
+      ################################################################
+      ### get list of fasta files so can see which genes got sequenced
+      sequenced_gene_segs = []
+      for fasta in "~{sep = "" consensus_fastas_array}":
+         # fasta file format = "{sample_name}_A_HA_H1.fasta" or "{sample_name}_B_PB1.fasta" for example
+         #gene_seg format = "A_HA_H1" or "B_PB1" for example
+         gene_seg = file.split('/')[-1].split('.fasta')[0].split('~{sample_name}_')[-1]
+         sequenced_gene_segs.append(gene_seg)
+
+       ######################################
+       ### get type and subtype
+      flu_type = ''
+      subtype = ''
+      flu_type = sequenced_gene_segs[0].split("_")[0]
+      # if flu A determine subtype
+      if flu_type == "A":
+         HA_sub = ''
+         NA_sub = ''
+         for gene_seg in sequenced_gene_segs:
+            if re.search('HA', gene_seg):
+               HA_sub = gene_seg.split('A_HA_')[1]
+            elif res.earch('NA', gene_seg):
+               NA_sub = gene_seg.split('A_NA_')[1]
+         subtype = '%s%s' % (HA_sub, NA_sub)
+         df.at[0, 'flu_type'] = flu_type
+         df.at[0, 'subtype'] = subtype
+
+      #####################################
+      ### get coverage of each gene seg
+      for gene_seg in flu_gene_segs:
+         # gene_seg_name format = 'HA' or "PB1" for example
+         gene_seg_name= gene_seg.split('_')[1] # pulls out gene seg from A_HA_H1 format
+         col_name = '%s_expected_len' % gene_seg_name
+         expected_len = ref_len_dict[gene_seg]
+         df.at[0, col_name] = expected_len
+
+      # calc percent coverage
+      for fasta in "~{sep = "" consensus_fastas_array}":
+         # get gene seg name
+         gene_seg = file.split('/')[-1].split('.fasta')[0].split('~{sample_name}_')[-1]
+         gene_seg_name = gene_seg.split('_')[1]
+
+         # get expected gene segment length
+         col_name = '%s_expected_len' % gene_seg_name
+         expected_len = ref_len_dict[gene_seg]
+         df.at[0, col_name] = expected_len
+
+         # read fasta file and pull out seq lenght
+         record = SeqIO.read(fasta, 'fasta')
+         seq_len = len(record.seq)
+         percent_coverage = (seq_len/expected_len) * 100
+
+         col_name = '%s_seq_len' % gene_seg
+         df.at[0, col_name] = [seq_len]
+
+         col_name= '%s_percent_coverage' % col_gene_seg
+         df.at[0, col_name] = [percent_coverage]
+
+
+       ######################################
+       ### get average depth at each gene segment
+       for file in "~{sep = "" tables_directory}":
+          if re.search('coverage') in file:
+            gene_seg_name = coverage_file.split('/')[-1].split('_')[2]
+
+            cov_df = pd.read_csv(file, sep = '\t')
+            cov_df = cov_df.rename(columns = {'Coverage Depth' : 'coverage_depth'})
+            mean_depth = cov_df.coverage_depth.mean()
+
+            # write mean deapth for each gene seg to df
+            col_name = '%s_mean_depth' % gene_seg_name
+            df.at[0, col_name] = mean_depth
+
+    ##########################################################
+    ### add in other columns for read qc stuff
+    df.at[0, 'total_reads_R1_raw'] = "~{total_reads_R1_raw}"
+    df.at[0, 'total_reads_R2_raw'] = '~{total_reads_R2_raw}'
+    df.at[0, 'read_length_R1_raw'] = '~{read_length_R1_raw}'
+    df.at[0, 'read_length_R2_raw'] = '~{read_length_R2_raw}'
+    df.at[0, 'read_pairs_raw'] = '~{read_pairs_raw}'
+
+    df.at[0, 'total_reads_R1_cleaned'] = "~{total_reads_R1_cleaned}"
+    df.at[0, 'total_reads_R2_cleaned'] = '~{total_reads_R2_cleaned}'
+    df.at[0, 'read_length_R1_cleaned'] = '~{read_length_R1_cleaned}'
+    df.at[0, 'read_length_R2_cleaned'] = '~{read_length_R2_cleaned}'
+    df.at[0, 'read_pairs_cleaned'] = '~{read_pairs_cleaned}'
+
+    outfile = '~{sample_name}_assembly_metrics.tsv'
+    df.to_csv(outfile, sep = '\t', index = False)
+    print('written outfile')
+    CODE
+  >>>
+
+  output {
+    File assembly_metrics_tsv = "~{sample_name}_assembly_metrics.tsv"
+
+  }
+
+    runtime {
+      docker: "~{docker}"
+      memory: "~{memory} GiB"
+      cpu: "~{cpu}"
+      disks: "local-disk 50 SSD"
+      preemptible: 0
+    }
 }
