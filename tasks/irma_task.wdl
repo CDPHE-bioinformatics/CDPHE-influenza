@@ -77,12 +77,18 @@ task irma {
         echo ${TYPE} > TYPE.txt
         echo ${HA_SUBTYPE} > HA_SUBTYPE.txt
         echo ${NA_SUBTYPE} > NA_SUBTYPE.txt
+
+        echo "sample_id,type,HA_subytpe,NA_subtype" > ~{sample_id}_irma_typing.txt
+        echo "~{sample_id},${TYPE},${HA_subtype},${NA_subtype}" >> ~{sample_id}_irma_typing.txt
+
+
     >>>
 
     output {
         String irma_type = read_string("TYPE.txt")
         String irma_ha_subtype = read_string("HA_SUBTYPE.txt")
         String irma_na_subtype = read_string("NA_SUBTYPE.txt")
+        File irma_typing = "~{sample_id}_irma_typing.txt"
         # Array[String] segment_array = read_lines("segment_list.txt")
         Array[File] irma_assemblies = glob("~{sample_id}*.fasta")
         Array[File] irma_bam_files = glob("~{sample_id}*.bam")

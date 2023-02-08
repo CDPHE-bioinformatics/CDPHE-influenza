@@ -11,51 +11,51 @@ task transfer_assembly_wdl{
         String out_path = sub(bucket_path, "/$", "") # fix if have a / at end
 
         # pre-process outputs
-        File fastqc1_raw_html
-        File fastqc1_raw_zip
-        File fastqc2_raw_html
-        File fastqc2_raw_zip
+        File fastqc1_html_raw
+        File fastqc1_zip_raw
+        File fastqc2_html_raw
+        File fastqc2_zip_raw
 
         File seqyclean_summary
 
-        File fastqc1_cleaned_html
-        File fastqc1_cleaned_zip
-        File fastqc2_cleaned_html
-        File fastqc2_cleaned_zip
+        File fastqc1_html_cleaned
+        File fastqc1_zip_cleaned
+        File fastqc2_html_cleaned
+        File fastqc2_zip_cleaned
 
         # irma assembly outputs
-        File[Array] irma_assemblies
-        File[Array] irma_bam_files
-        File[Array] irma_vcfs
+        Array[File] irma_assemblies
+        Array[File] irma_bam_files
+        Array[File] irma_vcfs
 
         # post assembly qc outputs
-        File irma_qc_metrics
+        File? irma_qc_metrics
 
     }
 
     command <<<
         # transfer fastqc raw
-        gsutil -m cp ~{fastqc1_raw_html} ~{out_path}/fastqc_raw/
-        gsutil -m cp ~{fastqc1_raw_zip} ~{out_path}/fastqc_raw/
-        gsutil -m cp ~{fastqc2_raw_html} ~{out_path}/fastqc_raw/
-        gsutil -m cp ~{fastqc2_raw_zip} ~{out_path}/fastqc_raw/
+        gsutil -m cp ~{fastqc1_html_raw} ~{out_path}/fastqc_raw/
+        gsutil -m cp ~{fastqc1_zip_raw} ~{out_path}/fastqc_raw/
+        gsutil -m cp ~{fastqc2_html_raw} ~{out_path}/fastqc_raw/
+        gsutil -m cp ~{fastqc2_zip_raw} ~{out_path}/fastqc_raw/
 
         # transfter seqyclean
         gsutil -m cp ~{seqyclean_summary} ~{out_path}/seqyclean/
 
         # transfer fastqc clean
-        gsutil -m cp ~{fastqc1_cleaned_html} ~{out_path}/fastqc_cleaned/
-        gsutil -m cp ~{fastqc1_cleaned_zip} ~{out_path}/fastqc_cleaned/
-        gsutil -m cp ~{fastqc2_cleaned_html} ~{out_path}/fastqc_cleaned/
-        gsutil -m cp ~{fastqc2_cleaned_zip} ~{out_path}/fastqc_cleaned/
+        gsutil -m cp ~{fastqc1_html_cleaned} ~{out_path}/fastqc_cleaned/
+        gsutil -m cp ~{fastqc1_zip_cleaned} ~{out_path}/fastqc_cleaned/
+        gsutil -m cp ~{fastqc2_html_cleaned} ~{out_path}/fastqc_cleaned/
+        gsutil -m cp ~{fastqc2_zip_cleaned} ~{out_path}/fastqc_cleaned/
 
         # transfer irma
-        gsutil -m cp ~{sep = " " irma_assemblies} ~{out_path}/irma/~{sample_name}/assemblies/
-        gsutil -m cp ~{sep = " " irma_bam_files} ~{out_path}/irma/~{sample_name}/bam_files/
-        gsutil -m cp ~{sep = " " irma_vcfs} ~{out_path}/irma/~{sample_name}/vcf_files/
+        gsutil -m cp ~{sep = " " irma_assemblies} ~{out_path}/irma/~{sample_id}/assemblies/
+        gsutil -m cp ~{sep = " " irma_bam_files} ~{out_path}/irma/~{sample_id}/bam_files/
+        gsutil -m cp ~{sep = " " irma_vcfs} ~{out_path}/irma/~{sample_id}/vcf_files/
 
         # transfer post assemlby qc
-        gsutil -m cp ~{sep = " " irma_qc_metrics} ~{out_path}/irma/~{sample_name}/
+        gsutil -m cp ~{irma_qc_metrics} ~{out_path}/irma/~{sample_id}/
 
         # transfer date
         transferdate=`date`

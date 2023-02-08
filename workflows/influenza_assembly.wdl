@@ -81,11 +81,9 @@ workflow influenza_assembly {
         }
     
     }
-
-    #4 - Write summary outputs for each sample so just have to concatenate
-    ## files for results wdl+
     # 5 - Transfer
-    call transfer.transfer_assembly_wdl as transfer {
+    
+    call transfer.transfer_assembly_wdl as transfer_assembly_wdl {
         input:
             sample_id = sample_id, 
             bucket_path = bucket_path,
@@ -134,6 +132,7 @@ workflow influenza_assembly {
         String irma_type = irma.irma_type
         String irma_ha_subtype = irma.irma_ha_subtype
         String irma_na_subtype = irma.irma_na_subtype
+        File irma_typing = irma.irma_typing
         # Array[String] segment_array = irma.segment_array
         Array[File] irma_assemblies = irma.irma_assemblies
         Array[File] irma_bam_files = irma.irma_bam_files
@@ -147,6 +146,6 @@ workflow influenza_assembly {
         File? irma_qc_metrics = irma_concat_post_qc_metrics.qc_metrics_summary
         
         # output from transfer
-        String transfer=transfer.transfer_date
+        String transfer_date=transfer_assembly_wdl.transfer_date
     }
 }
