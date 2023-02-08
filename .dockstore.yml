@@ -3,3 +3,5 @@ workflows:
  - name: influenza_assembly
    subclass: WDL
    primaryDescriptorPath: /workflows/influenza_assembly.wdl
+   testParameterFiles:
+      - empty.json

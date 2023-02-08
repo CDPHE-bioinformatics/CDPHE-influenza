@@ -1,10 +1,10 @@
 version 1.0
 
 # import tasks
-import "/home/molly_hetheringtonrauth/sandbox_influenza/pipeline_development/tasks/preprocess_tasks.wdl" as fastq_preprocess
-import "/home/molly_hetheringtonrauth/sandbox_influenza/pipeline_development/tasks/irma_task.wdl" as irma
-import "/home/molly_hetheringtonrauth/sandbox_influenza/pipeline_development/tasks/post_assembly_tasks.wdl" as post_assembly_qc
-import "/home/molly_hetheringtonrauth/sandbox_influenza/pipeline_development/tasks/transfer_task.wdl" as transfer
+import "../tasks/preprocess_tasks.wdl" as fastq_preprocess
+import "../tasks/irma_task.wdl" as irma
+import "../tasks/post_assembly_tasks.wdl" as post_assembly_qc
+import "../tasks/transfer_task.wdl" as transfer
 
 # begin workflow
 workflow influenza_assembly {
