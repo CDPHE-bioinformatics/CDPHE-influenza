@@ -84,7 +84,7 @@ workflow influenza_assembly {
 
     #4 - Write summary outputs for each sample so just have to concatenate
     ## files for results wdl+
-    5 - Transfer
+    # 5 - Transfer
     call transfer.transfer_assembly_wdl as transfer {
         input:
             sample_id = sample_id, 
@@ -108,7 +108,7 @@ workflow influenza_assembly {
             irma_qc_metrics = irma_concat_post_qc_metrics.qc_metrics_summary
 
 
-    # }
+    }
 
 
     output {
