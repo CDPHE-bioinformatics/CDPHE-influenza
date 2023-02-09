@@ -82,10 +82,10 @@ We have our workflow setup so that the following data files are stored in our wo
 | fastqc1_zip_raw | {sample_id}_R1_001_fastqc.zip| |
 | fastqc2_html_raw | {sample_id}_R2_001_fastqc.html | empty if read_type == "single"|
 | fastqc2_zip_raw | {sample_id}_R1_001_fastqc.zip| empty if read_type == "single"|
-| fastqc1_html_cleaned | {sample_id}_clean_R1_001_fastqc.html| |
-| fastqc1_zip_clenaed | {sample_id}_clean_R1_001_fastqc.zip| |
-| fastqc2_html_clenaed | {sample_id}_clean_R2_001_fastqc.html| empty if read_type == "single"|
-| fastqc2_zip_cleaned | {sample_id}_clean_R2_001_fastqc.zip| empty if read_type == "single"|
+| fastqc1_html_cleaned | {sample_id}_R1_001_fastqc.html| |
+| fastqc1_zip_clenaed | {sample_id}_R1_001_fastqc.zip| |
+| fastqc2_html_clenaed | {sample_id}_R2_001_fastqc.html| empty if read_type == "single"|
+| fastqc2_zip_cleaned | {sample_id}_R2_001_fastqc.zip| empty if read_type == "single"|
 | seqyclean_version | N/A | version of seqyclean |
 | seqyclean_docker | N/A | docker used for seqyclean | 
 | seqyclean_summary | {smaple_id}_clean_SummaryStatistics.tsv | |

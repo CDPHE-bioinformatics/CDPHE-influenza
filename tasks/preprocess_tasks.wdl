@@ -7,13 +7,16 @@ task fastqc {
     }
 
     input {
-      File fastq_R1
-      File? fastq_R2
-    #   String fastq_R1_name = basename(basename(basename(fastq_R1, ".gz"), ".fastq"), ".fq")
-    #   String fastq_R2_name = basename(basename(basename(fastq_R2, ".gz"), ".fastq"), ".fq")
-      String read_type
-      String docker = 'staphb/fastqc:0.11.9'
+        String sample_id
+        File fastq_R1
+        File? fastq_R2
+
+        String read_type
+        String docker = 'staphb/fastqc:0.11.9'
     }
+    # String fastq_R1_name = basename(basename(basename(fastq_R1, ".gz"), ".fastq"), ".fq")
+    # String fastq_R2_name = basename(basename(basename(fastq_R2, ".gz"), ".fastq"), ".fq")
+
     command <<<
         # capture date and version
         fastqc --version | tee VERSION
@@ -21,22 +24,26 @@ task fastqc {
         if [ ~{read_type} == "paired" ]; then
             # get the base name of the fastq files
             fastq_R1_name=$(basename ~{fastq_R1} | cut -d "." -f 1 | cut -d "." -f 1)
-            echo $fastq_R1_name | tee fastq_R1_name
             fastq_R2_name=$(basename ~{fastq_R2} | cut -d "." -f 1 | cut -d "." -f 1)
-            echo $fastq_R2_name | tee fastq_R2_name
 
             # run fastqc
             fastqc --outdir $PWD ~{fastq_R1} ~{fastq_R2}
 
+            # rename outputs
+            mv ${fastq_R1_name}_fastqc.html ~{sample_id}_R1_fastqc.html
+            mv ${fastq_R1_name}_fastqc.zip ~{sample_id}_R1_fastqc.zip
+            mv ${fastq_R2_name}_fastqc.html ~{sample_id}_R2_fastqc.html
+            mv ${fastq_R2_name}_fastqc.zip ~{sample_id}_R2_fastqc.zip
+
             # pull some info from the zip file regarding number of reads and read length
-            unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ1_LEN
-            unzip -p ${fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ2_LEN
+            unzip -p ~{sample_id}_R1_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ1_LEN
+            unzip -p ~{sample_id}_R2_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ2_LEN
 
-            unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
-            unzip -p ${fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ2_SEQS
+            unzip -p ~{sample_id}_R1_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
+            unzip -p ~{sample_id}_R2_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ2_SEQS
 
-            READ1_SEQS=$(unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
-            READ2_SEQS=$(unzip -p ${fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
+            READ1_SEQS=$(unzip -p ~{sample_id}_R1_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
+            READ2_SEQS=$(unzip -p ~{sample_id}_R2_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
 
             if [ $READ1_SEQS == $READ2_SEQS ]; then
                 read_pairs=$READ1_SEQS
@@ -49,20 +56,23 @@ task fastqc {
         elif [ ~{read_type} == "single" ]; then
             # get base name
             fastq_R1_name=$(basename ~{fastq_R1} | cut -d "." -f 1 | cut -d "." -f 1)
-            echo $fastq_R1_name | tee fastq_R1_name
-            echo "" | tee fastq_R1_name 
+
 
             # run fastqc
             fastqc --outdir $PWD ~{fastq_R1}
 
+            # rename outputs
+            mv ${fastq_R1_name}_fastqc.html ~{sample_id}_R1_fastqc.html
+            mv ${fastq_R1_name}_fastqc.zip ~{sample_id}_R1_fastqc.zip
+
             # pull some info from the zip file regarding number of reads and read length
-            unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ1_LEN
+            unzip -p ~{sample_id}_R1_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ1_LEN
             # unzip -p ~{fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ2_LEN
             
-            unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
+            unzip -p ~{sample_id}_R1_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
             # unzip -p ~{fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ2_SEQS
 
-            READ1_SEQS=$(unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
+            READ1_SEQS=$(unzip -p ~{sample_id}_R1_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
             # READ2_SEQS=$(unzip -p ~{fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
     
             echo $READ1_SEQS| tee READ_PAIRS
@@ -74,13 +84,10 @@ task fastqc {
 
     >>>
     output {
-        String fastq_R1_name = read_string('fastq_R1_name')
-        String fastq_R2_name = read_string('fastq_R2_name')
-
-        File fastqc1_html = "~{fastq_R1_name}_fastqc.html"
-        File fastqc1_zip = "~{fastq_R1_name}_fastqc.zip"
-        File? fastqc2_html = "~{fastq_R2_name}_fastqc.html"
-        File? fastqc2_zip = "~{fastq_R2_name}_fastqc.zip"
+        File fastqc1_html = "~{sample_id}_R1_fastqc.html"
+        File fastqc1_zip = "~{sample_id}_R1_fastqc.zip"
+        File? fastqc2_html = "~{sample_id}_R2_fastqc.html"
+        File? fastqc2_zip = "~{sample_id}_R2_fastqc.zip"
 
         Int total_reads_R1 = read_string("READ1_SEQS")
         Int total_reads_R2 = read_string("READ2_SEQS")

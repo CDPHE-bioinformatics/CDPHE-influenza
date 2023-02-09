@@ -26,6 +26,7 @@ workflow influenza_assembly {
     # 1 - Preprocess QC raw fastq files
     call fastq_preprocess.fastqc as fastqc_raw {
         input:
+            sample_id = sample_id,
             fastq_R1 = fastq_R1,
             fastq_R2 = fastq_R2,
             read_type = read_type
@@ -40,6 +41,7 @@ workflow influenza_assembly {
     }
     call fastq_preprocess.fastqc as fastqc_cleaned {
         input:
+            sample_id = sample_id,
             fastq_R1 = seqyclean.fastq_R1_cleaned,
             fastq_R2 = seqyclean.fastq_R2_cleaned,
             read_type = read_type
