@@ -9,13 +9,13 @@ task fastqc {
     input {
         String sample_id
         File fastq_R1
-        File? fastq_R2
+        File fastq_R2 = "default.fastq.gz" # need a dumby value so can use the basename on fastq_R2
 
         String read_type
         String docker = 'staphb/fastqc:0.11.9'
     }
-    # String fastq_R1_name = basename(basename(basename(fastq_R1, ".gz"), ".fastq"), ".fq")
-    # String fastq_R2_name = basename(basename(basename(fastq_R2, ".gz"), ".fastq"), ".fq")
+    String fastq_R1_name = basename(basename(basename(fastq_R1, ".gz"), ".fastq"), ".fq")
+    String fastq_R2_name = basename(basename(basename(fastq_R2, ".gz"), ".fastq"), ".fq")
 
     command <<<
         # capture date and version
