@@ -88,7 +88,7 @@ We have our workflow setup so that the following data files are stored in our wo
 | fastqc2_zip_cleaned | {sample_id}_clean_R2_001_fastqc.zip| empty if read_type == "single"|
 | seqyclean_version | N/A | version of seqyclean |
 | seqyclean_docker | N/A | docker used for seqyclean | 
-| seqyclean_summary | | |
+| seqyclean_summary | {smaple_id}_clean_SummaryStatistics.tsv | |
 
 
 

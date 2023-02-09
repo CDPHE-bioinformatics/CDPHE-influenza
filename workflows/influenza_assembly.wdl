@@ -1,8 +1,8 @@
 version 1.0
 
 # import tasks
-import "../tasks/preprocess_tasks_with_SE.wdl" as fastq_preprocess
-import "../tasks/irma_task_with_SE.wdl" as irma
+import "../tasks/preprocess_tasks.wdl" as fastq_preprocess
+import "../tasks/irma_task.wdl" as irma
 import "../tasks/post_assembly_tasks.wdl" as post_assembly_qc
 import "../tasks/transfer_task.wdl" as transfer
 
