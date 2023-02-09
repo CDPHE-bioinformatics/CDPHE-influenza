@@ -1,9 +1,0 @@
-{"influenza_assembly.adapters_and_contaminants" : "workspace.adapters_and_contaminants",
-"influenza_assembly.bucket_path" : "this.out_dir",
-"influenza_assembly.calc_percent_cov_py" : "workspace.flu_calc_percent_cov_py",
-"influenza_assembly.concat_post_assembly_qc_metrics_py" "workspace.flu_concat_post_assembly_qc_metrics_py",
-"influenza_assembly.concat_preprocess_qc_metrics_py" : "workspace.flu_concat_preprocess_qc_metrics_py",
-"influenza_assembly.fastq_R1" : "this.fastq_R1",
-"influenza_assembly.fastq_R2" : "this.fastq_R2",
-"influenza_assembly.read_type" : "this.read_type",
-"influenza_assembly.sample_id" : ""}
