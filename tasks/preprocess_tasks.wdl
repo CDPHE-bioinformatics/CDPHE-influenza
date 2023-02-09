@@ -8,9 +8,9 @@ task fastqc {
 
     input {
       File fastq_R1
-      File fastq_R2
-      String fastq_R1_name = basename(basename(basename(fastq_R1, ".gz"), ".fastq"), ".fq")
-      String fastq_R2_name = basename(basename(basename(fastq_R2, ".gz"), ".fastq"), ".fq")
+      File? fastq_R2
+    #   String fastq_R1_name = basename(basename(basename(fastq_R1, ".gz"), ".fastq"), ".fq")
+    #   String fastq_R2_name = basename(basename(basename(fastq_R2, ".gz"), ".fastq"), ".fq")
       String read_type
       String docker = 'staphb/fastqc:0.11.9'
     }
@@ -19,14 +19,21 @@ task fastqc {
         fastqc --version | tee VERSION
 
         if [ ~{read_type} == "paired" ]; then
+            # get the base name of the fastq files
+            fastq_R1_name=$(basename ~{fastq_R1} | cut -d "." -f 1 | cut -d "." -f 1)
+            echo $fastq_R1_name | tee fastq_R1_name
+            fastq_R2_name=$(basename ~{fastq_R2} | cut -d "." -f 1 | cut -d "." -f 1)
+            echo $fastq_R2_name | tee fastq_R2_name
+
+            # run fastqc
             fastqc --outdir $PWD ~{fastq_R1} ~{fastq_R2}
 
             # pull some info from the zip file regarding number of reads and read length
-            unzip -p ~{fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ1_LEN
-            unzip -p ~{fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ2_LEN
+            unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ1_LEN
+            unzip -p ${fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ2_LEN
 
-            unzip -p ~{fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
-            unzip -p ~{fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ2_SEQS
+            unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
+            unzip -p ${fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ2_SEQS
 
             READ1_SEQS=$(unzip -p ~{fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
             READ2_SEQS=$(unzip -p ~{fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
@@ -40,13 +47,19 @@ task fastqc {
             echo $read_pairs | tee READ_PAIRS
         
         elif [ ~{read_type} == "single" ]; then
+            # get base name
+            fastq_R1_name=$(basename ~{fastq_R1} | cut -d "." -f 1 | cut -d "." -f 1)
+            echo $fastq_R1_name | tee fastq_R1_name
+            echo "" | tee fastq_R1_name 
+
+            # run fastqc
             fastqc --outdir $PWD ~{fastq_R1}
 
             # pull some info from the zip file regarding number of reads and read length
-            unzip -p ~{fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ1_LEN
+            unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ1_LEN
             # unzip -p ~{fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ2_LEN
             
-            unzip -p ~{fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
+            unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
             # unzip -p ~{fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ2_SEQS
 
             READ1_SEQS=$(unzip -p ~{fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
@@ -61,6 +74,9 @@ task fastqc {
 
     >>>
     output {
+        String fastq_R1_name = read_string('fastq_R1_name')
+        String fastq_R2_name = read_string('fastq_R2_name')
+
         File fastqc1_html = "~{fastq_R1_name}_fastqc.html"
         File fastqc1_zip = "~{fastq_R1_name}_fastqc.zip"
         File? fastqc2_html = "~{fastq_R2_name}_fastqc.html"
