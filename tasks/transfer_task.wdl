@@ -8,7 +8,6 @@ task transfer_assembly_wdl{
     input{
         String sample_id
         String bucket_path
-        String out_path = sub(bucket_path, "/$", "") # fix if have a / at end
 
         # pre-process outputs
         File fastqc1_html_raw
@@ -34,6 +33,8 @@ task transfer_assembly_wdl{
         File? irma_qc_metrics
 
     }
+    
+    String out_path = sub(bucket_path, "/$", "") # fix if have a / at end
 
     command <<<
         # transfer fastqc raw
