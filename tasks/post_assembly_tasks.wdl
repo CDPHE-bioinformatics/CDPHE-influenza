@@ -15,7 +15,7 @@ task samtools_mapped_reads {
     base_name=$(basename ~{bam_file})
     sample_id=$(basename ~{bam_file} | cut -d "_" -f 1)
     segment_name=$(basename ~{bam_file} | cut -d "." -f 1 | cut -d "_" -f 2-)
-    gene_name=$(basename ~{bam_file} | cut -d "_" -f 3)
+    gene_name=$(basename ~{bam_file} | cut -d "." -f 1 | cut -d "_" -f 3)
 
     # count mapped flu reads
     samtools view -c -F 260 ~{bam_file} > num_mapped_reads.txt
@@ -61,7 +61,7 @@ task calc_percent_coverage{
     command <<<
 
     # get segment name from fasta file name
-    segment_name=$(basename ~{fasta_file} | cut -d "." -f 1 | cut -d "_" -f 2-)
+    # segment_name=$(basename ~{fasta_file} | cut -d "." -f 1 | cut -d "_" -f 2-)
 
 
     python ~{python_script} --fasta_file ~{fasta_file}
@@ -90,8 +90,8 @@ task concat_post_qc_metrics{
     input{
         File python_script
         String sample_id
-        Array[File?] bam_results_array
-        Array[File?] per_cov_results_array
+        Array[File] bam_results_array
+        Array[File] per_cov_results_array
 
     }
 

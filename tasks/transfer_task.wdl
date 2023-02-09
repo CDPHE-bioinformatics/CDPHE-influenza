@@ -13,15 +13,17 @@ task transfer_assembly_wdl{
         # pre-process outputs
         File fastqc1_html_raw
         File fastqc1_zip_raw
-        File fastqc2_html_raw
-        File fastqc2_zip_raw
+        File? fastqc2_html_raw
+        File? fastqc2_zip_raw
 
         File seqyclean_summary
 
+        File preprocess_qc_metrics
+
         File fastqc1_html_cleaned
         File fastqc1_zip_cleaned
-        File fastqc2_html_cleaned
-        File fastqc2_zip_cleaned
+        File? fastqc2_html_cleaned
+        File? fastqc2_zip_cleaned
 
         # irma assembly outputs
         Array[File] irma_assemblies
@@ -35,7 +37,7 @@ task transfer_assembly_wdl{
 
     command <<<
         # transfer fastqc raw
-        gsutil -m cp ~{fastqc1_html_raw} ~{out_path}/fastqc_raw/
+        gsutil -m cp ~{fastqc1_html_raw} ~{out_path}/prefastqc_raw/
         gsutil -m cp ~{fastqc1_zip_raw} ~{out_path}/fastqc_raw/
         gsutil -m cp ~{fastqc2_html_raw} ~{out_path}/fastqc_raw/
         gsutil -m cp ~{fastqc2_zip_raw} ~{out_path}/fastqc_raw/
@@ -48,6 +50,9 @@ task transfer_assembly_wdl{
         gsutil -m cp ~{fastqc1_zip_cleaned} ~{out_path}/fastqc_cleaned/
         gsutil -m cp ~{fastqc2_html_cleaned} ~{out_path}/fastqc_cleaned/
         gsutil -m cp ~{fastqc2_zip_cleaned} ~{out_path}/fastqc_cleaned/
+
+        # transfer preprocess qc metrics summary
+        gsutil -m cp ~{preprocess_qc_metrics} ~{out_path}/preprocess_qc_metrics/
 
         # transfer irma
         gsutil -m cp ~{sep = " " irma_assemblies} ~{out_path}/irma/~{sample_id}/assemblies/
@@ -75,3 +80,4 @@ task transfer_assembly_wdl{
     }
 
 }
+

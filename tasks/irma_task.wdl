@@ -8,9 +8,10 @@ task irma {
     input {
         String sample_id
         File fastq_R1
-        File fastq_R2
+        File? fastq_R2
+        String read_type
         String irma_module = "FLU"
-        String docker = "staphb/irma:latest"
+        String docker = "staphb/irma:1.0.3"
 
     }
     command <<<
@@ -18,8 +19,12 @@ task irma {
         IRMA | head -n1 | awk -F' ' '{ print "IRMA " $5 }' | tee VERSION
 
         # run IRMA
-        IRMA ~{irma_module} ~{fastq_R1} ~{fastq_R2} ~{sample_id}
-
+        if [ ~{read_type} == 'paired' ]; then
+            IRMA ~{irma_module} ~{fastq_R1} ~{fastq_R2} ~{sample_id}
+        elif [ ~{read_type} == 'single' ]; then
+            IRMA ~{irma_module} ~{fastq_R1} ~{sample_id}
+        fi
+        
         # determine if assemly was successful
         if compgen -G "~{sample_id}/*.fasta"; then
             proceed=yes
@@ -78,8 +83,8 @@ task irma {
         echo ${HA_SUBTYPE} > HA_SUBTYPE.txt
         echo ${NA_SUBTYPE} > NA_SUBTYPE.txt
 
-        echo "sample_id,type,HA_subytpe,NA_subtype" > ~{sample_id}_irma_typing.txt
-        echo "~{sample_id},${TYPE},${HA_subtype},${NA_subtype}" >> ~{sample_id}_irma_typing.txt
+        echo "sample_id,type,HA_subytpe,NA_subtype" > ~{sample_id}_irma_typing.csv
+        echo "~{sample_id},${TYPE},${HA_subtype},${NA_subtype}" >> ~{sample_id}_irma_typing.csv
 
 
     >>>
@@ -88,7 +93,7 @@ task irma {
         String irma_type = read_string("TYPE.txt")
         String irma_ha_subtype = read_string("HA_SUBTYPE.txt")
         String irma_na_subtype = read_string("NA_SUBTYPE.txt")
-        File irma_typing = "~{sample_id}_irma_typing.txt"
+        File irma_typing = "~{sample_id}_irma_typing.csv"
         # Array[String] segment_array = read_lines("segment_list.txt")
         Array[File] irma_assemblies = glob("~{sample_id}*.fasta")
         Array[File] irma_bam_files = glob("~{sample_id}*.bam")
@@ -105,3 +110,4 @@ task irma {
         preemptible: 0
   }
 }
+

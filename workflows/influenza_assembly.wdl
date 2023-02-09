@@ -1,8 +1,8 @@
 version 1.0
 
 # import tasks
-import "../tasks/preprocess_tasks.wdl" as fastq_preprocess
-import "../tasks/irma_task.wdl" as irma
+import "../tasks/preprocess_tasks_with_SE.wdl" as fastq_preprocess
+import "../tasks/irma_task_with_SE.wdl" as irma
 import "../tasks/post_assembly_tasks.wdl" as post_assembly_qc
 import "../tasks/transfer_task.wdl" as transfer
 
@@ -13,24 +13,27 @@ workflow influenza_assembly {
         String sample_id
         String read_type
         File fastq_R1
-        File fastq_R2
+        File? fastq_R2
         File adapters_and_contaminants
         String bucket_path
 
         # python scripts
+        File concat_preprocess_qc_metrics_py
         File calc_percent_cov_py
-        File concat_qc_metrics_py
+        File concat_post_assembly_qc_metrics_py
     }
 
     # 1 - Preprocess QC raw fastq files
     call fastq_preprocess.fastqc as fastqc_raw {
         input:
             fastq_R1 = fastq_R1,
-            fastq_R2 = fastq_R2
+            fastq_R2 = fastq_R2,
+            read_type = read_type
     }
     call fastq_preprocess.seqyclean as seqyclean {
         input:
             sample_id = sample_id,
+            read_type = read_type,
             fastq_R1 = fastq_R1,
             fastq_R2 = fastq_R2,
             adapters_and_contaminants = adapters_and_contaminants  
@@ -38,13 +41,41 @@ workflow influenza_assembly {
     call fastq_preprocess.fastqc as fastqc_cleaned {
         input:
             fastq_R1 = seqyclean.fastq_R1_cleaned,
-            fastq_R2 = seqyclean.fastq_R2_cleaned
+            fastq_R2 = seqyclean.fastq_R2_cleaned,
+            read_type = read_type
+    }
+    call fastq_preprocess.concat_preprocess_qc_metrics as concat_preprocess_qc_metrics{
+        input:
+            python_script = concat_preprocess_qc_metrics_py,
+            sample_id = sample_id,
+            read_type = read_type,
+
+            fastqc_version = fastqc_raw.fastqc_version,
+            fastqc_docker = fastqc_raw.fastqc_docker,
+
+            total_reads_R1_raw = fastqc_raw.total_reads_R1,
+            total_reads_R2_raw = fastqc_raw.total_reads_R2,
+            read_length_R1_raw = fastqc_raw.read_length_R1,
+            read_length_R2_raw = fastqc_raw.read_length_R2,
+            read_pairs_raw = fastqc_raw.read_pairs,
+
+            total_reads_R1_cleaned = fastqc_cleaned.total_reads_R1,
+            total_reads_R2_cleaned = fastqc_cleaned.total_reads_R2,
+            read_length_R1_cleaned = fastqc_cleaned.read_length_R1,
+            read_length_R2_cleaned = fastqc_cleaned.read_length_R2,
+            read_pairs_cleaned = fastqc_cleaned.read_pairs,
+
+            seqyclean_version = seqyclean.seqyclean_version,
+            seqyclean_docker = seqyclean.seqyclean_docker
+
+
     }
 
     # 2- run irma
     call irma.irma as irma {
         input:
             sample_id = sample_id,
+            read_type = read_type,
             fastq_R1 = seqyclean.fastq_R1_cleaned,
             fastq_R2 = seqyclean.fastq_R2_cleaned
     }
@@ -73,7 +104,7 @@ workflow influenza_assembly {
         # input depth and cov arrays to create a single outfile for all gene segments
         call post_assembly_qc.concat_post_qc_metrics as irma_concat_post_qc_metrics{
             input:
-                python_script = concat_qc_metrics_py,
+                python_script = concat_post_assembly_qc_metrics_py,
                 sample_id = sample_id,
                 bam_results_array = irma_samtools_mapped_reads.bam_results,
                 per_cov_results_array = irma_percent_coverage.perc_cov_results
@@ -94,10 +125,12 @@ workflow influenza_assembly {
 
             seqyclean_summary = seqyclean.seqyclean_summary,
 
+            preprocess_qc_metrics = concat_preprocess_qc_metrics.preprocess_qc_metrics,
+
             fastqc1_html_cleaned = fastqc_cleaned.fastqc1_html,
             fastqc1_zip_cleaned = fastqc_cleaned.fastqc1_zip,
             fastqc2_html_cleaned = fastqc_cleaned.fastqc2_html,
-            fastqc2_zip_cleaned = fastqc_raw.fastqc2_zip,
+            fastqc2_zip_cleaned = fastqc_cleaned.fastqc2_zip,
 
             irma_assemblies = irma.irma_assemblies,
             irma_bam_files = irma.irma_bam_files,
@@ -116,8 +149,8 @@ workflow influenza_assembly {
 
         File fastqc1_html_raw = fastqc_raw.fastqc1_html
         File fastqc1_zip_raw = fastqc_raw.fastqc1_zip
-        File fastqc2_html_raw = fastqc_raw.fastqc2_html
-        File fastqc2_zip_raw = fastqc_raw.fastqc2_zip
+        File? fastqc2_html_raw = fastqc_raw.fastqc2_html
+        File? fastqc2_zip_raw = fastqc_raw.fastqc2_zip
 
         String seqyclean_version = seqyclean.seqyclean_version
         String seqyclean_docker = seqyclean.seqyclean_docker
@@ -125,8 +158,10 @@ workflow influenza_assembly {
 
         File fastqc1_html_cleaned = fastqc_cleaned.fastqc1_html
         File fastqc1_zip_cleaned = fastqc_cleaned.fastqc1_zip
-        File fastqc2_html_cleaned = fastqc_cleaned.fastqc2_html
-        File fastqc2_zip_cleaned = fastqc_raw.fastqc2_zip
+        File? fastqc2_html_cleaned = fastqc_cleaned.fastqc2_html
+        File? fastqc2_zip_cleaned = fastqc_raw.fastqc2_zip
+
+        File preprocess_qc_metrics = concat_preprocess_qc_metrics.preprocess_qc_metrics
 
         # output from irma
         String irma_type = irma.irma_type

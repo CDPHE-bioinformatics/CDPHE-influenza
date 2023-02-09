@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-version = '0.1.0'
+#version = '0.1.0'
 
 # import python modules
 import pandas as pd
@@ -43,24 +43,26 @@ def getOptions(args=sys.argv[1:]):
 #     return list
 
 def get_fasta_file_basename(fasta_file_path):
-    base_name = fasta_file_path.split('/')[-1] # strip directories
-    return base_name
+    basename = fasta_file_path.split('/')[-1] # strip directories
+    return basename
 
 def get_segment_name(fasta_file_path):
-    base_name = fasta_file_path.split('/')[-1] # strip directories
+    basename = fasta_file_path.split('/')[-1] # strip directories
     strip_sample_id = '_'.join(basename.split('_')[1:]) # strip sample id
     segment_name = strip_sample_id.split('.')[0] # strip .fasta
 
     return segment_name
 
 def get_gene_name(fasta_file_path):
-    base_name = fasta_file_path.split('/')[-1] # strip directories
-    gene_name = basename.split('_')[2] # strip sample id
-
+    basename = fasta_file_path.split('/')[-1] # strip directories
+    strip_sample_id = '_'.join(basename.split('_')[1:]) # strip sample id
+    segment_name = strip_sample_id.split('.')[0] # strip .fasta 
+    gene_name = segment_name.split('_')[1]
+    
     return gene_name
 
 def get_sample_id(fasta_file_path):
-    base_name = fasta_file_path.split('/')[-1] # strip directories
+    basename = fasta_file_path.split('/')[-1] # strip directories
     sample_id = basename.split('_')[0] # pull out sample id
 
     return sample_id
