@@ -8,9 +8,9 @@ task fastqc {
 
     input {
       File fastq_R1
-      File? fastq_R2
+      File fastq_R2
       String fastq_R1_name = basename(basename(basename(fastq_R1, ".gz"), ".fastq"), ".fq")
-      String? fastq_R2_name = basename(basename(basename(fastq_R2, ".gz"), ".fastq"), ".fq")
+      String fastq_R2_name = basename(basename(basename(fastq_R2, ".gz"), ".fastq"), ".fq")
       String read_type
       String docker = 'staphb/fastqc:0.11.9'
     }
