@@ -85,7 +85,7 @@ task irma {
         echo ${NA_SUBTYPE} > NA_SUBTYPE.txt
 
         echo "sample_id,type,HA_subytpe,NA_subtype,irma_module,irma_docker,irma_version" > ~{sample_id}_irma_typing.csv
-        echo "~{sample_id},${TYPE},${HA_subtype},${NA_subtype},~{irma_module},~{docker},${version}" >> ~{sample_id}_irma_typing.csv
+        echo "~{sample_id},${TYPE},${HA_SUBTYPE},${NA_SUBTYPE},~{irma_module},~{docker},${version}" >> ~{sample_id}_irma_typing.csv
 
 
     >>>
