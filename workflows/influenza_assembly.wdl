@@ -6,6 +6,7 @@ import "../tasks/irma_task.wdl" as irma
 import "../tasks/post_assembly_tasks.wdl" as post_assembly_qc
 import "../tasks/transfer_task.wdl" as transfer
 
+# in order to check right import
 # begin workflow
 workflow influenza_assembly {
 

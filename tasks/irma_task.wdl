@@ -39,7 +39,7 @@ task irma {
             TYPE=$(basename $(find ~{sample_id}/*.fasta | head -n 1 ) | cut -d "_" -f 1)
 
             ## Type == A then grab subtype if exists
-            if [ $TYPE == "A"]; then
+            if [ $TYPE == "A" ]; then
                 if compgen -G "~{sample_id}/*_HA*.fasta"; then
                     HA_SUBTYPE=$(basename $(find ~{sample_id}/*HA*.fasta | head -n 1 ) | cut -d "_" -f 3 | cut -d "." -f1)
                 else
