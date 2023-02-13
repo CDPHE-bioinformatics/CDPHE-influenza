@@ -17,6 +17,7 @@ task irma {
     command <<<
         # potentially adjust config file to match theiagen
         IRMA | head -n1 | awk -F' ' '{ print "IRMA " $5 }' | tee VERSION
+        version=$(cat VERSION)
 
         # run IRMA
         if [ ~{read_type} == 'paired' ]; then
@@ -83,8 +84,8 @@ task irma {
         echo ${HA_SUBTYPE} > HA_SUBTYPE.txt
         echo ${NA_SUBTYPE} > NA_SUBTYPE.txt
 
-        echo "sample_id,type,HA_subytpe,NA_subtype" > ~{sample_id}_irma_typing.csv
-        echo "~{sample_id},${TYPE},${HA_subtype},${NA_subtype}" >> ~{sample_id}_irma_typing.csv
+        echo "sample_id,type,HA_subytpe,NA_subtype,irma_module,irma_docker,irma_version" > ~{sample_id}_irma_typing.csv
+        echo "~{sample_id},${TYPE},${HA_subtype},${NA_subtype},~{irma_module},~{docker},${version}" >> ~{sample_id}_irma_typing.csv
 
 
     >>>
