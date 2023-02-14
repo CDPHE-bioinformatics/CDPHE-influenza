@@ -5,13 +5,14 @@ task ivar_consensus {
     meta {
         description : "generate consesnus sequnce from bam files input"
     }
+
     input {
         File bam_file
         String docker = "andersenlabapps/ivar:1.3.1"
     }
 
     Int ivar_min_depth = 10
-    String ivar_min_freq = "0.5"
+    Float ivar_min_freq = 0.5
     Int ivar_min_qual = 20
     
 
@@ -41,11 +42,11 @@ task ivar_consensus {
 
     output {
         File ivar_consensus_fasta = glob(".fa")
-        Int ivar_min_depth = ~{ivar_min_depth}
-        String ivar_min_freq = ~{ivar_min_freq}
-        Int ivar_min_qual = ~{ivar_min_qual}
-        String ivar_docker = ~{docker}
-        String ivar_version = read_string(ivar_version.txt)
+        # Int ivar_min_depth = ~{ivar_min_depth}
+        # Float ivar_min_freq = ~{ivar_min_freq}
+        # Int ivar_min_qual = ~{ivar_min_qual}
+        String ivar_docker = "~{docker}"
+        String ivar_version = read_string("ivar_version.txt")
         File ivar_parameters = "ivar_parameters.csv"
 
     }
@@ -57,7 +58,7 @@ task ivar_consensus {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker: ~{docker}
+        docker: "~{docker}"
     }
 
 }
