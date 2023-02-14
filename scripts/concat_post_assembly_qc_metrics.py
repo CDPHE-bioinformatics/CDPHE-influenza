@@ -63,7 +63,7 @@ if __name__ == '__main__':
     sample_id = options.sample_id
     bam_results_txt = options.bam_results
     per_cov_results_txt = options.per_cov_results
-    ivar_parameters_txt = options.ivar_parameters
+    ivar_parameters_path = options.ivar_parameters
 
     # set up the pandas dataframe
     header_list = create_col_headers(segment_list = segment_list, 
@@ -74,7 +74,7 @@ if __name__ == '__main__':
     # get a list of file paths
     bam_results_file_list = create_list_from_write_lines_input(write_lines_input = bam_results_txt)
     per_cov_results_file_list = create_list_from_write_lines_input(write_lines_input = per_cov_results_txt)
-    ivar_parameters_file_list = create_list_from_write_lines_input(write_lines_input=ivar_parameters_txt)
+    # ivar_parameters_file_list = create_list_from_write_lines_input(write_lines_input=ivar_parameters_txt)
 
     # insert bam results into data frame
     # track number of gene segments assemblied and total mapped reads
@@ -114,7 +114,7 @@ if __name__ == '__main__':
     df.at[0, 'total_flu_mapped_reads'] = total_mapped_reads
     
     # add in ivar parameters
-    ivar_df = pd.read_csv(ivar_parameters_file_list[0])
+    ivar_df = pd.read_csv(ivar_parameters_path)
     df.at[0, "ivar_version"] = ivar_df.loc[0, 'ivar_version']
     df.at[0, 'ivar_docker'] = ivar_df.loc[0, 'ivar_docker']
     df.at[0, 'ivar_min_depth'] = ivar_df.loc[0, 'ivar_min_depth']

@@ -95,6 +95,7 @@ task concat_post_qc_metrics{
         Array[File] ivar_parameters
 
     }
+    File ivar_parameters_file = select_first(ivar_parameters)
 
     command <<<
 
@@ -102,7 +103,7 @@ task concat_post_qc_metrics{
         --sample_id ~{sample_id} \
         --bam_results ~{write_lines(bam_results_array)} \
         --per_cov_results ~{write_lines(per_cov_results_array)} \
-        --ivar_parameters ~{write_lines(ivar_parameters)}
+        --ivar_parameters ~{ivar_parameters_file}
 
     >>>
 
