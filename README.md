@@ -12,7 +12,8 @@ Iterative Refinement Meta-Assembler (IRMA) was developed by the CDC. More inform
 
 ## WDL workflow: influenza_assembly.wdl
 (insert drop down)
-(insert workflow diagram)
+
+![influenza assembly workflow diagram](./diagrams/influenza_assembly_diagram_2023-02-13.PNG "influenza assembly workflow diagram")
 
 The workflow performs the following steps:
 
