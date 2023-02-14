@@ -27,6 +27,7 @@ task ivar_consensus {
     samtools sort ~{bam_file} -o sorted.bam
     samtools mpileup -A --a -B -Q 20 sorted.bam | \
     ivar consensus -p ${ivar_prefix} -q 20 -t 0.6 -m 10
+    
     # fasta will be named prefix.fa
     # create txt file with the name of the fasta file
     echo ${ivar_prefix}.fa | tee fasta_file_name.txt
@@ -34,7 +35,7 @@ task ivar_consensus {
 
     # rename consesnus header
     header_name=$(echo ${sample_id}_${segment_name})
-    sed -i "s/>.*/>$header_name/" ${ivar_prefix}.fa
+    sed -i 's/>.*/>${header_name}/' ${ivar_prefix}.fa > ${ivar_prefix}.fa
 
 
     # output ivar parameters
