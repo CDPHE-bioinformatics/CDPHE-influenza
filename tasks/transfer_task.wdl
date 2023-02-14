@@ -38,11 +38,11 @@ task transfer_assembly_wdl{
 
     }
     
-    String out_path = sub(~{bucket_path}, "/$", "") # fix if have a / at end
+    String out_path = sub(bucket_path, "/$", "") # fix if have a / at end
 
     command <<<
         # transfer fastqc raw
-        gsutil -m cp ~{fastqc1_html_raw} ~{out_path}/prefastqc_raw/
+        gsutil -m cp ~{fastqc1_html_raw} ~{out_path}/fastqc_raw/
         gsutil -m cp ~{fastqc1_zip_raw} ~{out_path}/fastqc_raw/
         gsutil -m cp ~{fastqc2_html_raw} ~{out_path}/fastqc_raw/
         gsutil -m cp ~{fastqc2_zip_raw} ~{out_path}/fastqc_raw/
@@ -68,7 +68,7 @@ task transfer_assembly_wdl{
          gsutil -m cp ~{sep = " " irma_assemblies} ~{out_path}/irma/~{sample_id}/ivar_consensus/
          gsutil -m cp ~{sep = " " irma_assemblies} ~{out_path}/irma/~{sample_id}/ivar_outputs/
 
-        # transfer post assemlby qc
+        # transfer post assembly qc
         gsutil -m cp ~{irma_qc_metrics} ~{out_path}/irma/~{sample_id}/
 
         # transfer date
