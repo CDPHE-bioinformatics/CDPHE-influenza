@@ -21,15 +21,18 @@ task ivar_consensus {
     # pull sample id and segment info from bam file
     sample_id=$(basename ~{bam_file} | cut -d "_" -f 1)
     segment_name=$(basename ~{bam_file} | cut -d "." -f 1 | cut -d "_" -f 2-)
-    ivar_prefix=${sample_id}_${segment_name}
+    ivar_prefix=$(basename ~{bam_file} | cut -d "." -f 1)
     # generate consensus
     samtools mpileup -A --a -B -Q ~{ivar_min_qual} ~{bam_file} | \
     ivar consensus -p ${ivar_prefix} -q ~{ivar_min_qual} -t ~{ivar_min_freq} -m ~{ivar_min_depth} 
     # fasta will be named prefix.fa
+    # create txt file with the name of the fasta file
+    echo ${ivar_prefix}.fa > fasta_file_name.txt
 
     # rename consesnus header
     header_name=$(echo ${sample_id}_${segment_name})
     sed -i "s/>.*/>$header_name/" ${ivar_prefix}.fa
+
 
     # output ivar parameters
     ivar version | head -n1 | cut -d " " -f 3 | tee ivar_version.txt
@@ -41,7 +44,7 @@ task ivar_consensus {
     >>>
 
     output {
-        File ivar_consensus_fasta = glob(".fa")
+        File ivar_consensus_fasta = read_string("fasta_file_name.txt")
         # Int ivar_min_depth = ~{ivar_min_depth}
         # Float ivar_min_freq = ~{ivar_min_freq}
         # Int ivar_min_qual = ~{ivar_min_qual}
