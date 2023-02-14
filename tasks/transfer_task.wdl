@@ -38,7 +38,7 @@ task transfer_assembly_wdl{
 
     }
     
-    String out_path = sub(bucket_path, "/$", "") # fix if have a / at end
+    String out_path = sub(~{bucket_path}, "/$", "") # fix if have a / at end
 
     command <<<
         # transfer fastqc raw

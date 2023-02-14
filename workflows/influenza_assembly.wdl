@@ -192,6 +192,8 @@ workflow influenza_assembly {
         # output from ivar_consensus
         Array[File]? ivar_assemblies = ivar_consensus.ivar_consensus_fasta
         Array[File]? ivar_outputs = ivar_consensus.ivar_output
+        String? ivar_version =  select_first(ivar_consensus.ivar_version)
+        String? ivar_docker = select_first(ivar_consensus.ivar_docker)
 
         # output from post assembly QC metrics
         Array[File]? irma_bam_results = irma_samtools_mapped_reads.bam_results

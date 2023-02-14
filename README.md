@@ -110,7 +110,8 @@ We have our workflow setup so that the following data files are stored in our wo
 |irma_assemblies| {sample_id}_{flu_type}\_{gene_segment}_irma.fasta | array of consensus assembly fasta files. Each assembled gene segment has a fasta file. The fasta header is formatted as : ">{sample_id}_{flu_type}\_{gene_segment}"|
 |irma_bam_files| {sample_id}_{flu_type}\_{gene_semgnet}.bam | Array of bam files. Each assembled gene segment has a bam file. The reference sequence is the final iterative plurality consensus |
 |irma_vcfs | {sample_id}_{flu_type}\_{gene_semgnet}.vcf | Array of vcf files. Each assembled gene segment has a vcf file. The reference sequence is the final iterative plurality consensus. |
-|ivar_consensus_fasta| {sample_id}_{flu_type}\_{gene_segment}.fa | consensus sequences generated using ivar (min depth = 10 reads, min freq = 0.6, min qual = 20)|
+|ivar_assemblies| {sample_id}_{flu_type}\_{gene_segment}.fa | consensus sequences generated using ivar (min depth = 10 reads, min freq = 0.6, min qual = 20)|
+|ivar_outputs| {sample_id}_{flu_type}\_{gene_segment}_ivar_output.txt | output from ``ivar consensus`` listing the prarameters used and the number of bases meeting min depth critera and the number of bases with 0 depth|
 
  
 
@@ -118,7 +119,7 @@ We have our workflow setup so that the following data files are stored in our wo
 |WDL Output variable name | File Name | Description |
 |-------|------|------------|
 |irma_bam_results| bam_results.csv| Array of bam_results files. Each assembied gene segment has a bam_resutl.csv file. Contains the segment name, number of reads mapped and the mean depth for that segment in a tabular format. Produced only if assembly is successful.|
-|irma_per_cov_results| | Array of per_cov_results files. Each assembied gene segment has a per_cov_results.csv file. Contains the segment name, percent of genome covered (percent_coverage), the expected gene segmenet length (based on the seed reference segement size IRMA usees), and the assemblied gene segement length for that segment in a tabular format.Produced only if assembly is successful.|
-|irma_qc_metrics | {sample_id}_qc_metrics.csv | A tablular formated file that contains the totally of the perc_cov_resutls and the bam_resutls files for all gene segments successfully assemblied. Produced only if assembly is successful.|
+|irma_per_cov_results| | Array of per_cov_results files. Each assembied gene segment has a per_cov_results.csv file. Contains the segment name, percent of genome covered (percent_coverage), the expected gene segmenet length (based on the seed reference segement size IRMA usees), and the assemblied gene segement length for that segment in a tabular format. Perecent coverage calculations based on the ivar consensus seqeunces generated. Produced only if assembly is successful.|
+|irma_qc_metrics | {sample_id}_qc_metrics.csv | A tablular formated file that contains the totally of the perc_cov_resutls and the bam_resutls files for all gene segments successfully assemblied. Includes version and docker information for IRMA and iVar. Produced only if assembly is successful.|
 
 
