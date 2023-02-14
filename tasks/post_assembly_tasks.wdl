@@ -13,23 +13,28 @@ task samtools_mapped_reads {
 
     # get segment name from bam file name
     base_name=$(basename ~{bam_file})
+    prefix=$(basename ~{bam_file} | cut -d "." -f 1)
+    sorted_bam=$(echo ${prefix}.sorted.bam)
+    
     sample_id=$(basename ~{bam_file} | cut -d "_" -f 1)
     segment_name=$(basename ~{bam_file} | cut -d "." -f 1 | cut -d "_" -f 2-)
     gene_name=$(basename ~{bam_file} | cut -d "." -f 1 | cut -d "_" -f 3)
 
     # count mapped flu reads
-    samtools view -c -F 260 ~{bam_file} > num_mapped_reads.txt
-    samtools coverage ~{bam_file} | tail -1 | cut -f 7 > mean_depth.txt
+    samtools sort ~{bam_file} -o ${sorted_bam}
+    samtools view -c -F 260 $s{sorted_bam} > num_mapped_reads.txt
+    samtools coverage ${sorted_bam} | tail -1 | cut -f 7 > mean_depth.txt
 
     echo "sample_id,base_name,segment_name,gene_name,description,value" > bam_results.csv
-    echo "${sample_id},${base_name},${segment_name},${gene_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> bam_results.csv
-    echo "${sample_id},${base_name},${segment_name},${gene_name},mean_depth,$(cat mean_depth.txt)" >> bam_results.csv
+    echo "${sample_id},${sorted_bam},${segment_name},${gene_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> bam_results.csv
+    echo "${sample_id},${sorted_bam},${segment_name},${gene_name},mean_depth,$(cat mean_depth.txt)" >> bam_results.csv
 
 
     >>>
 
     output {
         File bam_results = "bam_results.csv"
+        File sorted_bam = select_first(glob("*.sorted.bam"))
         # String mapped_reads = read_string("num_mapped_reads")
         # Striing mean_depth = read_string('mean_depth')
     }

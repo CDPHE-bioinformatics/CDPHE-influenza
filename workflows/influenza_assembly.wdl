@@ -147,6 +147,8 @@ workflow influenza_assembly {
             irma_bam_files = irma.irma_bam_files,
             irma_vcfs = irma.irma_vcfs,
 
+            irma_sorted_bams = irma_samtools_mapped_reads.sorted_bam,
+
             ivar_assemblies = ivar_consensus.ivar_consensus_fasta,
             ivar_outputs = ivar_consensus.ivar_output,
 
@@ -189,7 +191,8 @@ workflow influenza_assembly {
         String irma_version = irma.irma_version
         String irma_docker = irma.irma_docker
 
-        # output from ivar_consensus
+        # output from ivar_consensus and samtools
+        Array[File]? irma_sorted_bams = irma_samtools_mapped_reads.sorted_bam
         Array[File]? ivar_assemblies = ivar_consensus.ivar_consensus_fasta
         Array[File]? ivar_outputs = ivar_consensus.ivar_output
 

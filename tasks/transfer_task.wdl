@@ -29,7 +29,8 @@ task transfer_assembly_wdl{
         Array[File] irma_bam_files
         Array[File] irma_vcfs
 
-        # ivar_assemblies (from irma assembler)
+        # ivar_assemblies (from irma assembler) and samtools tools
+        Array[File]? irma_sorted_bams
         Array[File]? ivar_assemblies
         Array[File]? ivar_outputs
 
@@ -64,7 +65,8 @@ task transfer_assembly_wdl{
         gsutil -m cp ~{sep = " " irma_bam_files} ~{out_path}/irma/~{sample_id}/bam_files/
         gsutil -m cp ~{sep = " " irma_vcfs} ~{out_path}/irma/~{sample_id}/vcf_files/
 
-        # transfer ivar assemblies
+        # transfer ivar assemblies and sorted bams 
+        gsutil -m cp ~{sep = " " irma_bam_files} ~{out_path}/irma/~{sample_id}/sorted_bam_files/
          gsutil -m cp ~{sep = " " irma_assemblies} ~{out_path}/irma/~{sample_id}/ivar_consensus/
          gsutil -m cp ~{sep = " " irma_assemblies} ~{out_path}/irma/~{sample_id}/ivar_outputs/
 
