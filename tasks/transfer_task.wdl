@@ -29,6 +29,9 @@ task transfer_assembly_wdl{
         Array[File] irma_bam_files
         Array[File] irma_vcfs
 
+        # ivar_assemblies (from irma assembler)
+        Array[File] ivar_assemblies
+
         # post assembly qc outputs
         File? irma_qc_metrics
 
@@ -59,6 +62,9 @@ task transfer_assembly_wdl{
         gsutil -m cp ~{sep = " " irma_assemblies} ~{out_path}/irma/~{sample_id}/assemblies/
         gsutil -m cp ~{sep = " " irma_bam_files} ~{out_path}/irma/~{sample_id}/bam_files/
         gsutil -m cp ~{sep = " " irma_vcfs} ~{out_path}/irma/~{sample_id}/vcf_files/
+
+        # transfer ivar assemblies
+         gsutil -m cp ~{sep = " " irma_assemblies} ~{out_path}/irma/~{sample_id}/ivar_consensus/
 
         # transfer post assemlby qc
         gsutil -m cp ~{irma_qc_metrics} ~{out_path}/irma/~{sample_id}/

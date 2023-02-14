@@ -3,6 +3,7 @@ version 1.0
 # import tasks
 import "../tasks/preprocess_tasks.wdl" as fastq_preprocess
 import "../tasks/irma_task.wdl" as irma
+import "../tasks/ivar.wdl" as ivar
 import "../tasks/post_assembly_tasks.wdl" as post_assembly_qc
 import "../tasks/transfer_task.wdl" as transfer
 
@@ -93,14 +94,20 @@ workflow influenza_assembly {
                 input:
                     bam_file = bam_file
             }
+
+            call ivar.ivar_consensus as ivar_consensus {
+                input:
+                bam_file = bam_file
+            }
         }
         
-        ## scatter over fasta file array
-        scatter (fasta_file in select_all(irma.irma_assemblies)) {
+        ## scatter over fasta file array from ivar
+        scatter (fasta_file in select_all(ivar_consensus.ivar_consensus_fasta)) {
             call post_assembly_qc.calc_percent_coverage as irma_percent_coverage { 
                 input:
                     fasta_file  = fasta_file,
                     python_script = calc_percent_cov_py
+                    
             }
         }
 
@@ -110,7 +117,8 @@ workflow influenza_assembly {
                 python_script = concat_post_assembly_qc_metrics_py,
                 sample_id = sample_id,
                 bam_results_array = irma_samtools_mapped_reads.bam_results,
-                per_cov_results_array = irma_percent_coverage.perc_cov_results
+                per_cov_results_array = irma_percent_coverage.perc_cov_results,
+                ivar_parameters = ivar_consensus.ivar_parameters
 
         }
     
@@ -138,6 +146,8 @@ workflow influenza_assembly {
             irma_assemblies = irma.irma_assemblies,
             irma_bam_files = irma.irma_bam_files,
             irma_vcfs = irma.irma_vcfs,
+
+            ivar_assemblies = ivar_consensus.ivar_consensus_fasta
 
             irma_qc_metrics = irma_concat_post_qc_metrics.qc_metrics_summary
 
@@ -177,6 +187,9 @@ workflow influenza_assembly {
         Array[File] irma_vcfs = irma.irma_vcfs
         String irma_version = irma.irma_version
         String irma_docker = irma.irma_docker
+
+        # output from ivar_consensus
+        Array[File]? ivar_assemblies = ivar_consensus.ivar_conesnsus_fasta
 
         # output from post assembly QC metrics
         Array[File]? irma_bam_results = irma_samtools_mapped_reads.bam_results

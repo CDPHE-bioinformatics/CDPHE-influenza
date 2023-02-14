@@ -92,6 +92,7 @@ task concat_post_qc_metrics{
         String sample_id
         Array[File] bam_results_array
         Array[File] per_cov_results_array
+        Array[File] ivar_parameters
 
     }
 
@@ -100,7 +101,8 @@ task concat_post_qc_metrics{
     python ~{python_script} \
         --sample_id ~{sample_id} \
         --bam_results ~{write_lines(bam_results_array)} \
-        --per_cov_results ~{write_lines(per_cov_results_array)}
+        --per_cov_results ~{write_lines(per_cov_results_array)} \
+        --ivar_parameters ~{write_line(ivar_parameters)}
 
     >>>
 
