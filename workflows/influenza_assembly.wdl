@@ -148,6 +148,7 @@ workflow influenza_assembly {
             irma_vcfs = irma.irma_vcfs,
 
             ivar_assemblies = ivar_consensus.ivar_consensus_fasta,
+            ivar_outputs = ivar_outputs.ivar_output,
 
             irma_qc_metrics = irma_concat_post_qc_metrics.qc_metrics_summary
 
@@ -190,6 +191,7 @@ workflow influenza_assembly {
 
         # output from ivar_consensus
         Array[File]? ivar_assemblies = ivar_consensus.ivar_consensus_fasta
+        Array[File]? ivar_outputs = ivar_consensus.ivar_output
 
         # output from post assembly QC metrics
         Array[File]? irma_bam_results = irma_samtools_mapped_reads.bam_results

@@ -36,8 +36,7 @@ task ivar_consensus {
 
     # rename consesnus header
     header_name=$(echo ${sample_id}_${segment_name})
-    sed -i 's/>.*/>${header_name}/' ${ivar_prefix}.fa > ${ivar_prefix}.fa
-
+    sed -i "s/>.*/>${header_name}/" ${ivar_prefix}.fa
 
     # output ivar parameters
     ivar version | head -n1 | cut -d " " -f 3 | tee ivar_version.txt
