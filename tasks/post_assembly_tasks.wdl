@@ -108,7 +108,7 @@ task concat_post_qc_metrics{
     >>>
 
     output{
-        File? qc_metrics_summary = "~{sample_id}_qc_metrics.csv"
+        File? qc_metrics_summary = "~{sample_id}_assembly_qc_metrics.csv"
 
     }
 

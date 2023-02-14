@@ -122,5 +122,5 @@ if __name__ == '__main__':
     df.at[0, 'ivar_min_qual'] = ivar_df.loc[0, 'ivar_min_qual']
 
     # save df
-    outfile = "%s_qc_metrics.csv" % sample_id
+    outfile = "%s_assembly_qc_metrics.csv" % sample_id
     df.to_csv(outfile, index = False)
