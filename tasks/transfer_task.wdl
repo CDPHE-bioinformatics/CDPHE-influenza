@@ -30,7 +30,7 @@ task transfer_assembly_wdl{
         Array[File] irma_vcfs
 
         # ivar_assemblies (from irma assembler)
-        Array[File] ivar_assemblies
+        Array[File]? ivar_assemblies
 
         # post assembly qc outputs
         File? irma_qc_metrics
