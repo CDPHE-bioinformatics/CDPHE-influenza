@@ -8,7 +8,7 @@ This repository is in active development. This document describes the Colorado D
 This workflow can handle paired end (PE) and single end (SE) illumina short read data. Currently assembly is preformed using IRMA and contained in a WDL workflow that can be run on Terra.bio. The influenza_assembly.wdl is run on the sample and the influenza_assembly_summary.wdl is run on a sample_set. 
 
 ## IRMA overview
-Iterative Refinement Meta-Assembler (IRMA) was developed by the CDC. More information about IRMA can be found here: https://wonder.cdc.gov/amd/flu/irma/. IRMA performs genome assembly and variant calling of flu. Illumina paired-end, Illumina single-end, and ONT data can be used with IRMA; however our workflow uses illumina pair-end data. We use the default configuration file for the IRMA FLU module whch mean we use ALIGN_PROG=SAM and DEL_TYPE=''. 
+Iterative Refinement Meta-Assembler (IRMA) was developed by the CDC. More information about IRMA can be found here: https://wonder.cdc.gov/amd/flu/irma/. IRMA performs genome assembly and variant calling of flu. Illumina paired-end, Illumina single-end, and ONT data can be used with IRMA. Our workflow currently supports illumina paired end or illumina single end. We use the default configuration file for the IRMA FLU module whch mean we use ALIGN_PROG=SAM and DEL_TYPE=''. It is also worth noting that for IRMA to attempt assembly at least 15 flu reads must map and that the xxx are called with at least 1 read and using majority rule. (We take the bam files from IRMA and run them through ivar to generate a consensus sequence which allows greater flexiblity for consensus generation parameters (e.g. min freq, min depth, min qual)).
 
 ## WDL workflow: influenza_assembly.wdl
 (insert drop down)
@@ -20,7 +20,9 @@ The workflow performs the following steps:
 
 2. **Seqyclean.** Seqyclean is run on the raw reads with the parameters min length set to 70bp and quality set to 30 30. The adapters and contaminats fasta file can be found in the workspace data directory and should be linked to your workspace data in terra.
 
-3. **IRMA.** The 8 gene sgements are assembled using IRMA (see IRMA overview above). We use the "FLU" module. The fasta header is renamed to include the sample id (e.g. ">{sample_id}_A_HA_H1"). The fasta, bam, and vcf files are renamed to include the sample name in the file name (e.g. "{sample_id}_A_HA_H1.fasta").  We are currently using the fasta files from the main directory and not the fasta files from the "amended_consensus" directory. The difference is that the fasta files in the "amended_consensus" directory use IUPAC ambiguity codes. Note: the fastq files must follow the illumina style fastq header. Fastq files downloaded from SRA will need to be modified prior to running the workflow.   
+3. **IRMA.** The 8 gene sgements are assembled using IRMA (see IRMA overview above). We use the "FLU" module. The fasta header is renamed to include the sample id (e.g. ">{sample_id}_A_HA_H1"). The fasta, bam, and vcf files are renamed to include the sample name in the file name (e.g. "{sample_id}_A_HA_H1.fasta").  We are currently transfering the fasta files from the main directory and not the fasta files from the "amended_consensus" directory during the transfer step. Fastq files downloaded from SRA will need to be modified prior to running the workflow. 
+
+4. **iVar**. Using the bam files produced from IRMA, we use iVar to generate a consensus sequence using a minium read depth of 10 reads per site, a minium quality score of 20, and a minium allele frequency of 0.6. 
 
 4. **Post Assembly QC Metrics.** For each gene segment this step calculates the average depth and number of mapped reads using samtools and calcuates the percent coverage and determined the lenght using a custom python script. The results are then writed to a summary table ({sample_id}_qc_metrics.csv).
 
@@ -30,7 +32,8 @@ The workflow performs the following steps:
     * gs://{out_dir}/fastqc_clean/
     * gs://{out_dir}/seqyclean/
     * gs://{out_dir}/preprocess_qc_metrics/
-    * gs://{out_dir}/irma/{sample_id}/assemblies/
+    * gs://{out_dir}/irma/{sample_id}/assemblies/ # these are the assemblies as they come out of irma
+    * gs://{out_dir}/irma/{sample_id}/ivar_consensus/ # these are the consensus sequences generated using ivar following the ivar parameters
     * gs://{out_dir}/irma/{sample_id}/bam_files/
     * gs://{out_dir}/irma/{sample_id}/vcfs/
     * gs://{out_dir}/irma/{sample_id}/
@@ -103,9 +106,10 @@ We have our workflow setup so that the following data files are stored in our wo
 | irma_ha_subtype | N/A | if influenza type == "A" then it is the influenza subtype for the HA gene called by IRMA; commonly "H1" or "H3"|
 | irma_na_subtype | N/A | if influenza type == "A" then it is the influenza subtype for the NA gene called by IRMA; commonly "N1" or "N2" |
 |irma_typing| {sample_id}_irma_typing.csv | csv file with the sample id, irma type, irma ha subytpe and irma na subtype listed in a tabluar format|
-|irma_assemblies| {sample_id}_{flu_type}\_{gene_segment}.fasta | array of consensus assembly fasta files. Each assembled gene segment has a fasta file. The fasta header is formatted as : ">{sample_id}_{flu_type}\_{gene_segment}"|
+|irma_assemblies| {sample_id}_{flu_type}\_{gene_segment}_irma.fasta | array of consensus assembly fasta files. Each assembled gene segment has a fasta file. The fasta header is formatted as : ">{sample_id}_{flu_type}\_{gene_segment}"|
 |irma_bam_files| {sample_id}_{flu_type}\_{gene_semgnet}.bam | Array of bam files. Each assembled gene segment has a bam file. The reference sequence is the final iterative plurality consensus |
 |irma_vcfs | {sample_id}_{flu_type}\_{gene_semgnet}.vcf | Array of vcf files. Each assembled gene segment has a vcf file. The reference sequence is the final iterative plurality consensus. |
+|ivar_consensus_fasta| {sample_id}_{flu_type}\_{gene_segment}.fa | consensus sequences generated using ivar (min depth = 10 reads, min freq = 0.6, min qual = 20)|
 
  
 

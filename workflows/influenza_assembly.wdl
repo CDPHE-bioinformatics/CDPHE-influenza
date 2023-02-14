@@ -147,7 +147,7 @@ workflow influenza_assembly {
             irma_bam_files = irma.irma_bam_files,
             irma_vcfs = irma.irma_vcfs,
 
-            ivar_assemblies = ivar_consensus.ivar_consensus_fasta
+            ivar_assemblies = ivar_consensus.ivar_consensus_fasta,
 
             irma_qc_metrics = irma_concat_post_qc_metrics.qc_metrics_summary
 
