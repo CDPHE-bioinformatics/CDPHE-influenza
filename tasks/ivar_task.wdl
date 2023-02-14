@@ -22,12 +22,15 @@ task ivar_consensus {
     sample_id=$(basename ~{bam_file} | cut -d "_" -f 1)
     segment_name=$(basename ~{bam_file} | cut -d "." -f 1 | cut -d "_" -f 2-)
     ivar_prefix=$(basename ~{bam_file} | cut -d "." -f 1)
-    # generate consensus
-    samtools mpileup -A --a -B -Q ~{ivar_min_qual} ~{bam_file} | \
-    ivar consensus -p ${ivar_prefix} -q ~{ivar_min_qual} -t ~{ivar_min_freq} -m ~{ivar_min_depth} 
+    
+    # generate consensus; first sort bam file
+    samtools sort ~{bam_file} -o sorted.bam
+    samtools mpileup -A --a -B -Q 20 sorted.bam | \
+    ivar consensus -p ${ivar_prefix} -q 20 -t 0.6 -m 10
     # fasta will be named prefix.fa
     # create txt file with the name of the fasta file
-    echo ${ivar_prefix}.fa > fasta_file_name.txt
+    echo ${ivar_prefix}.fa | tee fasta_file_name.txt
+    cat ${ivar_prefix}.fa
 
     # rename consesnus header
     header_name=$(echo ${sample_id}_${segment_name})
