@@ -30,8 +30,8 @@ task ivar_consensus {
     
     # fasta will be named prefix.fa
     # create txt file with the name of the fasta file
-    echo ${ivar_prefix}_ivar_output.txt | tee ivar_output_file_name.txt
-    echo ${ivar_prefix}.fa | tee fasta_file_name.txt
+    # echo ${ivar_prefix}_ivar_output.txt | tee ivar_output_file_name.txt
+    # echo ${ivar_prefix}.fa | tee fasta_file_name.txt
     cat ${ivar_prefix}.fa
 
     # rename consesnus header
@@ -51,8 +51,10 @@ task ivar_consensus {
     >>>
 
     output {
-        File ivar_consensus_fasta = read_string("fasta_file_name.txt")
-        File ivar_output = read_string("ivar_output_file_name.txt")
+        # File ivar_consensus_fasta = read_string("fasta_file_name.txt")
+        File ivar_consensus_fasta = select_first(glob("*.fa"))
+        File ivar_output = select_first(glob("*_ivar_output.txt"))
+        # File ivar_output = read_string("ivar_output_file_name.txt")
         # Int ivar_min_depth = ~{ivar_min_depth}
         # Float ivar_min_freq = ~{ivar_min_freq}
         # Int ivar_min_qual = ~{ivar_min_qual}
