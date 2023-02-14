@@ -102,7 +102,7 @@ task concat_post_qc_metrics{
         --sample_id ~{sample_id} \
         --bam_results ~{write_lines(bam_results_array)} \
         --per_cov_results ~{write_lines(per_cov_results_array)} \
-        --ivar_parameters ~{write_line(ivar_parameters)}
+        --ivar_parameters ~{write_lines(ivar_parameters)}
 
     >>>
 
