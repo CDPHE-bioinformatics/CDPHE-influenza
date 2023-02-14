@@ -189,7 +189,7 @@ workflow influenza_assembly {
         String irma_docker = irma.irma_docker
 
         # output from ivar_consensus
-        Array[File]? ivar_assemblies = ivar_consensus.ivar_conesnsus_fasta
+        Array[File]? ivar_assemblies = ivar_consensus.ivar_consensus_fasta
 
         # output from post assembly QC metrics
         Array[File]? irma_bam_results = irma_samtools_mapped_reads.bam_results
