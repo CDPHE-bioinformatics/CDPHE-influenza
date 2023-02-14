@@ -26,10 +26,11 @@ task ivar_consensus {
     # generate consensus; first sort bam file
     samtools sort ~{bam_file} -o sorted.bam
     samtools mpileup -A --a -B -Q 20 sorted.bam | \
-    ivar consensus -p ${ivar_prefix} -q 20 -t 0.6 -m 10
+    ivar consensus -p ${ivar_prefix} -q 20 -t 0.6 -m 10 | tee ${ivar_prefix}_ivar_output.txt
     
     # fasta will be named prefix.fa
     # create txt file with the name of the fasta file
+    echo ${ivar_prefix}_ivar_output.txt | tee ivar_output_file_name.txt
     echo ${ivar_prefix}.fa | tee fasta_file_name.txt
     cat ${ivar_prefix}.fa
 
@@ -44,11 +45,14 @@ task ivar_consensus {
     echo "ivar_version,ivar_docker,ivar_min_depth,ivar_min_freq,ivar_min_qual" > ivar_parameters.csv
     echo "${ivar_version},~{docker},~{ivar_min_depth},~{ivar_min_freq},~{ivar_min_qual}" >> ivar_parameters.csv
 
+    # just trying something
+    echo "test file to check how outputs" > test_file.txt
 
     >>>
 
     output {
         File ivar_consensus_fasta = read_string("fasta_file_name.txt")
+        File ivar_output = read_string("ivar_output_file_name.txt")
         # Int ivar_min_depth = ~{ivar_min_depth}
         # Float ivar_min_freq = ~{ivar_min_freq}
         # Int ivar_min_qual = ~{ivar_min_qual}
