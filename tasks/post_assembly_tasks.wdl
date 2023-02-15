@@ -22,7 +22,7 @@ task samtools_mapped_reads {
 
     # count mapped flu reads
     samtools sort ~{bam_file} -o ${sorted_bam}
-    samtools view -c -F 260 $s{sorted_bam} > num_mapped_reads.txt
+    samtools view -c -F 260 ${sorted_bam} > num_mapped_reads.txt
     samtools coverage ${sorted_bam} | tail -1 | cut -f 7 > mean_depth.txt
 
     echo "sample_id,base_name,segment_name,gene_name,description,value" > bam_results.csv

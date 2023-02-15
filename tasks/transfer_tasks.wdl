@@ -92,3 +92,41 @@ task transfer_assembly_wdl{
 
 }
 
+task transfer_assembly_summary_wdl{
+    meta {
+        description: ""
+    }
+
+    input {
+
+        String bucket_path
+        File summary_file
+    }
+
+    String out_path = sub(bucket_path, "/$", "") # fix if have a / at end
+
+
+    command <<< 
+         gsutil -m cp ~{summary_file} ~{out_path}/summary_files/
+
+         # transfer date
+        transferdate=`date`
+        echo $transferdate | tee TRANSFERDATE
+    >>>
+
+    output {
+        String transfer_date = read_string("TRANSFERDATE")
+    }
+
+    runtime {
+        docker: "theiagen/utility:1.0"
+        memory: "16 GiB"
+        cpu: 4
+        disks: "local-disk 50 SSD"
+        preemptible: 0
+    }
+
+    
+}
+
+

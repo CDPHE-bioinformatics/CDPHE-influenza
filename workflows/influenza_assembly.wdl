@@ -199,7 +199,7 @@ workflow influenza_assembly {
         # output from post assembly QC metrics
         Array[File]? irma_bam_results = irma_samtools_mapped_reads.bam_results
         Array[File]? irma_per_cov_results = irma_percent_coverage.perc_cov_results
-        File? irma_qc_metrics = irma_concat_post_qc_metrics.qc_metrics_summary
+        File? irma_assembly_qc_metrics = irma_concat_post_qc_metrics.qc_metrics_summary
         
         # output from transfer
         String transfer_date=transfer_assembly_wdl.transfer_date
