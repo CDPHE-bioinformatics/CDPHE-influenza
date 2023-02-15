@@ -37,7 +37,7 @@ workflow influenza_assembly_summary{
 
     output {
 
-        File sequencing_results_csv = summary.assembly_results_csv
+        File sequencing_results_csv = summary.sequencing_results_csv
         String transfer_date = summary_transfer.transfer_date
 
     }
