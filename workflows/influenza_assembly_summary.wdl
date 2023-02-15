@@ -31,13 +31,13 @@ workflow influenza_assembly_summary{
 
     call transfer.transfer_assembly_summary_wdl as summary_transfer {
         input:
-            assembly_results_csv = summary.assembly_results_csv,
+            sequencing_results_csv = summary.sequencing_results_csv,
             bucket_path = bucket_path
     }
 
     output {
 
-        File assembly_results_csv = summary.assembly_results_csv
+        File sequencing_results_csv = summary.assembly_results_csv
         String transfer_date = summary_transfer.transfer_date
 
     }

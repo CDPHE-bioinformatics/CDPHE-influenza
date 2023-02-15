@@ -1,31 +1,149 @@
 # CDPHE-influenza
 
-## In development
+## Table of Contents
+
+[In Development]
+
+## **In Development**
 This repository is in active development. This document describes the Colorado Department of Public Health and Environment's workflow for the assembly and anlaysis of whole genome sequenicng data of influenza A and B ulitizing the Terra.bio platform. The pipeline consists of two workflows: influenza_assembly.wdl and influenza_assembly_summary.wdl. The first performs the assembly on each sample (entity = sample). The second generates a summary file that includes assembly summary statistics for all samples (entity = sample_set). Parts of the influenza_assembly.wdl workflow was adapted from and influenced by Thieagen Genomics's wf_theiacov_illumina_pe workflow for influenza. 
 
-### Acitive Development Stages
-- Stage 1: Baseline assembly using IRMA (Version 1.0.0 release). This will include a basic assembly pipeline that preprocesses raw fastq data from both SE and PE illumina data, generates assemblies using IRMA, generates conesensus assemblies using iVar, calculates percent coverage and mean depth for each gene segment, and generates a summary output.
-- Stage 2 (Active deveopment): Building on the baseline assembly pipeline, during this stage we will expand beyond IRMA's subtyping capability, which currently only subtypes influenza A, by incorporating subyting using abricate. This will provide a lineage for influenza B viruses. Then using the subytping information, we will perform variant calling agains the vacciine strain. 
+### **Acitive Development Stages**
+
+
+- **Stage 1**: Baseline assembly using IRMA (Version 1.0.0 release). This will include a basic assembly pipeline that preprocesses raw fastq data from both SE and PE illumina data, generates assemblies using IRMA, generates conesensus assemblies using iVar, calculates percent coverage and mean depth for each gene segment, and generates a summary output.
+
+- **Stage 2** (Active deveopment): Building on the baseline assembly pipeline, during this stage we will expand beyond IRMA's subtyping capability, which currently only subtypes influenza A, by incorporating subyting using abricate. This will provide a lineage for influenza B viruses. Then using the subytping information, we will perform variant calling agains the vacciine strain. 
+
 
 <br/>
 <br/>
 
-## IRMA overview
+## **IRMA overview**
+
+
+
 Our pipeline currently uses the Iterative Refinement Meta-Assembler (IRMA) for assembly. IRMA was developed by the CDC. More information about IRMA can be found here: https://wonder.cdc.gov/amd/flu/irma/. IRMA performs genome assembly and variant calling of flu. Illumina paired-end, Illumina single-end, and ONT data can be used with IRMA. Our workflow currently supports illumina paired end and illumina single end. We use the default configuration file for the IRMA FLU module which means we use ALIGN_PROG=SAM and DEL_TYPE=''. It is also worth noting that for IRMA to attempt assembly at least 15 flu reads must map and that bases are called with at least 1 read using majority rule. (We take the bam files from IRMA and run them through ivar to generate a consensus sequence which allows for greater flexiblity and control over consensus generation parameters (e.g. min freq, min depth, min qual)).
 
+
 <br/>
 <br/>
 
-## Workflows
+## **Running on Terra**
+In this section we describe how to prepare your terra workspace to run influenza_assembly.wdl followed by influenza_assembly_summary.wdl. All input for influenza_assembly_summary.wdl will be written to the terra data table during the influenza_assembly.wdl.
 
-## influenza_assembly.wdl
-(insert drop down)
+
+
+### **1- Setting up your data table**
+
+
+The datatable should look like the following and be saved as a tsv or txt file:
+
+For PE illumina data:
+
+| entity:sample_id   | read_type |  fastq_R1   | fastq_R2 | out_dir |
+|-------------------|-----|-------------|-----------|---------------------|
+| sample_name     | paired | gs://path_to_fastq_R1 | gs://path_to_fastq_R2 | gs://path_to_transfer_output
+
+For SE illumina data:
+
+| entity:sample_id   | read_type |  fastq_R1   | fastq_R2 | out_dir |
+|-------------------|-----|-------------|-----------|---------------------|
+| sample_name     | single | gs://path_to_fastq_R1 |  | gs://path_to_transfer_output
+
+
+<br/>
+
+### **2- Setting Up Workspace Data**
+
+We have our workflow setup so that the following data files are stored in our workspace data. You can find these files in the scripts and references directory within this repo.
+
+| Worksapce variable name | WDL variable name | File name |
+| ------------------- | ----------- | ----------- |
+| adapters_and_contaminants | adapters_and_contaminants | Adapters_plus_PhiX_174.fasta |
+| influenza_concat_preprocess_qc_metrics_py  |concat_preprocess_qc_metrics_py | concat_preprocess_qc_metrics.py|
+| influenza_calc_percent_cov_py | calc_percent_cov_py | calculate_percnet_cov.py
+| influenza_concat_post_assemby_qc_metrics_py | concat_post_assembly_qc_py | concat_post_assembly_qc.py| 
+| influenza_summary_py | summary_py | summary.py|
+
+<br/>
+
+### **3- Specifying Workflow Inputs**
+
+
+Use the ``influenza_assembly_inputs_PE.json`` or ``influenza_assembly_inputs_SE.json`` template for the ``influenza_assembly.wdl`` inputs and use the influenza_assembly_summary_inputs.json for the ``influenza_assembly_summary.wdl`` located in ``/inputs/`` to see correct inputs for each workflow. There are some optional inputs for the ``influenza_assembly.wdl`` which will be in italics in the terra inputs table. Below lists these optional inputs as well as what the default is if the input is left bank.
+
+| task | WDL variable | default| options|
+|----|----|----|---|
+|fastqc_cleaned | docker| "staphb/fastqc:0.11.9" | |
+|fastqc_raw |docker| "staphb/fastqc:0.11.9" | |
+|irma | docker| "staphb/irma:1.0.3" | |
+|irma | irma_module | "FLU" | "FLU"   |
+|irma_ivar_consensus| docker | "andersenlabapps/ivar:1.3.1" | |
+|seqyclean| docker | "staphb/seqyclean:1.10.09" | |
+
+
+
+<br/>
+
+## **Output Directory Stucture**
+
+
+
+```
+├── gs://{out_dir}
+│   ├── fastqc_raw
+│   │   ├── {sample_id}_R1_fastqc.html
+│   │   ├── {sample_id}_R1_fastqc.zip
+│   │   ├── {sample_id}_R2_fastqc.html
+│   │   ├── {sample_id}_R2_fsatqc.zip
+|   ├── fastqc_clean
+│   │   ├── {sample_id}_R1_fastqc.html
+│   │   ├── {sample_id}_R1_fastqc.zip
+│   │   ├── {sample_id}_R2_fastqc.html
+│   │   ├── {sample_id}_R2_fsatqc.zip
+|   ├── seqyclean
+│   │   ├── {sample_id}_clean_SummaryStatistics.tsv
+|   ├── preprocess_qc_metrics
+│   │   ├── {smaple_id}_preprocess_qc_metrics.csv
+|   ├── irma
+│   │   ├── {sample_id} (repeat for each sample)
+|   |   |   ├── {sample_id}_assembly_qc_metrics.csv
+|   |   |   ├── assemblies
+|   |   |   |   ├── {sample_id}_A_HA_H3.fasta
+|   |   |   |   ├── {sample_id}_A_MP.fasta
+|   |   |   ├── bam files
+|   |   |   |   ├── {sample_id}_A_HA_H3.bam
+|   |   |   |   ├── {sample_id}_A_MP.bam
+|   |   |   ├── vcfs
+|   |   |   |   ├── {sample_id}_A_HA_H3.vcf
+|   |   |   |   ├── {sample_id}_A_MP.vcf
+|   |   |   ├── sorted_bam_files
+|   |   |   |   ├── {sample_id}_A_HA_H3.sorted.bam
+|   |   |   |   ├── {sample_id}_A_MP.sorted.bam
+|   |   |   ├── irma_ivar_consesnsus
+|   |   |   |   ├── {sample_id}_A_HA_H3.fa
+|   |   |   |   ├── {sample_id}_A_MP.fa
+|   |   |   ├── irma_ivar_outputs
+|   |   |   |   ├── {sample_id}_A_HA_H3_ivar_output.txt
+|   |   |   |   ├── {sample_id}_A_MP_ivar_output.txt
+│   ├── sumamry_files
+|   |   ├── {project_name}_sequencing_results.csv
+
+```
+
+
+<br/>
+
+## **Workflows**
+
+### **influenza_assembly.wdl**
+
 
 ![influenza assembly workflow diagram](./diagrams/influenza_assembly_diagram_2023-02-13.PNG "influenza assembly workflow diagram")
 
 ### **Summary Overview**
 
-The workflow can be broken down into 5 main parts. Below we describe each part.
+This workflow is run on the entity sample. The workflow can be broken down into 5 main parts. Below we describe each part.
 
 1. **Preprocess Fastq Data**
 
@@ -68,98 +186,33 @@ The workflow can be broken down into 5 main parts. Below we describe each part.
 
 |Task Name | Description |
 |----------|-------------|
-| transfer_assembly_wdl  | Transfers intermediate and final output files to a specified gcp bucket path. See below to the file structure |
-
-<br/>
-
-```
-├── gs://{out_dir}
-│   ├── fastqc_raw
-|   ├── fastqc_clean
-|   ├── seqyclean
-|   ├── preprocess_qc_metrics
-|   ├── irma
-│   │   ├── {sample_id}
-|   |   |   ├── {sample_id}_assembly_qc_metrics.csv
-|   |   |   ├── assemblies
-|   |   |   ├── bam files
-|   |   |   ├── vcfs
-|   |   |   ├── sorted_bam_files
-|   |   |   ├── irma_ivar_consesnsus
-|   |   |   ├── irma_ivar_outputs
-│   ├── sumamry_files
-|   |   ├── {project_name}_sequencing_results.csv
-
-```
+| transfer_assembly_wdl  | Transfers intermediate and final output files to a specified gcp bucket path. See xx for directory structure. |
 
 <br/>
 
 
-### **Running on Terra**
-
-#### **1- Setting up your data table**
-
-The datatable should look like the following and be saved as a tsv or txt file:
-
-For PE illumina data:
-
-| entity:sample_id   | read_type |  fastq_R1   | fastq_R2 | out_dir |
-|-------------------|-----|-------------|-----------|---------------------|
-| sample_name     | paired | gs://path_to_fastq_R1 | gs://path_to_fastq_R2 | gs://path_to_transfer_output
-
-For SE illumina data:
-
-| entity:sample_id   | read_type |  fastq_R1   | fastq_R2 | out_dir |
-|-------------------|-----|-------------|-----------|---------------------|
-| sample_name     | single | gs://path_to_fastq_R1 |  | gs://path_to_transfer_output
 
 <br/>
 
-#### **2- Setting up your workspace data**
-We have our workflow setup so that the following data files are stored in our workspace data. You can find these files in the scripts and references directory within this repo.
 
-| Worksapce variable name | WDL variable name | File name |
-| ------------------- | ----------- | ----------- |
-| adapters_and_contaminants | adapters_and_contaminants | Adapters_plus_PhiX_174.fasta |
-| flu_concat_preprocess_qc_metrics_py  |concat_preprocess_qc_metrics_py | concat_preprocess_qc_metrics.py|
-| flu_calc_percent_cov_py | calc_percent_cov_py | calculate_percnet_cov.py
-| flu_concat_post_assemby_qc_metrics_py | concat_post_assembly_qc_py | concat_post_assembly_qc.py| 
-
-<br/>
-
-#### **3- Specifying your Workflow inputs**
-Use the influenza_assembly_inputs.json template located in ``/inputs/`` to see correct inputs. There are some optional inputs which will be in italics in the terra inputs table. Below lists these optional inputs as well as what the default is if the input is left bank.
-
-| task | WDL variable | default| options|
-|----|----|----|---|
-|fastqc_cleaned | docker| "staphb/fastqc:0.11.9" | |
-|fastqc_raw |docker| "staphb/fastqc:0.11.9" | |
-|irma | docker| "staphb/irma:1.0.3" | |
-|irma | irma_module | "FLU" | "FLU"   |
-|irma_ivar_consensus| docker | "andersenlabapps/ivar:1.3.1" | |
-|seqyclean| docker | "staphb/seqyclean:1.10.09" | |
-
-<br/>
-
-#### **4- Workflow Outputs**
+### **Workflow Outputs**
 <br/>
 
 **Preprocessing Outputs**
 
-*note {basename_fastq} refers basenmae of the raw fastq file (e.g. basename = "{sample_id}_R1_001" when the fastq file name is ``{sample_id}_R1_001.fastq.gz``.
 
 |WDL Output variable name | File Name | Description |
 |-------|------|------------|
 | fastqc_version | N/A | version of fastqc |
 | fastqc_docker | N/A | docker used for fastqc |
-| fastqc1_html_raw | {basename_fastq}_fastqc.html | |
-| fastqc1_zip_raw | {basename_fastq}_fastqc.zip| |
-| fastqc2_html_raw | {basename_fastq}_fastqc.html | empty if read_type == "single"|
-| fastqc2_zip_raw | {basename_fastq}_fastqc.zip| empty if read_type == "single"|
-| fastqc1_html_cleaned | {sample_id}_clean_PE1_fastqc.html| note this file was renamed to match the paired end format for SE data. The base name from the actual output from seqyclean is "{sample_id}_clean_SE" |
-| fastqc1_zip_cleaned| {sample_id}_clean_PE1_fastqc.zip| ote this file was renamed to match the paired end format for SE data. The base name from the actual output from seqyclean is "{sample_id}_clean_SE" |
-| fastqc2_html_cleaned | {sample_id}_clean_PE2_fastqc.html| empty if read_type == "single"|
-| fastqc2_zip_cleaned | {sample_id}_clean_PE2_fastqc.zip| empty if read_type == "single"|
+| fastqc1_html_raw | {sample_id}_R1_fastqc.html | |
+| fastqc1_zip_raw | {sample_id}_R1_fastqc.zip| |
+| fastqc2_html_raw | {sample_id}_R2_fastqc.html | empty if read_type == "single"|
+| fastqc2_zip_raw | {sample_id}_R2_fastqc.zip| empty if read_type == "single"|
+| fastqc1_html_cleaned | {sample_id}_R1_fastqc.html|  |
+| fastqc1_zip_cleaned| {sample_id}_R1_fastqc.zip|  |
+| fastqc2_html_cleaned | {sample_id}_R2_fastqc.html| empty if read_type == "single"|
+| fastqc2_zip_cleaned | {sample_id}_R2_fastqc.zip| empty if read_type == "single"|
 | seqyclean_version | N/A | version of seqyclean |
 | seqyclean_docker | N/A | docker used for seqyclean | 
 | seqyclean_summary | {sample_id}_clean_SummaryStatistics.tsv | |
@@ -199,4 +252,41 @@ Use the influenza_assembly_inputs.json template located in ``/inputs/`` to see c
 |irma_per_cov_results| | Array of per_cov_results files. Each assembled gene segment has a per_cov_results.csv file. Contains the segment name, percent of genome covered (percent_coverage), the expected gene segmenet length (based on the seed reference segement size IRMA usees), and the assemblied gene segement length for that segment in a tabular format. Perecent coverage calculations based on the ivar consensus seqeunces generated. Produced only if assembly is successful.|
 |irma_assembly_qc_metrics | {sample_id}_assebmly_qc_metrics.csv | A tablular formatted file that combines the bam_results and the perc_cov_reuslts files. Includes version and docker information for IRMA and iVar. Produced only if assembly is successful.|
 
+
+
+<br/>
+
+### **influenza_assembly_summary.wdl**
+
+
+![influenza assembly workflow diagram]({insert_path} "influenza assembly workflow diagram")
+
+<br/>
+
+### **Summary Overview**
+
+This workflow is run on the entity sample_set. The workflow can be broken down into 2 main parts. Below we describe each part.
+
+1. **Concatenate All Files**
+
+|Task Name | Description |
+|----------|-------------|
+| summary  | concatenates teh preprocess_qc_metrics.csv, irma_typing.csv, and irma_assembly_qc_metrics.csv into a single tabular formatted file that contains all samples. Output is named {project_name}_sequencing_results.csv |
+
+
+<br/>
+
+2. **Transfer Output Files to GCP**
+
+|Task Name | Description |
+|----------|-------------|
+| transfer| Transfers the summary files to the specified GCP bucket. See xx for directory structure |
+
+<br/>
+
+### **Workflow Outputs**
+
+|WDL Output variable name | File Name | Description |
+|-------|------|------------|
+| sequencing_results_csv| {project_name}_sequencing_results.csv| |
 

@@ -100,14 +100,14 @@ task transfer_assembly_summary_wdl {
     input {
 
         String bucket_path
-        File assembly_results_csv
+        File sequencing_results_csv
     }
 
     String out_path = sub(bucket_path, "/$", "") # fix if have a / at end
 
 
     command <<< 
-         gsutil -m cp ~{assembly_results_csv} ~{out_path}/summary_files/
+         gsutil -m cp ~{sequencing_results_csv} ~{out_path}/summary_files/
 
          # transfer date
         transferdate=`date`

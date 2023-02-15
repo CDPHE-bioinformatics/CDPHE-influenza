@@ -26,7 +26,7 @@ task summary {
     >>>
 
     output {
-        File assembly_results_csv = "~{project_name}_sequencing_results.csv" 
+        File sequencing_results_csv = "~{project_name}_sequencing_results.csv" 
     }
 
     runtime {

@@ -73,16 +73,27 @@ if __name__ == '__main__':
     # get a list of file paths
     bam_results_file_list = create_list_from_write_lines_input(write_lines_input = bam_results_txt)
     per_cov_results_file_list = create_list_from_write_lines_input(write_lines_input = per_cov_results_txt)
-   
+    
+    print('bam_results file list')
+    for item in bam_results_file_list:
+        print(item)
+
+    print('percent cov results file list')
+    for item in per_cov_results_file_list:
+        print(item)
+    
 
     # insert bam results into data frame
     # track number of gene segments assemblied and total mapped reads
     num_segs = 0
     total_mapped_reads = 0
 
+    print('/n/n')
     for bam_result_file in bam_results_file_list:
         num_segs = num_segs + 1
         bam_df = pd.read_csv(bam_result_file)
+        # fill in "NAs" the NA gene is being read as NA
+        bam_df = bam_df.fillna('NA')
         gene_name = bam_df.gene_name[0]
         for row in range(bam_df.shape[0]):
             
@@ -95,10 +106,13 @@ if __name__ == '__main__':
             # get correct column header name
             col_name = "%s_%s" % (gene_name, description)
             df.at[0, col_name] = value
+            print(gene_name, col_name, description, value)
 
+    print('/n/n')
     # insert per cov results into data frame
     for per_cov_result_file in per_cov_results_file_list:
         per_cov_df = pd.read_csv(per_cov_result_file)
+        per_cov_df = per_cov_df.fillna("NA")
         gene_name = per_cov_df.gene_name[0]
         for row in range(per_cov_df.shape[0]):
             description = per_cov_df.description[row]
@@ -107,6 +121,7 @@ if __name__ == '__main__':
             # get correct column header name
             col_name = "%s_%s" % (gene_name, description)
             df.at[0, col_name] = value
+            print(gene_name, col_name, description, value)
 
     # add in final columns
     df.at[0, 'total_segments'] = num_segs
@@ -119,6 +134,8 @@ if __name__ == '__main__':
     df.at[0, 'ivar_min_depth'] = ivar_df.loc[0, 'ivar_min_depth']
     df.at[0, 'ivar_min_freq'] = ivar_df.loc[0, 'ivar_min_freq']
     df.at[0, 'ivar_min_qual'] = ivar_df.loc[0, 'ivar_min_qual']
+
+    print(df)
 
     # save df
     outfile = "%s_assembly_qc_metrics.csv" % sample_id
