@@ -1,12 +1,35 @@
 # CDPHE-influenza
 
-## Table of Contents
+<br/>
 
-1. [In Development](#in_development)
+## **Table of Contents**
+1. [In Development](#in-development)
 
-2. [IRMA Overview](#irma_overview)
+2. [IRMA Overview](#irma-overview)
 
-## **In Development** <a name="in_development"></a>
+3. [Running on Terra](#running-on-terra)
+
+    [1-Setting Up the Data Table](#1-setting-up-the-data-table)
+    
+    [2-Setting Up Workspace Data](#2-setting-up-workspace-data)
+
+    [3-Specifying Workflow Inputs](#3-specfying-workflow-inputs)
+
+4. [Output Directory Stucture](#output-directory-structure)
+
+5. [Workflows](#workflows)
+
+    [1-influenza_assembly.wdl](#1-influenza_assembly-wdl)
+
+
+    [2-influenza_assembly_summary.wdl](#2-influenza_assembly_summary-wdl)
+
+6. [Example Data](#example-data)
+
+<br/>
+<br/>
+
+## **In Development** 
 This repository is in active development. This document describes the Colorado Department of Public Health and Environment's workflow for the assembly and anlaysis of whole genome sequenicng data of influenza A and B ulitizing the Terra.bio platform. The pipeline consists of two workflows: influenza_assembly.wdl and influenza_assembly_summary.wdl. The first performs the assembly on each sample (entity = sample). The second generates a summary file that includes assembly summary statistics for all samples (entity = sample_set). Parts of the influenza_assembly.wdl workflow was adapted from and influenced by Thieagen Genomics's wf_theiacov_illumina_pe workflow for influenza. 
 
 ### **Active Development Stages**
@@ -20,7 +43,7 @@ This repository is in active development. This document describes the Colorado D
 <br/>
 <br/>
 
-## **IRMA Overview**  <a name="irma_overview"></a>
+## **IRMA Overview** 
 
 
 
@@ -35,7 +58,7 @@ In this section we describe how to prepare your terra workspace to run influenza
 
 
 
-### **1- Setting up your data table**
+### **1-Setting Up the Data Table**
 
 
 The datatable should look like the following and be saved as a tsv or txt file:
@@ -55,7 +78,7 @@ For SE illumina data:
 
 <br/>
 
-### **2- Setting Up Workspace Data**
+### **2-Setting Up Workspace Data**
 
 We have our workflow setup so that the following data files are stored in our workspace data. You can find these files in the scripts and references directory within this repo.
 
@@ -69,7 +92,7 @@ We have our workflow setup so that the following data files are stored in our wo
 
 <br/>
 
-### **3- Specifying Workflow Inputs**
+### **3-Specifying Workflow Inputs**
 
 
 Use the ``influenza_assembly_inputs_PE.json`` or ``influenza_assembly_inputs_SE.json`` template for the ``influenza_assembly.wdl`` inputs and use the influenza_assembly_summary_inputs.json for the ``influenza_assembly_summary.wdl`` located in ``/inputs/`` to see correct inputs for each workflow. There are some optional inputs for the ``influenza_assembly.wdl`` which will be in italics in the terra inputs table. Below lists these optional inputs as well as what the default is if the input is left bank.
@@ -87,7 +110,7 @@ Use the ``influenza_assembly_inputs_PE.json`` or ``influenza_assembly_inputs_SE.
 
 <br/>
 
-## **Output Directory Stucture**
+## **Output Directory Structure**
 
 
 
@@ -138,7 +161,7 @@ Use the ``influenza_assembly_inputs_PE.json`` or ``influenza_assembly_inputs_SE.
 
 ## **Workflows**
 
-### **influenza_assembly.wdl**
+### **1-influenza_assembly-wdl**
 
 
 ![influenza assembly workflow diagram](./diagrams/influenza_assembly_diagram_2023-02-13.PNG "influenza assembly workflow diagram")
@@ -258,7 +281,7 @@ This workflow is run on the entity sample. The workflow can be broken down into 
 
 <br/>
 
-### **influenza_assembly_summary.wdl**
+### **2-influenza_assembly_summary-wdl**
 
 
 ![influenza assembly workflow diagram]({insert_path} "influenza assembly workflow diagram")
@@ -292,3 +315,7 @@ This workflow is run on the entity sample_set. The workflow can be broken down i
 |-------|------|------------|
 | sequencing_results_csv| {project_name}_sequencing_results.csv| |
 
+<br/>
+
+## **Example Data**
+In development
