@@ -92,7 +92,7 @@ task transfer_assembly_wdl{
 
 }
 
-task transfer_assembly_summary_wdl{
+task transfer_assembly_summary_wdl {
     meta {
         description: ""
     }
@@ -100,14 +100,14 @@ task transfer_assembly_summary_wdl{
     input {
 
         String bucket_path
-        File summary_file
+        File assembly_results_csv
     }
 
     String out_path = sub(bucket_path, "/$", "") # fix if have a / at end
 
 
     command <<< 
-         gsutil -m cp ~{summary_file} ~{out_path}/summary_files/
+         gsutil -m cp ~{assembly_results_csv} ~{out_path}/summary_files/
 
          # transfer date
         transferdate=`date`

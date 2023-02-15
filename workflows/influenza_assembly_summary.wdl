@@ -31,7 +31,7 @@ workflow influenza_assembly_summary{
 
     call transfer.transfer_assembly_summary_wdl as summary_transfer {
         input:
-            summary_file = summary_file,
+            assembly_results_csv = summary.assembly_results_csv,
             bucket_path = bucket_path
     }
 
