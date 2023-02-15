@@ -2,7 +2,7 @@ version 1.0
 
 task irma {
     meta {
-        description: "runs CDC's IRMA for FLU. Form more info on IRMA visit: https://wonder.cdc.gov/amd/flu/irma/configuration.html. Modified from theiagen genomics - publich helath viral genomics. This task runs the default config of IRMA meaning it uses: \ALIGN_PROG=SAM \DEL_TYPE=''"
+        description: "runs CDC's IRMA for FLU. For more info on IRMA visit: https://wonder.cdc.gov/amd/flu/irma/configuration.html. Modified from theiagen genomics - public helath viral genomics (theiaCov PE workflow). This task runs the default config of IRMA meaning it uses: \ALIGN_PROG=SAM \DEL_TYPE=''"
     }
 
     input {
@@ -15,7 +15,7 @@ task irma {
 
     }
     command <<<
-        # potentially adjust config file to match theiagen
+        # grab version
         IRMA | head -n1 | awk -F' ' '{ print "IRMA " $5 }' | tee VERSION
         version=$(cat VERSION)
 
@@ -67,7 +67,7 @@ task irma {
                 sed -i "s/>.*/>${header_name}/" ${file}
 
                 # rename file
-                new_name=$(echo ~{sample_id}_$(basename $file))
+                new_name=$(echo ~{sample_id}_$(basename $file)_irma)
                 mv "${file}" "${new_name}"
             done
 
@@ -84,6 +84,7 @@ task irma {
         echo ${HA_SUBTYPE} > HA_SUBTYPE.txt
         echo ${NA_SUBTYPE} > NA_SUBTYPE.txt
 
+        # create irma_typing file
         echo "sample_id,type,HA_subytpe,NA_subtype,irma_module,irma_docker,irma_version" > ~{sample_id}_irma_typing.csv
         echo "~{sample_id},${TYPE},${HA_SUBTYPE},${NA_SUBTYPE},~{irma_module},~{docker},${version}" >> ~{sample_id}_irma_typing.csv
 
@@ -95,7 +96,6 @@ task irma {
         String irma_ha_subtype = read_string("HA_SUBTYPE.txt")
         String irma_na_subtype = read_string("NA_SUBTYPE.txt")
         File irma_typing = "~{sample_id}_irma_typing.csv"
-        # Array[String] segment_array = read_lines("segment_list.txt")
         Array[File] irma_assemblies = glob("~{sample_id}*.fasta")
         Array[File] irma_bam_files = glob("~{sample_id}*.bam")
         Array[File] irma_vcfs = glob("~{sample_id}*.vcf")

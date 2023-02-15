@@ -3,7 +3,7 @@ version 1.0
 # begin tasks
 task ivar_consensus {
     meta {
-        description : "generate consesnus sequnce from bam files input"
+        description : "generate consesnus sequnce from sorted bam files input"
     }
 
     input {
@@ -11,6 +11,7 @@ task ivar_consensus {
         String docker = "andersenlabapps/ivar:1.3.1"
     }
 
+    #record parameters
     Int ivar_min_depth = 10
     Float ivar_min_freq = 0.5
     Int ivar_min_qual = 20
@@ -18,21 +19,18 @@ task ivar_consensus {
 
     command <<<
 
-    # pull sample id and segment info from bam file
+    # pull sample id and segment info from bam file; create prefix for consensus fasta file
     sample_id=$(basename ~{bam_file} | cut -d "_" -f 1)
     segment_name=$(basename ~{bam_file} | cut -d "." -f 1 | cut -d "_" -f 2-)
     ivar_prefix=$(basename ~{bam_file} | cut -d "." -f 1)
     
     # generate consensus; first sort bam file
     samtools sort ~{bam_file} -o sorted.bam
-    samtools mpileup -A --a -B -Q 20 sorted.bam | \
-    ivar consensus -p ${ivar_prefix} -q 20 -t 0.6 -m 10 | tee ${ivar_prefix}_ivar_output.txt
+    samtools mpileup -A --a -B -Q ~{ivar_min_qual} sorted.bam | \
+    ivar consensus -p ${ivar_prefix} -q ~{ivar_min_qual} -t ~{ivar_min_freq} -m ~{ivar_min_depth} | tee ${ivar_prefix}_ivar_output.txt
     
     # fasta will be named prefix.fa
-    # create txt file with the name of the fasta file
-    # echo ${ivar_prefix}_ivar_output.txt | tee ivar_output_file_name.txt
-    # echo ${ivar_prefix}.fa | tee fasta_file_name.txt
-    cat ${ivar_prefix}.fa
+    cat ${ivar_prefix}.fa # for troubleshooting purposes print fasta contents to screen
 
     # rename consesnus header
     header_name=$(echo ${sample_id}_${segment_name})
@@ -49,9 +47,6 @@ task ivar_consensus {
     output {
         File ivar_consensus_fasta = select_first(glob("*.fa"))
         File ivar_output = select_first(glob("*_ivar_output.txt"))
-        # Int ivar_min_depth = ~{ivar_min_depth}
-        # Float ivar_min_freq = ~{ivar_min_freq}
-        # Int ivar_min_qual = ~{ivar_min_qual}
         String ivar_docker = "~{docker}"
         String ivar_version = read_string("ivar_version.txt")
         File ivar_parameters = "ivar_parameters.csv"

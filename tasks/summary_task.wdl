@@ -14,7 +14,6 @@ task summary {
         String project_name
     }
 
-
     command <<<
 
     python ~{python_script} \

@@ -2,7 +2,7 @@ version 1.0
 
 task samtools_mapped_reads {
     meta {
-        description: "use samtools to calc depth metrics"
+        description: "output sorted bams and use samtools to calc depth metrics"
     }
 
     input {
@@ -11,23 +11,26 @@ task samtools_mapped_reads {
 
     command <<<
 
-    # get segment name from bam file name
-    base_name=$(basename ~{bam_file})
-    prefix=$(basename ~{bam_file} | cut -d "." -f 1)
-    sorted_bam=$(echo ${prefix}.sorted.bam)
-    
-    sample_id=$(basename ~{bam_file} | cut -d "_" -f 1)
-    segment_name=$(basename ~{bam_file} | cut -d "." -f 1 | cut -d "_" -f 2-)
-    gene_name=$(basename ~{bam_file} | cut -d "." -f 1 | cut -d "_" -f 3)
+        # create name for sorted bam file
+        prefix=$(basename ~{bam_file} | cut -d "." -f 1)
+        sorted_bam=$(echo ${prefix}.sorted.bam)
+        
+        # pull sample id, segment name, and gene name from original ba file
+        sample_id=$(basename ~{bam_file} | cut -d "_" -f 1)
+        segment_name=$(basename ~{bam_file} | cut -d "." -f 1 | cut -d "_" -f 2-)
+        gene_name=$(basename ~{bam_file} | cut -d "." -f 1 | cut -d "_" -f 3)
 
-    # count mapped flu reads
-    samtools sort ~{bam_file} -o ${sorted_bam}
-    samtools view -c -F 260 ${sorted_bam} > num_mapped_reads.txt
-    samtools coverage ${sorted_bam} | tail -1 | cut -f 7 > mean_depth.txt
+        # create sorted bam file
+        samtools sort ~{bam_file} -o ${sorted_bam}
 
-    echo "sample_id,base_name,segment_name,gene_name,description,value" > bam_results.csv
-    echo "${sample_id},${sorted_bam},${segment_name},${gene_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> bam_results.csv
-    echo "${sample_id},${sorted_bam},${segment_name},${gene_name},mean_depth,$(cat mean_depth.txt)" >> bam_results.csv
+        # use sorted bam file to get number mapped reads and mean depth
+        samtools view -c -F 260 ${sorted_bam} > num_mapped_reads.txt
+        samtools coverage ${sorted_bam} | tail -1 | cut -f 7 > mean_depth.txt
+
+        # create output file
+        echo "sample_id,base_name,segment_name,gene_name,description,value" > bam_results.csv
+        echo "${sample_id},${sorted_bam},${segment_name},${gene_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> bam_results.csv
+        echo "${sample_id},${sorted_bam},${segment_name},${gene_name},mean_depth,$(cat mean_depth.txt)" >> bam_results.csv
 
 
     >>>
@@ -35,8 +38,6 @@ task samtools_mapped_reads {
     output {
         File bam_results = "bam_results.csv"
         File sorted_bam = select_first(glob("*.sorted.bam"))
-        # String mapped_reads = read_string("num_mapped_reads")
-        # Striing mean_depth = read_string('mean_depth')
     }
 
     runtime {
@@ -65,10 +66,6 @@ task calc_percent_coverage{
 
     command <<<
 
-    # get segment name from fasta file name
-    # segment_name=$(basename ~{fasta_file} | cut -d "." -f 1 | cut -d "_" -f 2-)
-
-
     python ~{python_script} --fasta_file ~{fasta_file}
     
     >>>
@@ -89,7 +86,7 @@ task calc_percent_coverage{
 
 task concat_post_qc_metrics{
     meta{
-        description:" pull the alignment (depth results from \samtools results) and the assembly (percent coverage \resutls from the biopython script) into a single file \for the sample"
+        description: "concatenate all post assembly qc metrics (depth and coverage) into a single file"
     }
 
     input{
@@ -100,6 +97,7 @@ task concat_post_qc_metrics{
         Array[File] ivar_parameters
 
     }
+    
     File ivar_parameters_file = select_first(ivar_parameters)
 
     command <<<
@@ -114,7 +112,6 @@ task concat_post_qc_metrics{
 
     output{
         File? qc_metrics_summary = "~{sample_id}_assembly_qc_metrics.csv"
-
     }
 
     runtime {

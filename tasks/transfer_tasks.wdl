@@ -31,8 +31,8 @@ task transfer_assembly_wdl{
 
         # ivar_assemblies (from irma assembler) and samtools tools
         Array[File]? irma_sorted_bams
-        Array[File]? ivar_assemblies
-        Array[File]? ivar_outputs
+        Array[File]? irma_ivar_assemblies
+        Array[File]? irma_ivar_outputs
 
         # post assembly qc outputs
         File? irma_qc_metrics
@@ -67,8 +67,8 @@ task transfer_assembly_wdl{
 
         # transfer ivar assemblies and sorted bams 
         gsutil -m cp ~{sep = " " irma_bam_files} ~{out_path}/irma/~{sample_id}/sorted_bam_files/
-         gsutil -m cp ~{sep = " " irma_assemblies} ~{out_path}/irma/~{sample_id}/ivar_consensus/
-         gsutil -m cp ~{sep = " " irma_assemblies} ~{out_path}/irma/~{sample_id}/ivar_outputs/
+         gsutil -m cp ~{sep = " " irma_assemblies} ~{out_path}/irma/~{sample_id}/irma_ivar_consensus/
+         gsutil -m cp ~{sep = " " irma_assemblies} ~{out_path}/irma/~{sample_id}/irma_ivar_outputs/
 
         # transfer post assembly qc
         gsutil -m cp ~{irma_qc_metrics} ~{out_path}/irma/~{sample_id}/

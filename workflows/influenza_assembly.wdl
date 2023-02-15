@@ -7,7 +7,6 @@ import "../tasks/ivar_task.wdl" as ivar
 import "../tasks/post_assembly_tasks.wdl" as post_assembly_qc
 import "../tasks/transfer_tasks.wdl" as transfer
 
-# in order to check right import
 # begin workflow
 workflow influenza_assembly {
 
@@ -48,6 +47,7 @@ workflow influenza_assembly {
             fastq_R2 = seqyclean.fastq_R2_cleaned,
             read_type = read_type
     }
+    # concatenate all preprocess qc metrics into single file
     call fastq_preprocess.concat_preprocess_qc_metrics as concat_preprocess_qc_metrics{
         input:
             python_script = concat_preprocess_qc_metrics_py,
@@ -84,25 +84,25 @@ workflow influenza_assembly {
             fastq_R2 = seqyclean.fastq_R2_cleaned
     }
 
-    # proceed with post assembly QC metrics if irma assembly was successful
+    # Proceed with post assembly QC metrics if irma assembly was successful
     if (irma.irma_type != "no IRMA assembly generated") {
         # 3- post assembly QC metrics
         ## scatter over bam file array
-
         scatter (bam_file in select_all(irma.irma_bam_files)) {
+            ## determine number mapped reads and mean depth using samtools
             call post_assembly_qc.samtools_mapped_reads as irma_samtools_mapped_reads { 
                 input:
                     bam_file = bam_file
             }
-
-            call ivar.ivar_consensus as ivar_consensus {
+            ## generate consensus sequence using ivar (so can control base calling parameters)
+            call ivar.ivar_consensus as irma_ivar_consensus {
                 input:
                 bam_file = bam_file
             }
         }
         
-        ## scatter over fasta file array from ivar
-        scatter (fasta_file in select_all(ivar_consensus.ivar_consensus_fasta)) {
+        ## scatter over fasta file array using consensus sequences from ivar
+        scatter (fasta_file in select_all(irma_ivar_consensus.ivar_consensus_fasta)) {
             call post_assembly_qc.calc_percent_coverage as irma_percent_coverage { 
                 input:
                     fasta_file  = fasta_file,
@@ -111,24 +111,25 @@ workflow influenza_assembly {
             }
         }
 
-        # input depth and cov arrays to create a single outfile for all gene segments
+        # concantenate post assembly qc metrics (coverage, depth) into a single file
         call post_assembly_qc.concat_post_qc_metrics as irma_concat_post_qc_metrics{
             input:
                 python_script = concat_post_assembly_qc_metrics_py,
                 sample_id = sample_id,
                 bam_results_array = irma_samtools_mapped_reads.bam_results,
                 per_cov_results_array = irma_percent_coverage.perc_cov_results,
-                ivar_parameters = ivar_consensus.ivar_parameters
+                ivar_parameters = irma_ivar_consensus.ivar_parameters
 
         }
     
     }
-    # 5 - Transfer
-    
+    # 5 - Transfer some intermediate files and all final files to gcp bucket
     call transfer.transfer_assembly_wdl as transfer_assembly_wdl {
         input:
             sample_id = sample_id, 
             bucket_path = bucket_path,
+
+            # preprocess and preprocesss qc metrics files
             fastqc1_html_raw = fastqc_raw.fastqc1_html,
             fastqc1_zip_raw = fastqc_raw.fastqc1_zip,
             fastqc2_html_raw = fastqc_raw.fastqc2_html,
@@ -136,25 +137,23 @@ workflow influenza_assembly {
 
             seqyclean_summary = seqyclean.seqyclean_summary,
 
-            preprocess_qc_metrics = concat_preprocess_qc_metrics.preprocess_qc_metrics,
-
             fastqc1_html_cleaned = fastqc_cleaned.fastqc1_html,
             fastqc1_zip_cleaned = fastqc_cleaned.fastqc1_zip,
             fastqc2_html_cleaned = fastqc_cleaned.fastqc2_html,
             fastqc2_zip_cleaned = fastqc_cleaned.fastqc2_zip,
 
+            preprocess_qc_metrics = concat_preprocess_qc_metrics.preprocess_qc_metrics,
+
+            # irma, ivar, and post assembly qc metrics files
             irma_assemblies = irma.irma_assemblies,
             irma_bam_files = irma.irma_bam_files,
             irma_vcfs = irma.irma_vcfs,
 
             irma_sorted_bams = irma_samtools_mapped_reads.sorted_bam,
-
-            ivar_assemblies = ivar_consensus.ivar_consensus_fasta,
-            ivar_outputs = ivar_consensus.ivar_output,
+            irma_ivar_assemblies = irma_ivar_consensus.ivar_consensus_fasta,
+            irma_ivar_outputs = irma_ivar_consensus.ivar_output,
 
             irma_qc_metrics = irma_concat_post_qc_metrics.qc_metrics_summary
-
-
     }
 
 
@@ -184,7 +183,6 @@ workflow influenza_assembly {
         String irma_ha_subtype = irma.irma_ha_subtype
         String irma_na_subtype = irma.irma_na_subtype
         File irma_typing = irma.irma_typing
-        # Array[String] segment_array = irma.segment_array
         Array[File] irma_assemblies = irma.irma_assemblies
         Array[File] irma_bam_files = irma.irma_bam_files
         Array[File] irma_vcfs = irma.irma_vcfs
@@ -193,8 +191,8 @@ workflow influenza_assembly {
 
         # output from ivar_consensus and samtools
         Array[File]? irma_sorted_bams = irma_samtools_mapped_reads.sorted_bam
-        Array[File]? ivar_assemblies = ivar_consensus.ivar_consensus_fasta
-        Array[File]? ivar_outputs = ivar_consensus.ivar_output
+        Array[File]? irma_ivar_assemblies = irma_ivar_consensus.ivar_consensus_fasta
+        Array[File]? irma_ivar_outputs = irma_ivar_consensus.ivar_output
 
         # output from post assembly QC metrics
         Array[File]? irma_bam_results = irma_samtools_mapped_reads.bam_results

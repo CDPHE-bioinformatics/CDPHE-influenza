@@ -9,7 +9,7 @@ task fastqc {
     input {
         String sample_id
         File fastq_R1
-        File fastq_R2 = "default.fastq.gz" # need a dummy value so can use the basename on fastq_R2
+        File fastq_R2 = "default.fastq.gz" # need a dummy value so can use the basename on fastq_R2 and WDL is happy
         String read_type
         String docker = 'staphb/fastqc:0.11.9'
     }
@@ -18,22 +18,13 @@ task fastqc {
     String fastq_R2_name = basename(basename(basename(fastq_R2, ".gz"), ".fastq"), ".fq")
 
     command <<<
-        # capture date and version
+        # grab version
         fastqc --version | tee VERSION
 
         if [ ~{read_type} == "paired" ]; then
-            # get the base name of the fastq files
-            # fastq_R1_name=$(basename ~{fastq_R1} | cut -d "." -f 1 | cut -d "." -f 1)
-            # fastq_R2_name=$(basename ~{fastq_R2} | cut -d "." -f 1 | cut -d "." -f 1)
 
             # run fastqc
             fastqc --outdir $PWD ~{fastq_R1} ~{fastq_R2}
-
-            # # rename outputs
-            # mv ${fastq_R1_name}_fastqc.html ~{sample_id}_R1_fastqc.html
-            # mv ${fastq_R1_name}_fastqc.zip ~{sample_id}_R1_fastqc.zip
-            # mv ${fastq_R2_name}_fastqc.html ~{sample_id}_R2_fastqc.html
-            # mv ${fastq_R2_name}_fastqc.zip ~{sample_id}_R2_fastqc.zip
 
             # pull some info from the zip file regarding number of reads and read length
             unzip -p ~{fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ1_LEN
@@ -54,30 +45,20 @@ task fastqc {
             echo $read_pairs | tee READ_PAIRS
         
         elif [ ~{read_type} == "single" ]; then
-            # get base name
-            # fastq_R1_name=$(basename ~{fastq_R1} | cut -d "." -f 1 | cut -d "." -f 1)
-
-
+           
             # run fastqc
             fastqc --outdir $PWD ~{fastq_R1}
 
-            # # rename outputs
-            # mv ${fastq_R1_name}_fastqc.html ~{sample_id}_R1_fastqc.html
-            # mv ${fastq_R1_name}_fastqc.zip ~{sample_id}_R1_fastqc.zip
-
             # pull some info from the zip file regarding number of reads and read length
             unzip -p ~{fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ1_LEN
-            # unzip -p ~{fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ2_LEN
-            
+
             unzip -p ~{fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
-            # unzip -p ~{fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ2_SEQS
 
             READ1_SEQS=$(unzip -p ~{fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
-            # READ2_SEQS=$(unzip -p ~{fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
     
             echo $READ1_SEQS| tee READ_PAIRS
             
-            # create dumby variables
+            # create dummy variables for second read so WDL is happy
             echo 0 | tee READ2_SEQS
             echo 0 | tee READ2_LEN
         fi
@@ -88,7 +69,8 @@ task fastqc {
         File fastqc1_zip = "~{fastq_R1_name}_fastqc.zip"
         File? fastqc2_html = "~{fastq_R2_name}_fastqc.html"
         File? fastqc2_zip = "~{fastq_R2_name}_fastqc.zip"
-
+ 
+        # these outputs will go into the concatenated preprocess qc metrics file
         Int total_reads_R1 = read_string("READ1_SEQS")
         Int total_reads_R2 = read_string("READ2_SEQS")
         
@@ -99,6 +81,7 @@ task fastqc {
         String fastqc_version = read_string("VERSION")
         String fastqc_docker = "~{docker}"
     } 
+
     runtime {
       docker: "~{docker}"
       memory: "1 GiB"
@@ -111,7 +94,7 @@ task fastqc {
 
 task seqyclean {
     meta{
-        description : "This task reads in a pair of fastq files (R1 and R2), uses seqyclean to remove containments and adapaters and then filters on min len and quality. The output is two clean fastq files (R1 and R2)."
+        description : "This task uses seqyclean to remove containments and adapaters and then filters on min len and quality."
     }
     input {
         File adapters_and_contaminants
@@ -121,9 +104,10 @@ task seqyclean {
         String read_type
         String docker = "staphb/seqyclean:1.10.09"
     }
+
     command <<<
 
-        # get version number of seqyclean
+        # run seqyclean
         if [ ~{read_type} == "paired" ]; then
             seqyclean -minlen 70 -qual 30 30 -gz -1 ~{fastq_R1} -2 ~{fastq_R2} -c ~{adapters_and_contaminants} -o ~{sample_id}_clean
         elif [ ~{read_type} == "single" ]; then
@@ -154,7 +138,7 @@ task seqyclean {
 
 task concat_preprocess_qc_metrics {
     meta {
-        description: "creating a single csv file with all pre=processing qc"
+        description: "creates a single csv file with all preprocess qc metrics"
     }
 
     input {
