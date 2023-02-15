@@ -2,9 +2,9 @@
 
 ## Table of Contents
 
-[In Development]
+[In Development] (#indevelopment)
 
-## **In Development**
+## **In Development** <a name="indevelopment"></a>
 This repository is in active development. This document describes the Colorado Department of Public Health and Environment's workflow for the assembly and anlaysis of whole genome sequenicng data of influenza A and B ulitizing the Terra.bio platform. The pipeline consists of two workflows: influenza_assembly.wdl and influenza_assembly_summary.wdl. The first performs the assembly on each sample (entity = sample). The second generates a summary file that includes assembly summary statistics for all samples (entity = sample_set). Parts of the influenza_assembly.wdl workflow was adapted from and influenced by Thieagen Genomics's wf_theiacov_illumina_pe workflow for influenza. 
 
 ### **Acitive Development Stages**
