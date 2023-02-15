@@ -29,7 +29,7 @@ workflow influenza_assembly_summary{
             project_name = project_name
     }
 
-    call transfer.transer_assembly_summary_wdl as summary_transfer {
+    call transfer.transfer_assembly_summary_wdl as summary_transfer {
         input:
             summary_file = summary_file,
             bucket_path = bucket_path
