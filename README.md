@@ -2,12 +2,14 @@
 
 ## Table of Contents
 
-[In Development] (#indevelopment)
+1. [In Development](#in_development)
 
-## **In Development** <a name="indevelopment"></a>
+2. [IRMA Overview](#irma_overview)
+
+## **In Development** <a name="in_development"></a>
 This repository is in active development. This document describes the Colorado Department of Public Health and Environment's workflow for the assembly and anlaysis of whole genome sequenicng data of influenza A and B ulitizing the Terra.bio platform. The pipeline consists of two workflows: influenza_assembly.wdl and influenza_assembly_summary.wdl. The first performs the assembly on each sample (entity = sample). The second generates a summary file that includes assembly summary statistics for all samples (entity = sample_set). Parts of the influenza_assembly.wdl workflow was adapted from and influenced by Thieagen Genomics's wf_theiacov_illumina_pe workflow for influenza. 
 
-### **Acitive Development Stages**
+### **Active Development Stages**
 
 
 - **Stage 1**: Baseline assembly using IRMA (Version 1.0.0 release). This will include a basic assembly pipeline that preprocesses raw fastq data from both SE and PE illumina data, generates assemblies using IRMA, generates conesensus assemblies using iVar, calculates percent coverage and mean depth for each gene segment, and generates a summary output.
@@ -18,7 +20,7 @@ This repository is in active development. This document describes the Colorado D
 <br/>
 <br/>
 
-## **IRMA overview**
+## **IRMA Overview**  <a name="irma_overview"></a>
 
 
 
