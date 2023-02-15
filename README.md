@@ -95,7 +95,7 @@ We have our workflow setup so that the following data files are stored in our wo
 ### **3-Specifying Workflow Inputs**
 
 
-Use the ``influenza_assembly_inputs_PE.json`` or ``influenza_assembly_inputs_SE.json`` template for the ``influenza_assembly.wdl`` inputs and use the influenza_assembly_summary_inputs.json for the ``influenza_assembly_summary.wdl`` located in ``/inputs/`` to see correct inputs for each workflow. There are some optional inputs for the ``influenza_assembly.wdl`` which will be in italics in the terra inputs table. Below lists these optional inputs as well as what the default is if the input is left bank.
+Use the ``influenza_assembly_inputs_PE.json`` or ``influenza_assembly_inputs_SE.json`` template for the ``influenza_assembly.wdl`` inputs and use the ``influenza_assembly_summary_inputs.json`` for the ``influenza_assembly_summary.wdl`` located in ``./inputs/`` to see correct inputs for each workflow. There are some optional inputs for the ``influenza_assembly.wdl`` which will be in italics in the terra inputs table. Below lists these optional inputs as well as what the default is used if the input is left bank.
 
 | task | WDL variable | default| options|
 |----|----|----|---|
@@ -241,6 +241,7 @@ This workflow is run on the entity sample. The workflow can be broken down into 
 | seqyclean_version | N/A | version of seqyclean |
 | seqyclean_docker | N/A | docker used for seqyclean | 
 | seqyclean_summary | {sample_id}_clean_SummaryStatistics.tsv | |
+| preprocess_qc_metrics| {sample_id}_preprocess_qc_metrics.csv | |
 
 <br/>
 
