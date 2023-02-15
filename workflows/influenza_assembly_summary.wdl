@@ -10,7 +10,7 @@ workflow influenza_assembly_summary{
         Array[String] project_name_array
         Array[File] preprocess_qc_metrics
         Array[File] irma_typing
-        Array[File] irma_qc_metrics
+        Array[File] irma_assembly_qc_metrics
         Array[String] bucket_path_array
 
         File summary_py
@@ -24,12 +24,12 @@ workflow influenza_assembly_summary{
             sample_id = sample_id,
             preprocess_qc_metrics = preprocess_qc_metrics,
             irma_typing = irma_typing,
-            irma_qc_metrics = irma_qc_metrics,
+            irma_assembly_qc_metrics = irma_assembly_qc_metrics,
             python_script = summary_py,
             project_name = project_name
     }
 
-    call transfer.summary_transfer as summary_transfer {
+    call transfer.transer_assembly_summary_wdl as summary_transfer {
         input:
             summary_file = summary_file,
             bucket_path = bucket_path

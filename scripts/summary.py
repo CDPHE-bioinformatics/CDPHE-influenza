@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-#version = '0.1.0'
+#version = '1.0.0'
 
 # import python modules
 import pandas as pd
@@ -44,10 +44,6 @@ if __name__ == '__main__':
     irma_typing_list = create_list_from_write_lines_input(write_lines_input = irma_typing_txt)
     irma_qc_metrics_list= create_list_from_write_lines_input(write_lines_input = irma_qc_metrics_txt)
 
-    # print(sample_id_list)
-    # print(preprocess_qc_metrics_list)
-    # print(irma_typing_list)
-    # print(irma_qc_metrics_list)
 
     preprocess_qc_metrics_df_list = []
     for preprocess_qc_metrics in preprocess_qc_metrics_list:

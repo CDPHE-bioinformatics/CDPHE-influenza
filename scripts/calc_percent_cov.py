@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-#version = '0.1.0'
+#version = '1.0.0'
 
 # import python modules
 import pandas as pd
@@ -35,12 +35,6 @@ def getOptions(args=sys.argv[1:]):
     options = parser.parse_args(args)
     return options
 
-# def create_list_from_write_lines_input(write_lines_input):
-#     list = []
-#     with open(write_lines_input, 'r') as f:
-#         for line in f:
-#             list.append(line.strip())
-#     return list
 
 def get_fasta_file_basename(fasta_file_path):
     basename = fasta_file_path.split('/')[-1] # strip directories
@@ -103,18 +97,11 @@ def create_output(sample_id, basename, segment_name, gene_name, seq_len, per_cov
     df.to_csv(outfile, index = False)
 
 
-
-
-
-
 #### MAIN ####
 if __name__ == '__main__':
 
     options = getOptions()
     fasta_file_path = options.fasta_file
-
-    # fasta_file_list =  create_list_from_write_lines_input(write_lines_input = fasta_file_txt)
-    # fasta_file_path = fasta_file_list[0]
 
     basename = get_fasta_file_basename(fasta_file_path = fasta_file_path)
 

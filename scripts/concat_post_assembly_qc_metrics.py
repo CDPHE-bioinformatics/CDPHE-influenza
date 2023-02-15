@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-#version = '0.1.0'
+#version = '1.0.0'
 
 # import python modules
 import pandas as pd
@@ -27,8 +27,7 @@ segment_list = ['HA', 'NA', 'MP', 'NP', 'NS', 'PA', 'PB1', 'PB2']
 metric_variables = ['per_cov', 'mean_depth', 'num_mapped_reads', 'seq_len', 'expected_len']
 
 col_headers = ['sample_id', 'total_segments','total_flu_mapped_reads', 'average_per_cov', 'average_mean_depth']
-# total_flu_mapped_reads = sum(num_read_mapped from all segments)
-# total_segments = count number of segments total
+
 
 #### FUNCTIONS #####
 def getOptions(args=sys.argv[1:]):
@@ -74,7 +73,7 @@ if __name__ == '__main__':
     # get a list of file paths
     bam_results_file_list = create_list_from_write_lines_input(write_lines_input = bam_results_txt)
     per_cov_results_file_list = create_list_from_write_lines_input(write_lines_input = per_cov_results_txt)
-    # ivar_parameters_file_list = create_list_from_write_lines_input(write_lines_input=ivar_parameters_txt)
+   
 
     # insert bam results into data frame
     # track number of gene segments assemblied and total mapped reads

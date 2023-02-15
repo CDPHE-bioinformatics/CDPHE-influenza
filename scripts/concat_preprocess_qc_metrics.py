@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-#version = '0.1.0'
+#version = '1.0.0'
 
 # import python modules
 import pandas as pd

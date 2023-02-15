@@ -9,7 +9,7 @@ task summary {
         Array[String] sample_id
         Array[File] preprocess_qc_metrics
         Array[File] irma_typing
-        Array[File] irma_qc_metrics
+        Array[File] irma_assembly_qc_metrics
         File python_script
         String project_name
     }
@@ -20,15 +20,13 @@ task summary {
         --sample_id ~{write_lines(sample_id)} \
         --preprocess_qc_metrics ~{write_lines(preprocess_qc_metrics)} \
         --irma_typing ~{write_lines(irma_typing)} \
-        --irma_qc_metrics ~{write_lines(irma_qc_metrics)} \
+        --irma_qc_metrics ~{write_lines(irma_assembly_qc_metrics)} \
         --project_name ~{project_name}
 
     >>>
 
     output {
-
         File assembly_results_csv = "~{project_name}_sequencing_results.csv" 
-
     }
 
     runtime {
