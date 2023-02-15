@@ -71,18 +71,26 @@ The workflow can be broken down into 5 main parts. Below we describe each part.
 | transfer_assembly_wdl  | Transfers intermediate and final output files to a specified gcp bucket path. See below to the file structure |
 
 <br/>
-gs://{out_dir}/
 
+```
+├── gs://{out_dir}
+│   ├── fastqc_raw
+|   ├── fastqc_clean
+|   ├── seqyclean
+|   ├── preprocess_qc_metrics
+|   ├── irma
+│   │   ├── {sample_id}
+|   |   |   ├── {sample_id}_assembly_qc_metrics.csv
+|   |   |   ├── assemblies
+|   |   |   ├── bam files
+|   |   |   ├── vcfs
+|   |   |   ├── sorted_bam_files
+|   |   |   ├── irma_ivar_consesnsus
+|   |   |   ├── irma_ivar_outputs
+│   ├── sumamry_files
+|   |   ├── {project_name}_sequencing_results.csv
 
-    * gs://{out_dir}/fastqc_raw/
-    * gs://{out_dir}/fastqc_clean/
-    * gs://{out_dir}/seqyclean/
-    * gs://{out_dir}/preprocess_qc_metrics/
-    * gs://{out_dir}/irma/{sample_id}/assemblies/ # these are the assemblies as they come out of irma
-    * gs://{out_dir}/irma/{sample_id}/ivar_consensus/ # these are the consensus sequences generated using ivar following the ivar parameters
-    * gs://{out_dir}/irma/{sample_id}/bam_files/
-    * gs://{out_dir}/irma/{sample_id}/vcfs/
-    * gs://{out_dir}/irma/{sample_id}/
+```
 
 <br/>
 
