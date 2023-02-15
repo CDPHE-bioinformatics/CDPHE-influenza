@@ -9,7 +9,7 @@ task fastqc {
     input {
         String sample_id
         File fastq_R1
-        File fastq_R2
+        File? fastq_R2
         String read_type
         String docker = 'staphb/fastqc:0.11.9'
     }
