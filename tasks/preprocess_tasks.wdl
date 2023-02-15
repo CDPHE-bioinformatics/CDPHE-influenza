@@ -46,10 +46,12 @@ task fastqc {
             echo $read_pairs | tee READ_PAIRS
 
             # rename files 
-            mv ${fastq_R1_name}_fastqc.html ~{sample_id}_R1_fastqc.html
-            mv ${fastq_R1_name}_fastqc.zip ~{sample_id}_R1_fastqc.zip
-            mv ${fastq_R2_name}_fastqc.html ~{sample_id}_R2_fastqc.html
-            mv ${fastq_R2_name}_fastqc.zip ~{sample_id}_R2_fastqc.zip
+            if [ ${fastq_R1_name}  != ~{sample_id} ]; then 
+                mv ${fastq_R1_name}_fastqc.html ~{sample_id}_R1_fastqc.html
+                mv ${fastq_R1_name}_fastqc.zip ~{sample_id}_R1_fastqc.zip
+                mv ${fastq_R2_name}_fastqc.html ~{sample_id}_R2_fastqc.html
+                mv ${fastq_R2_name}_fastqc.zip ~{sample_id}_R2_fastqc.zip
+            fi
         
         elif [ ~{read_type} == "single" ]; then
            # get basename of fastq file
@@ -72,8 +74,10 @@ task fastqc {
             echo 0 | tee READ2_LEN
 
             # rename files 
-            mv ${fastq_R1_name}_fastqc.html ~{sample_id}_R1_fastqc.html
-            mv ${fastq_R1_name}_fastqc.zip ~{sample_id}_R1_fastqc.zip
+             if [ ${fastq_R1_name}  != ~{sample_id} ]; then
+                mv ${fastq_R1_name}_fastqc.html ~{sample_id}_R1_fastqc.html
+                mv ${fastq_R1_name}_fastqc.zip ~{sample_id}_R1_fastqc.zip
+            fi
         fi
 
 
