@@ -1,0 +1,7 @@
+{"influenza_assembly_summary.bucket_path_array":"${this.sample_ids.out_dir}",
+"influenza_assembly_summary.irma_assembly_qc_metrics":"${this.sample_idss.irma_assembly_qc_metrics}",
+"influenza_assembly_summary.irma_typing":"${this.sample_idss.irma_typing}",
+"influenza_assembly_summary.preprocess_qc_metrics":"${this.sample_idss.preprocess_qc_metrics}",
+"influenza_assembly_summary.project_name_array":"${this.sample_idss.project_name}",
+"influenza_assembly_summary.sample_id":"${this.sample_idss.sample_id}",
+"influenza_assembly_summary.summary_py":"${workspace.influenza_summary_py}"}
