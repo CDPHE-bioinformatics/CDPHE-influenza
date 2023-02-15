@@ -5,7 +5,7 @@ import "../tasks/preprocess_tasks.wdl" as fastq_preprocess
 import "../tasks/irma_task.wdl" as irma
 import "../tasks/ivar_task.wdl" as ivar
 import "../tasks/post_assembly_tasks.wdl" as post_assembly_qc
-import "../tasks/transfer_task.wdl" as transfer
+import "../tasks/transfer_tasks.wdl" as transfer
 
 # in order to check right import
 # begin workflow
