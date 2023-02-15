@@ -1,7 +1,7 @@
 version 1.0
 
 import "../tasks/summary_task.wdl" as summary 
-import "../tasks/transfer_task.wdl" as transfer
+import "../tasks/transfer_tasks.wdl" as transfer
 
 workflow influenza_assembly_summary{
     
