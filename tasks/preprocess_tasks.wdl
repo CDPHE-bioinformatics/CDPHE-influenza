@@ -9,13 +9,10 @@ task fastqc {
     input {
         String sample_id
         File fastq_R1
-        File fastq_R2 = "default.fastq.gz" # need a dummy value so can use the basename on fastq_R2 and WDL is happy
+        File fastq_R2
         String read_type
         String docker = 'staphb/fastqc:0.11.9'
     }
-
-    String fastq_R1_name = basename(basename(basename(fastq_R1, ".gz"), ".fastq"), ".fq")
-    String fastq_R2_name = basename(basename(basename(fastq_R2, ".gz"), ".fastq"), ".fq")
 
     command <<<
         # grab version
@@ -23,18 +20,22 @@ task fastqc {
 
         if [ ~{read_type} == "paired" ]; then
 
+            # get basename of fastq file
+            fastq_R1_name=$(basename ~{fastq_R1} | cut -d "." -f 1 | cut -d "." -f 1)
+            fastq_R2_name=$(basename ~{fastq_R2} | cut -d "." -f 1 | cut -d "." -f 1)
+
             # run fastqc
             fastqc --outdir $PWD ~{fastq_R1} ~{fastq_R2}
 
             # pull some info from the zip file regarding number of reads and read length
-            unzip -p ~{fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ1_LEN
-            unzip -p ~{fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ2_LEN
+            unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ1_LEN
+            unzip -p ${fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ2_LEN
 
-            unzip -p ~{fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
-            unzip -p ~{fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ2_SEQS
+            unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
+            unzip -p ${fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ2_SEQS
 
-            READ1_SEQS=$(unzip -p ~{fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
-            READ2_SEQS=$(unzip -p ~{fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
+            READ1_SEQS=$(unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
+            READ2_SEQS=$(unzip -p ${fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
 
             if [ $READ1_SEQS == $READ2_SEQS ]; then
                 read_pairs=$READ1_SEQS
@@ -43,32 +44,46 @@ task fastqc {
             fi
 
             echo $read_pairs | tee READ_PAIRS
+
+            # rename files 
+            mv ${fastq_R1_name}_fastqc.html ~{sample_id}_R1_fastqc.html
+            mv ${fastq_R1_name}_fastqc.zip ~{sample_id}_R1_fastqc.zip
+            mv ${fastq_R2_name}_fastqc.html ~{sample_id}_R2_fastqc.html
+            mv ${fastq_R2_name}_fastqc.zip ~{sample_id}_R2_fastqc.zip
         
         elif [ ~{read_type} == "single" ]; then
-           
+           # get basename of fastq file
+            fastq_R1_name=$(basename ~{fastq_R1} | cut -d "." -f 1 | cut -d "." -f 1)
+
             # run fastqc
             fastqc --outdir $PWD ~{fastq_R1}
 
             # pull some info from the zip file regarding number of reads and read length
-            unzip -p ~{fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ1_LEN
+            unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ1_LEN
 
-            unzip -p ~{fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
+            unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
 
-            READ1_SEQS=$(unzip -p ~{fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
+            READ1_SEQS=$(unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
     
             echo $READ1_SEQS| tee READ_PAIRS
             
             # create dummy variables for second read so WDL is happy
             echo 0 | tee READ2_SEQS
             echo 0 | tee READ2_LEN
+
+            # rename files 
+            mv ${fastq_R1_name}_fastqc.html ~{sample_id}_R1_fastqc.html
+            mv ${fastq_R1_name}_fastqc.zip ~{sample_id}_R1_fastqc.zip
         fi
+
+
 
     >>>
     output {
-        File fastqc1_html = "~{fastq_R1_name}_fastqc.html"
-        File fastqc1_zip = "~{fastq_R1_name}_fastqc.zip"
-        File? fastqc2_html = "~{fastq_R2_name}_fastqc.html"
-        File? fastqc2_zip = "~{fastq_R2_name}_fastqc.zip"
+        File fastqc1_html = "~{sample_id}_R1_fastqc.html"
+        File fastqc1_zip = "~{sample_id}_R1_fastqc.zip"
+        File? fastqc2_html = "~{sample_id}_R2_fastqc.html"
+        File? fastqc2_zip = "~{sample_id}_R2_fastqc.zip"
  
         # these outputs will go into the concatenated preprocess qc metrics file
         Int total_reads_R1 = read_string("READ1_SEQS")
