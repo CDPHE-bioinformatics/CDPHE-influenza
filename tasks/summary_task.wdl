@@ -9,7 +9,7 @@ task summary {
         Array[String] sample_id
         Array[File] preprocess_qc_metrics
         Array[File] irma_typing
-        Array[File]? irma_assembly_qc_metrics
+        Array[File] irma_assembly_qc_metrics
         File python_script
         String project_name
         String run_date
