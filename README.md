@@ -163,8 +163,11 @@ Use the ``influenza_assembly_inputs_PE.json`` or ``influenza_assembly_inputs_SE.
 
 ### **1-influenza_assembly-wdl**
 
+<br/>
 
-![influenza assembly workflow diagram](./diagrams/influenza_assembly_diagram_2023-02-13.PNG "influenza assembly workflow diagram")
+![influenza assembly workflow diagram](./diagrams/influenza_assembly_workflow_diagram_2023-01-15.png "influenza assembly workflow diagram")
+
+<br/>
 
 ### **Summary Overview**
 
@@ -255,7 +258,7 @@ This workflow is run on the entity sample. The workflow can be broken down into 
 | irma_ha_subtype | N/A | if influenza type == "A" then it is the influenza subtype for the HA gene called by IRMA; commonly "H1" or "H3"|
 | irma_na_subtype | N/A | if influenza type == "A" then it is the influenza subtype for the NA gene called by IRMA; commonly "N1" or "N2" |
 |irma_typing| {sample_id}_irma_typing.csv | csv file with the sample id, irma type, irma ha subytpe and irma na subtype listed in a tabluar format|
-|irma_assemblies| {sample_id}_{flu_type}\_{gene_segment}_irma.fasta | array of consensus assembly fasta files. Each assembled gene segment has a fasta file. The fasta header is formatted as : ">{sample_id}_{flu_type}\_{gene_segment}"|
+|irma_assemblies| {sample_id}_{flu_type}\_{gene_segment}.fasta | array of consensus assembly fasta files. Each assembled gene segment has a fasta file. The fasta header is formatted as : ">{sample_id}_{flu_type}\_{gene_segment}"|
 |irma_bam_files| {sample_id}_{flu_type}\_{gene_semgnet}.bam | Array of bam files. Each assembled gene segment has a bam file. The reference sequence is the final iterative plurality consensus |
 |irma_vcfs | {sample_id}_{flu_type}\_{gene_semgnet}.vcf | Array of vcf files. Each assembled gene segment has a vcf file. The reference sequence is the final iterative plurality consensus. |
 
@@ -283,9 +286,9 @@ This workflow is run on the entity sample. The workflow can be broken down into 
 <br/>
 
 ### **2-influenza_assembly_summary-wdl**
+<br/> 
 
-
-![influenza assembly workflow diagram]({insert_path} "influenza assembly workflow diagram")
+![influenza assembly workflow diagram](./diagrams/influenza_assembly_summary_workflow_diagram_2023-01-15.png "influenza assembly workflow diagram")
 
 <br/>
 
