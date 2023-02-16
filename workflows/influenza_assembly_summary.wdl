@@ -8,9 +8,9 @@ workflow influenza_assembly_summary{
     input {
         Array[String] sample_id
         Array[String] project_name_array
-        Array[File] preprocess_qc_metrics
-        Array[File] irma_typing
-        Array[File] irma_assembly_qc_metrics
+        Array[File]? preprocess_qc_metrics
+        Array[File]? irma_typing
+        Array[File]? irma_assembly_qc_metrics
         Array[String] bucket_path_array
         Array[String] run_date_array
 
