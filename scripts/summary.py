@@ -16,7 +16,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--sample_id")
     parser.add_argument( "--preprocess_qc_metrics")
     parser.add_argument( "--irma_typing")
-    parser.add_argument( "--irma_qc_metrics")
+    parser.add_argument( "--irma_assembly_qc_metrics", default = "")
     parser.add_argument( "--project_name")
     parser.add_argument( "--run_date")
     options = parser.parse_args(args)
@@ -37,15 +37,17 @@ if __name__ == '__main__':
     sample_id_txt = options.sample_id
     preprocess_qc_metrics_txt = options.preprocess_qc_metrics
     irma_typing_txt = options.irma_typing
-    irma_qc_metrics_txt = options.irma_qc_metrics
+    irma_qc_metrics_txt = options.irma_assembly_qc_metrics
     project_name = options.project_name
     run_date = options.run_date
 
     sample_id_list = create_list_from_write_lines_input(write_lines_input = sample_id_txt)
     preprocess_qc_metrics_list = create_list_from_write_lines_input(write_lines_input = preprocess_qc_metrics_txt)
     irma_typing_list = create_list_from_write_lines_input(write_lines_input = irma_typing_txt)
-    irma_qc_metrics_list= create_list_from_write_lines_input(write_lines_input = irma_qc_metrics_txt)
-
+    if irma_qc_metrics_txt != "":
+        irma_qc_metrics_list= create_list_from_write_lines_input(write_lines_input = irma_qc_metrics_txt)
+    else:
+        irma_qc_metrics_list = []
 
     preprocess_qc_metrics_df_list = []
     for preprocess_qc_metrics in preprocess_qc_metrics_list:
@@ -61,12 +63,66 @@ if __name__ == '__main__':
     irma_typing_df = pd.concat(irma_typing_df_list).reset_index(drop=True)
     irma_typing_df = irma_typing_df.set_index('sample_id')
 
-    irma_qc_metrics_df_list = []
-    for irma_qc_metrics in irma_qc_metrics_list:
-        df = pd.read_csv(irma_qc_metrics, dtype = {'sample_id' : object})
-        irma_qc_metrics_df_list.append(df)
-    irma_qc_metrics_df = pd.concat(irma_qc_metrics_df_list).reset_index(drop = True)
-    irma_qc_metrics_df = irma_qc_metrics_df.set_index('sample_id')
+    if len(irma_qc_metrics_list) > 0:
+        irma_qc_metrics_df_list = []
+        for irma_qc_metrics in irma_qc_metrics_list:
+            df = pd.read_csv(irma_qc_metrics, dtype = {'sample_id' : object})
+            irma_qc_metrics_df_list.append(df)
+        irma_qc_metrics_df = pd.concat(irma_qc_metrics_df_list).reset_index(drop = True)
+        irma_qc_metrics_df = irma_qc_metrics_df.set_index('sample_id')
+    else:
+        # somehow need to create a fake sample so that the headers get included:
+        adict = {'sample_id' : ['dummy'], 
+        'total_segments' : [0], 
+        'total_flu_mapped_reads':[0], 
+        'HA_per_cov' :[0],
+        'HA_mean_depth':[0], 
+        'HA_num_mapped_reads':[0], 
+        'HA_seq_len':[0], 
+        'HA_expected_len':[0],
+        'NA_per_cov':[0], 
+        'NA_mean_depth':[0], 
+        'NA_num_mapped_reads':[0], 
+        'NA_seq_len':[0],
+        'NA_expected_len':[0], 
+        'MP_per_cov':[0], 
+        'MP_mean_depth':[0], 
+        'MP_num_mapped_reads':[0],
+        'MP_seq_len':[0], 
+        'MP_expected_len':[0], 
+        'NP_per_cov':[0], 
+        'NP_mean_depth':[0],
+        'NP_num_mapped_reads':[0], 
+        'NP_seq_len':[0], 
+        'NP_expected_len':[0], 
+        'NS_per_cov':[0],
+        'NS_mean_depth':[0], 
+        'NS_num_mapped_reads':[0], 
+        'NS_seq_len':[0], 
+        'NS_expected_len':[0],
+        'PA_per_cov':[0], 
+        'PA_mean_depth':[0], 
+        'PA_num_mapped_reads':[0], 
+        'PA_seq_len':[0],
+        'PA_expected_len':[0], 
+        'PB1_per_cov':[0], 
+        'PB1_mean_depth':[0],
+        'PB1_num_mapped_reads':[0], 
+        'PB1_seq_len':[0], 
+        'PB1_expected_len':[0],
+        'PB2_per_cov':[0], 
+        'PB2_mean_depth':[0], 
+        'PB2_num_mapped_reads':[0], 
+        'PB2_seq_len':[0],
+        'PB2_expected_len':[0], 
+        'ivar_version':[0], 
+        'ivar_docker':[0], 
+        'ivar_min_depth':[0],
+        'ivar_min_freq':[0], 
+        'ivar_min_qual':[0]}
+
+        irma_qc_metrics_df = pd.DataFrame(adict)
+
 
 
     # join
@@ -102,6 +158,9 @@ if __name__ == '__main__':
 
     df = df[col_order]
     df = df["analysis_date"] = transfer_date
+
+    #drop dummy sample if exists:
+    df = df[df.sample_id != "dummy"].reset_index(drop = True)
 
     #outfile
     outfile = '%s_sequencing_results.csv' % project_name
