@@ -16,7 +16,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--sample_id")
     parser.add_argument( "--preprocess_qc_metrics")
     parser.add_argument( "--irma_typing")
-    parser.add_argument( "--irma_assembly_qc_metrics", default = "")
+    parser.add_argument( "--irma_assembly_qc_metrics")
     parser.add_argument( "--project_name")
     parser.add_argument( "--run_date")
     options = parser.parse_args(args)
@@ -44,10 +44,8 @@ if __name__ == '__main__':
     sample_id_list = create_list_from_write_lines_input(write_lines_input = sample_id_txt)
     preprocess_qc_metrics_list = create_list_from_write_lines_input(write_lines_input = preprocess_qc_metrics_txt)
     irma_typing_list = create_list_from_write_lines_input(write_lines_input = irma_typing_txt)
-    if irma_qc_metrics_txt != "":
-        irma_qc_metrics_list= create_list_from_write_lines_input(write_lines_input = irma_qc_metrics_txt)
-    else:
-        irma_qc_metrics_list = []
+    irma_qc_metrics_list= create_list_from_write_lines_input(write_lines_input = irma_qc_metrics_txt)
+
 
     preprocess_qc_metrics_df_list = []
     for preprocess_qc_metrics in preprocess_qc_metrics_list:

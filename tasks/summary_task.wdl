@@ -22,8 +22,8 @@ task summary {
         --preprocess_qc_metrics ~{write_lines(preprocess_qc_metrics)} \
         --irma_typing ~{write_lines(irma_typing)} \
         --irma_assembly_qc_metrics ~{write_lines(irma_assembly_qc_metrics)} \
-        --project_name ~{project_name} \
-        --run_date ~{run_date}
+        --project_name "~{project_name}" \
+        --run_date "~{run_date}""
 
     >>>
 
