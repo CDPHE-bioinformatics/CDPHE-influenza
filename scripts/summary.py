@@ -18,7 +18,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--irma_typing")
     parser.add_argument( "--irma_qc_metrics")
     parser.add_argument( "--project_name")
-    parser.add_argument( "--transfer_date")
+    parser.add_argument( "--run_date")
     options = parser.parse_args(args)
     return options
 
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     irma_typing_txt = options.irma_typing
     irma_qc_metrics_txt = options.irma_qc_metrics
     project_name = options.project_name
-    transfer_date = otpions.transfer_date
+    run_date = options.run_date
 
     sample_id_list = create_list_from_write_lines_input(write_lines_input = sample_id_txt)
     preprocess_qc_metrics_list = create_list_from_write_lines_input(write_lines_input = preprocess_qc_metrics_txt)
@@ -101,7 +101,7 @@ if __name__ == '__main__':
     'ivar_version', 'ivar_docker', 'ivar_min_depth', 'ivar_min_freq', 'ivar_min_qual']
 
     df = df[col_order]
-    df = df["transfer_date"] = transfer_date
+    df = df["analysis_date"] = transfer_date
 
     #outfile
     outfile = '%s_sequencing_results.csv' % project_name
