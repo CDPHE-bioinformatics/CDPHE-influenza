@@ -46,7 +46,7 @@ task fastqc {
             echo $read_pairs | tee READ_PAIRS
 
             # rename files 
-            if [ ${fastq_R1_name}  != ~{sample_id} ]; then 
+            if [ ${fastq_R1_name} != ~{sample_id}_R1 ]; then 
                 mv ${fastq_R1_name}_fastqc.html ~{sample_id}_R1_fastqc.html
                 mv ${fastq_R1_name}_fastqc.zip ~{sample_id}_R1_fastqc.zip
                 mv ${fastq_R2_name}_fastqc.html ~{sample_id}_R2_fastqc.html
@@ -74,7 +74,7 @@ task fastqc {
             echo 0 | tee READ2_LEN
 
             # rename files 
-             if [ ${fastq_R1_name}  != ~{sample_id} ]; then
+             if [ ${fastq_R1_name} != ~{sample_id}_R1 ]; then
                 mv ${fastq_R1_name}_fastqc.html ~{sample_id}_R1_fastqc.html
                 mv ${fastq_R1_name}_fastqc.zip ~{sample_id}_R1_fastqc.zip
             fi
