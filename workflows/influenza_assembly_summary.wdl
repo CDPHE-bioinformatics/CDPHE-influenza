@@ -12,12 +12,14 @@ workflow influenza_assembly_summary{
         Array[File] irma_typing
         Array[File] irma_assembly_qc_metrics
         Array[String] bucket_path_array
+        Array[String] transfer_date_array
 
         File summary_py
     }
 
     String bucket_path = select_first(bucket_path_array)
     String project_name = select_first(project_name_array)
+    String transfer_date = select_first(transfer_date_array)
 
     call summary.summary as summary {
         input:
@@ -26,7 +28,8 @@ workflow influenza_assembly_summary{
             irma_typing = irma_typing,
             irma_assembly_qc_metrics = irma_assembly_qc_metrics,
             python_script = summary_py,
-            project_name = project_name
+            project_name = project_name,
+            transfer_date = transfer_date
     }
 
     call transfer.transfer_assembly_summary_wdl as summary_transfer {

@@ -12,6 +12,7 @@ task summary {
         Array[File] irma_assembly_qc_metrics
         File python_script
         String project_name
+        String transfer_date
     }
 
     command <<<
@@ -21,7 +22,8 @@ task summary {
         --preprocess_qc_metrics ~{write_lines(preprocess_qc_metrics)} \
         --irma_typing ~{write_lines(irma_typing)} \
         --irma_qc_metrics ~{write_lines(irma_assembly_qc_metrics)} \
-        --project_name ~{project_name}
+        --project_name ~{project_name} \
+        --transfer_date ~{transfer_date}
 
     >>>
 
