@@ -12,7 +12,7 @@ task summary {
         Array[File] irma_assembly_qc_metrics
         File python_script
         String project_name
-        String run_date
+        String analysis_date
     }
 
     command <<<
@@ -23,7 +23,7 @@ task summary {
         --irma_typing ~{write_lines(irma_typing)} \
         --irma_assembly_qc_metrics ~{write_lines(irma_assembly_qc_metrics)} \
         --project_name "~{project_name}" \
-        --run_date "~{run_date}""
+        --analysis_date "~{analysis_date}"
 
     >>>
 
