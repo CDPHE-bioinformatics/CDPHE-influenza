@@ -23,6 +23,7 @@ def getOptions(args=sys.argv[1:]):
     return options
 
 def create_list_from_write_lines_input(write_lines_input):
+
     list = []
     with open(write_lines_input, 'r') as f:
         for line in f:
@@ -46,7 +47,6 @@ if __name__ == '__main__':
     irma_typing_list = create_list_from_write_lines_input(write_lines_input = irma_typing_txt)
     irma_qc_metrics_list= create_list_from_write_lines_input(write_lines_input = irma_qc_metrics_txt)
 
-
     preprocess_qc_metrics_df_list = []
     for preprocess_qc_metrics in preprocess_qc_metrics_list:
         df = pd.read_csv(preprocess_qc_metrics, dtype = {'sample_id' : object})
@@ -61,8 +61,9 @@ if __name__ == '__main__':
     irma_typing_df = pd.concat(irma_typing_df_list).reset_index(drop=True)
     irma_typing_df = irma_typing_df.set_index('sample_id')
 
-    if len(irma_qc_metrics_list) > 0:
-        irma_qc_metrics_df_list = []
+    irma_qc_metrics_df_list = []
+    first_item = irma_qc_metrics_list[0]
+    if first_item != "" and len(irma_qc_metrics_list) != 1:
         for irma_qc_metrics in irma_qc_metrics_list:
             df = pd.read_csv(irma_qc_metrics, dtype = {'sample_id' : object})
             irma_qc_metrics_df_list.append(df)
@@ -155,7 +156,7 @@ if __name__ == '__main__':
     'ivar_version', 'ivar_docker', 'ivar_min_depth', 'ivar_min_freq', 'ivar_min_qual']
 
     df = df[col_order]
-    df = df["analysis_date"] = analysis_date
+    df["analysis_date"] = analysis_date
 
     #drop dummy sample if exists:
     df = df[df.sample_id != "dummy"].reset_index(drop = True)
