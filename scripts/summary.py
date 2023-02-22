@@ -121,6 +121,7 @@ if __name__ == '__main__':
         'ivar_min_qual':[0]}
 
         irma_qc_metrics_df = pd.DataFrame(adict)
+        irma_qc_metrics_df = irma_qc_metrics_df.set_index('sample_id')
 
 
 
@@ -129,9 +130,10 @@ if __name__ == '__main__':
     df = df.join(irma_qc_metrics_df,how = 'outer')
     df = df.reset_index()
     df['percent_flu_mapped_reads'] = round((df.total_flu_mapped_reads / df.read_pairs_cleaned) * 100 , 2)
-
+    df['project_name'] = project_name
+    
     # order columns
-    col_order = ['sample_id', 'type', 'HA_subytpe', 'NA_subtype',
+    col_order = ['sample_id', 'project_name', 'type', 'HA_subytpe', 'NA_subtype',
     'total_segments', 'total_flu_mapped_reads', 'percent_flu_mapped_reads',
     'read_pairs_cleaned',
     'HA_per_cov','HA_mean_depth', 'HA_num_mapped_reads', 'HA_seq_len', 'HA_expected_len',
@@ -159,7 +161,7 @@ if __name__ == '__main__':
     df["analysis_date"] = analysis_date
 
     #drop dummy sample if exists:
-    df = df[df.sample_id != "dummy"].reset_index(drop = True)
+    df = df[df.sample_id != "dummy"]
 
     #outfile
     outfile = '%s_sequencing_results.csv' % project_name
