@@ -6,7 +6,7 @@ task summary {
     }
 
     input{
-        Array[String] sample_id
+        Array[String] sample_name
         Array[File] preprocess_qc_metrics
         Array[File] irma_typing
         Array[File] irma_assembly_qc_metrics
@@ -18,7 +18,7 @@ task summary {
     command <<<
 
     python ~{python_script} \
-        --sample_id ~{write_lines(sample_id)} \
+        --sample_name ~{write_lines(sample_name)} \
         --preprocess_qc_metrics ~{write_lines(preprocess_qc_metrics)} \
         --irma_typing ~{write_lines(irma_typing)} \
         --irma_assembly_qc_metrics ~{write_lines(irma_assembly_qc_metrics)} \

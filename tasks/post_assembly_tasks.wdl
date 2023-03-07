@@ -16,7 +16,7 @@ task samtools_mapped_reads {
         sorted_bam=$(echo ${prefix}.sorted.bam)
         
         # pull sample id, segment name, and gene name from original ba file
-        sample_id=$(basename ~{bam_file} | cut -d "_" -f 1)
+        sample_name=$(basename ~{bam_file} | cut -d "_" -f 1)
         segment_name=$(basename ~{bam_file} | cut -d "." -f 1 | cut -d "_" -f 2-)
         gene_name=$(basename ~{bam_file} | cut -d "." -f 1 | cut -d "_" -f 3)
 
@@ -28,9 +28,9 @@ task samtools_mapped_reads {
         samtools coverage ${sorted_bam} | tail -1 | cut -f 7 > mean_depth.txt
 
         # create output file
-        echo "sample_id,base_name,segment_name,gene_name,description,value" > bam_results.csv
-        echo "${sample_id},${sorted_bam},${segment_name},${gene_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> bam_results.csv
-        echo "${sample_id},${sorted_bam},${segment_name},${gene_name},mean_depth,$(cat mean_depth.txt)" >> bam_results.csv
+        echo "sample_name,base_name,segment_name,gene_name,description,value" > bam_results.csv
+        echo "${sample_name},${sorted_bam},${segment_name},${gene_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> bam_results.csv
+        echo "${sample_name},${sorted_bam},${segment_name},${gene_name},mean_depth,$(cat mean_depth.txt)" >> bam_results.csv
 
 
     >>>
@@ -91,7 +91,7 @@ task concat_post_qc_metrics{
 
     input{
         File python_script
-        String sample_id
+        String sample_name
         Array[File] bam_results_array
         Array[File] per_cov_results_array
         Array[File] ivar_parameters
@@ -103,7 +103,7 @@ task concat_post_qc_metrics{
     command <<<
 
     python ~{python_script} \
-        --sample_id ~{sample_id} \
+        --sample_name ~{sample_name} \
         --bam_results ~{write_lines(bam_results_array)} \
         --per_cov_results ~{write_lines(per_cov_results_array)} \
         --ivar_parameters ~{ivar_parameters_file}
@@ -111,7 +111,7 @@ task concat_post_qc_metrics{
     >>>
 
     output{
-        File? qc_metrics_summary = "~{sample_id}_assembly_qc_metrics.csv"
+        File? qc_metrics_summary = "~{sample_name}_assembly_qc_metrics.csv"
     }
 
     runtime {

@@ -11,7 +11,7 @@ import "../tasks/transfer_tasks.wdl" as transfer
 workflow influenza_assembly {
 
     input {
-        String sample_id
+        String sample_name
         String read_type
         File fastq_R1
         File? fastq_R2
@@ -27,14 +27,14 @@ workflow influenza_assembly {
     # 1 - Preprocess QC raw fastq files
     call fastq_preprocess.fastqc as fastqc_raw {
         input:
-            sample_id = sample_id,
+            sample_name = sample_name,
             fastq_R1 = fastq_R1,
             fastq_R2 = fastq_R2,
             read_type = read_type
     }
     call fastq_preprocess.seqyclean as seqyclean {
         input:
-            sample_id = sample_id,
+            sample_name = sample_name,
             read_type = read_type,
             fastq_R1 = fastq_R1,
             fastq_R2 = fastq_R2,
@@ -42,7 +42,7 @@ workflow influenza_assembly {
     }
     call fastq_preprocess.fastqc as fastqc_cleaned {
         input:
-            sample_id = sample_id,
+            sample_name = sample_name,
             fastq_R1 = seqyclean.fastq_R1_cleaned,
             fastq_R2 = seqyclean.fastq_R2_cleaned,
             read_type = read_type
@@ -51,7 +51,7 @@ workflow influenza_assembly {
     call fastq_preprocess.concat_preprocess_qc_metrics as concat_preprocess_qc_metrics{
         input:
             python_script = concat_preprocess_qc_metrics_py,
-            sample_id = sample_id,
+            sample_name = sample_name,
             read_type = read_type,
 
             fastqc_version = fastqc_raw.fastqc_version,
@@ -78,7 +78,7 @@ workflow influenza_assembly {
     # 2- run irma
     call irma.irma as irma {
         input:
-            sample_id = sample_id,
+            sample_name = sample_name,
             read_type = read_type,
             fastq_R1 = seqyclean.fastq_R1_cleaned,
             fastq_R2 = seqyclean.fastq_R2_cleaned
@@ -115,7 +115,7 @@ workflow influenza_assembly {
         call post_assembly_qc.concat_post_qc_metrics as irma_concat_post_qc_metrics{
             input:
                 python_script = concat_post_assembly_qc_metrics_py,
-                sample_id = sample_id,
+                sample_name = sample_name,
                 bam_results_array = irma_samtools_mapped_reads.bam_results,
                 per_cov_results_array = irma_percent_coverage.perc_cov_results,
                 ivar_parameters = irma_ivar_consensus.ivar_parameters
@@ -126,7 +126,7 @@ workflow influenza_assembly {
     # 5 - Transfer some intermediate files and all final files to gcp bucket
     call transfer.transfer_assembly_wdl as transfer_assembly_wdl {
         input:
-            sample_id = sample_id, 
+            sample_name = sample_name, 
             bucket_path = bucket_path,
 
             # preprocess and preprocesss qc metrics files

@@ -28,7 +28,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--seqyclean_version")
     parser.add_argument( "--seqyclean_docker")
     parser.add_argument( "--read_type")
-    parser.add_argument( "--sample_id")
+    parser.add_argument( "--sample_name")
     options = parser.parse_args(args)
     return options
 
@@ -37,8 +37,8 @@ def getOptions(args=sys.argv[1:]):
 if __name__ == '__main__':
 
     options = getOptions()
-    sample_id = options.sample_id
-    print(sample_id)
+    sample_name = options.sample_name
+    print(sample_name)
     read_type = options.read_type
 
     fastqc_version = options.fastqc_version
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     seqyclean_docker = options.seqyclean_docker
 
     df = pd.DataFrame()
-    df.at[0, 'sample_id'] = sample_id
+    df.at[0, 'sample_name'] = sample_name
     df.at[0, 'read_type'] = read_type
 
     df['total_read_diff'] = int(read_pairs_raw) - int(read_pairs_cleaned)
@@ -82,5 +82,5 @@ if __name__ == '__main__':
     df['seqyclean_version'] = seqyclean_version
     df['seqyclean_docker'] = seqyclean_docker
 
-    outfile =  "%s_preprocess_qc_metrics.csv" % sample_id
+    outfile =  "%s_preprocess_qc_metrics.csv" % sample_name
     df.to_csv(outfile, index = False)

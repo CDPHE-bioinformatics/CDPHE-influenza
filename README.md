@@ -65,13 +65,13 @@ The datatable should look like the following and be saved as a tsv or txt file:
 
 For PE illumina data:
 
-| entity:sample_id   | read_type |  fastq_R1   | fastq_R2 | out_dir |
+| entity:sample_name   | read_type |  fastq_R1   | fastq_R2 | out_dir |
 |-------------------|-----|-------------|-----------|---------------------|
 | sample_name     | paired | gs://path_to_fastq_R1 | gs://path_to_fastq_R2 | gs://path_to_transfer_output
 
 For SE illumina data:
 
-| entity:sample_id   | read_type |  fastq_R1   | fastq_R2 | out_dir |
+| entity:sample_name   | read_type |  fastq_R1   | fastq_R2 | out_dir |
 |-------------------|-----|-------------|-----------|---------------------|
 | sample_name     | single | gs://path_to_fastq_R1 |  | gs://path_to_transfer_output
 
@@ -117,40 +117,40 @@ Use the ``influenza_assembly_inputs_PE.json`` or ``influenza_assembly_inputs_SE.
 ```
 ├── gs://{out_dir}
 │   ├── fastqc_raw
-│   │   ├── {sample_id}_R1_fastqc.html
-│   │   ├── {sample_id}_R1_fastqc.zip
-│   │   ├── {sample_id}_R2_fastqc.html
-│   │   ├── {sample_id}_R2_fsatqc.zip
+│   │   ├── {sample_name}_R1_fastqc.html
+│   │   ├── {sample_name}_R1_fastqc.zip
+│   │   ├── {sample_name}_R2_fastqc.html
+│   │   ├── {sample_name}_R2_fsatqc.zip
 |   ├── fastqc_clean
-│   │   ├── {sample_id}_R1_fastqc.html
-│   │   ├── {sample_id}_R1_fastqc.zip
-│   │   ├── {sample_id}_R2_fastqc.html
-│   │   ├── {sample_id}_R2_fsatqc.zip
+│   │   ├── {sample_name}_R1_fastqc.html
+│   │   ├── {sample_name}_R1_fastqc.zip
+│   │   ├── {sample_name}_R2_fastqc.html
+│   │   ├── {sample_name}_R2_fsatqc.zip
 |   ├── seqyclean
-│   │   ├── {sample_id}_clean_SummaryStatistics.tsv
+│   │   ├── {sample_name}_clean_SummaryStatistics.tsv
 |   ├── preprocess_qc_metrics
 │   │   ├── {smaple_id}_preprocess_qc_metrics.csv
 |   ├── irma
-│   │   ├── {sample_id} (repeat for each sample)
-|   |   |   ├── {sample_id}_assembly_qc_metrics.csv
+│   │   ├── {sample_name} (repeat for each sample)
+|   |   |   ├── {sample_name}_assembly_qc_metrics.csv
 |   |   |   ├── assemblies
-|   |   |   |   ├── {sample_id}_A_HA_H3.fasta
-|   |   |   |   ├── {sample_id}_A_MP.fasta
+|   |   |   |   ├── {sample_name}_A_HA_H3.fasta
+|   |   |   |   ├── {sample_name}_A_MP.fasta
 |   |   |   ├── bam files
-|   |   |   |   ├── {sample_id}_A_HA_H3.bam
-|   |   |   |   ├── {sample_id}_A_MP.bam
+|   |   |   |   ├── {sample_name}_A_HA_H3.bam
+|   |   |   |   ├── {sample_name}_A_MP.bam
 |   |   |   ├── vcfs
-|   |   |   |   ├── {sample_id}_A_HA_H3.vcf
-|   |   |   |   ├── {sample_id}_A_MP.vcf
+|   |   |   |   ├── {sample_name}_A_HA_H3.vcf
+|   |   |   |   ├── {sample_name}_A_MP.vcf
 |   |   |   ├── sorted_bam_files
-|   |   |   |   ├── {sample_id}_A_HA_H3.sorted.bam
-|   |   |   |   ├── {sample_id}_A_MP.sorted.bam
+|   |   |   |   ├── {sample_name}_A_HA_H3.sorted.bam
+|   |   |   |   ├── {sample_name}_A_MP.sorted.bam
 |   |   |   ├── irma_ivar_consesnsus
-|   |   |   |   ├── {sample_id}_A_HA_H3.fa
-|   |   |   |   ├── {sample_id}_A_MP.fa
+|   |   |   |   ├── {sample_name}_A_HA_H3.fa
+|   |   |   |   ├── {sample_name}_A_MP.fa
 |   |   |   ├── irma_ivar_outputs
-|   |   |   |   ├── {sample_id}_A_HA_H3_ivar_output.txt
-|   |   |   |   ├── {sample_id}_A_MP_ivar_output.txt
+|   |   |   |   ├── {sample_name}_A_HA_H3_ivar_output.txt
+|   |   |   |   ├── {sample_name}_A_MP_ivar_output.txt
 │   ├── sumamry_files
 |   |   ├── {project_name}_sequencing_results.csv
 
@@ -233,18 +233,18 @@ This workflow is run on the entity sample. The workflow can be broken down into 
 |-------|------|------------|
 | fastqc_version | N/A | version of fastqc |
 | fastqc_docker | N/A | docker used for fastqc |
-| fastqc1_html_raw | {sample_id}_R1_fastqc.html | |
-| fastqc1_zip_raw | {sample_id}_R1_fastqc.zip| |
-| fastqc2_html_raw | {sample_id}_R2_fastqc.html | empty if read_type == "single"|
-| fastqc2_zip_raw | {sample_id}_R2_fastqc.zip| empty if read_type == "single"|
-| fastqc1_html_cleaned | {sample_id}_R1_fastqc.html|  |
-| fastqc1_zip_cleaned| {sample_id}_R1_fastqc.zip|  |
-| fastqc2_html_cleaned | {sample_id}_R2_fastqc.html| empty if read_type == "single"|
-| fastqc2_zip_cleaned | {sample_id}_R2_fastqc.zip| empty if read_type == "single"|
+| fastqc1_html_raw | {sample_name}_R1_fastqc.html | |
+| fastqc1_zip_raw | {sample_name}_R1_fastqc.zip| |
+| fastqc2_html_raw | {sample_name}_R2_fastqc.html | empty if read_type == "single"|
+| fastqc2_zip_raw | {sample_name}_R2_fastqc.zip| empty if read_type == "single"|
+| fastqc1_html_cleaned | {sample_name}_R1_fastqc.html|  |
+| fastqc1_zip_cleaned| {sample_name}_R1_fastqc.zip|  |
+| fastqc2_html_cleaned | {sample_name}_R2_fastqc.html| empty if read_type == "single"|
+| fastqc2_zip_cleaned | {sample_name}_R2_fastqc.zip| empty if read_type == "single"|
 | seqyclean_version | N/A | version of seqyclean |
 | seqyclean_docker | N/A | docker used for seqyclean | 
-| seqyclean_summary | {sample_id}_clean_SummaryStatistics.tsv | |
-| preprocess_qc_metrics| {sample_id}_preprocess_qc_metrics.csv | |
+| seqyclean_summary | {sample_name}_clean_SummaryStatistics.tsv | |
+| preprocess_qc_metrics| {sample_name}_preprocess_qc_metrics.csv | |
 
 <br/>
 
@@ -257,10 +257,10 @@ This workflow is run on the entity sample. The workflow can be broken down into 
 | irma_type | N/A | influenza type called by IRMA; options A, B, N/A|
 | irma_ha_subtype | N/A | if influenza type == "A" then it is the influenza subtype for the HA gene called by IRMA; commonly "H1" or "H3"|
 | irma_na_subtype | N/A | if influenza type == "A" then it is the influenza subtype for the NA gene called by IRMA; commonly "N1" or "N2" |
-|irma_typing| {sample_id}_irma_typing.csv | csv file with the sample id, irma type, irma ha subytpe and irma na subtype listed in a tabluar format|
-|irma_assemblies| {sample_id}_{flu_type}\_{gene_segment}.fasta | array of consensus assembly fasta files. Each assembled gene segment has a fasta file. The fasta header is formatted as : ">{sample_id}_{flu_type}\_{gene_segment}"|
-|irma_bam_files| {sample_id}_{flu_type}\_{gene_semgnet}.bam | Array of bam files. Each assembled gene segment has a bam file. The reference sequence is the final iterative plurality consensus |
-|irma_vcfs | {sample_id}_{flu_type}\_{gene_semgnet}.vcf | Array of vcf files. Each assembled gene segment has a vcf file. The reference sequence is the final iterative plurality consensus. |
+|irma_typing| {sample_name}_irma_typing.csv | csv file with the sample id, irma type, irma ha subytpe and irma na subtype listed in a tabluar format|
+|irma_assemblies| {sample_name}_{flu_type}\_{gene_segment}.fasta | array of consensus assembly fasta files. Each assembled gene segment has a fasta file. The fasta header is formatted as : ">{sample_name}_{flu_type}\_{gene_segment}"|
+|irma_bam_files| {sample_name}_{flu_type}\_{gene_semgnet}.bam | Array of bam files. Each assembled gene segment has a bam file. The reference sequence is the final iterative plurality consensus |
+|irma_vcfs | {sample_name}_{flu_type}\_{gene_semgnet}.vcf | Array of vcf files. Each assembled gene segment has a vcf file. The reference sequence is the final iterative plurality consensus. |
 
 
  <br/>
@@ -268,9 +268,9 @@ This workflow is run on the entity sample. The workflow can be broken down into 
 **IRMA consensus outputs**
 |WDL Output variable name | File Name | Description |
 |-------|------|------------|
-|irma_sorted_bams| {sample_id}_{flu_type}\_{gene_segment}.sorted.bam| Array of bam files from IRMA run through samtools sort; used for all post assembly qc metrics calucations|
-|irma_ivar_assemblies| {sample_id}_{flu_type}\_{gene_segment}.fa | Array of consensus sequences generated using ``ivar consensus`` (min depth = 10 reads, min freq = 0.6, min qual = 20)|
-|irma_ivar_outputs| {sample_id}_{flu_type}\_{gene_segment}_ivar_output.txt | Array of files. Screen output from ``ivar consensus`` written to file. |
+|irma_sorted_bams| {sample_name}_{flu_type}\_{gene_segment}.sorted.bam| Array of bam files from IRMA run through samtools sort; used for all post assembly qc metrics calucations|
+|irma_ivar_assemblies| {sample_name}_{flu_type}\_{gene_segment}.fa | Array of consensus sequences generated using ``ivar consensus`` (min depth = 10 reads, min freq = 0.6, min qual = 20)|
+|irma_ivar_outputs| {sample_name}_{flu_type}\_{gene_segment}_ivar_output.txt | Array of files. Screen output from ``ivar consensus`` written to file. |
 
  <br/>
 
@@ -279,7 +279,7 @@ This workflow is run on the entity sample. The workflow can be broken down into 
 |-------|------|------------|
 |irma_bam_results| bam_results.csv| Array of bam_results files. Each assembled gene segment has a bam_results.csv file. Contains the segment name, number of reads mapped and the mean depth for that segment in a tabular format. Produced only if assembly is successful. Uses sorted bam files. |
 |irma_per_cov_results| | Array of per_cov_results files. Each assembled gene segment has a per_cov_results.csv file. Contains the segment name, percent of genome covered (percent_coverage), the expected gene segmenet length (based on the seed reference segement size IRMA usees), and the assemblied gene segement length for that segment in a tabular format. Perecent coverage calculations based on the ivar consensus seqeunces generated. Produced only if assembly is successful.|
-|irma_assembly_qc_metrics | {sample_id}_assebmly_qc_metrics.csv | A tablular formatted file that combines the bam_results and the perc_cov_reuslts files. Includes version and docker information for IRMA and iVar. Produced only if assembly is successful.|
+|irma_assembly_qc_metrics | {sample_name}_assebmly_qc_metrics.csv | A tablular formatted file that combines the bam_results and the perc_cov_reuslts files. Includes version and docker information for IRMA and iVar. Produced only if assembly is successful.|
 
 
 

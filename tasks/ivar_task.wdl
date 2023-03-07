@@ -20,7 +20,7 @@ task ivar_consensus {
     command <<<
 
     # pull sample id and segment info from bam file; create prefix for consensus fasta file
-    sample_id=$(basename ~{bam_file} | cut -d "_" -f 1)
+    sample_name=$(basename ~{bam_file} | cut -d "_" -f 1)
     segment_name=$(basename ~{bam_file} | cut -d "." -f 1 | cut -d "_" -f 2-)
     ivar_prefix=$(basename ~{bam_file} | cut -d "." -f 1)
     
@@ -33,7 +33,7 @@ task ivar_consensus {
     cat ${ivar_prefix}.fa # for troubleshooting purposes print fasta contents to screen
 
     # rename consesnus header
-    header_name=$(echo ${sample_id}_${segment_name})
+    header_name=$(echo ${sample_name}_${segment_name})
     sed -i "s/>.*/>${header_name}/" ${ivar_prefix}.fa
 
     # output ivar parameters

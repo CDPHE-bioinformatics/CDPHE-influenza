@@ -6,7 +6,7 @@ task transfer_assembly_wdl{
     }
 
     input{
-        String sample_id
+        String sample_name
         String bucket_path
 
         # pre-process outputs
@@ -61,17 +61,17 @@ task transfer_assembly_wdl{
         gsutil -m cp ~{preprocess_qc_metrics} ~{out_path}/preprocess_qc_metrics/
 
         # transfer irma
-        gsutil -m cp ~{sep = " " irma_assemblies} ~{out_path}/irma/~{sample_id}/assemblies/
-        gsutil -m cp ~{sep = " " irma_bam_files} ~{out_path}/irma/~{sample_id}/bam_files/
-        gsutil -m cp ~{sep = " " irma_vcfs} ~{out_path}/irma/~{sample_id}/vcf_files/
+        gsutil -m cp ~{sep = " " irma_assemblies} ~{out_path}/irma/~{sample_name}/assemblies/
+        gsutil -m cp ~{sep = " " irma_bam_files} ~{out_path}/irma/~{sample_name}/bam_files/
+        gsutil -m cp ~{sep = " " irma_vcfs} ~{out_path}/irma/~{sample_name}/vcf_files/
 
         # transfer ivar assemblies and sorted bams 
-        gsutil -m cp ~{sep = " " irma_sorted_bams} ~{out_path}/irma/~{sample_id}/sorted_bam_files/
-         gsutil -m cp ~{sep = " " irma_ivar_assemblies} ~{out_path}/irma/~{sample_id}/irma_ivar_consensus/
-         gsutil -m cp ~{sep = " " irma_ivar_outputs} ~{out_path}/irma/~{sample_id}/irma_ivar_outputs/
+        gsutil -m cp ~{sep = " " irma_sorted_bams} ~{out_path}/irma/~{sample_name}/sorted_bam_files/
+         gsutil -m cp ~{sep = " " irma_ivar_assemblies} ~{out_path}/irma/~{sample_name}/irma_ivar_consensus/
+         gsutil -m cp ~{sep = " " irma_ivar_outputs} ~{out_path}/irma/~{sample_name}/irma_ivar_outputs/
 
         # transfer post assembly qc
-        gsutil -m cp ~{irma_qc_metrics} ~{out_path}/irma/~{sample_id}/
+        gsutil -m cp ~{irma_qc_metrics} ~{out_path}/irma/~{sample_name}/
 
         # transfer date
         transferdate=`date`

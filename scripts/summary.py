@@ -13,7 +13,7 @@ import subprocess
 #### FUNCTIONS #####
 def getOptions(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Parses command.")
-    parser.add_argument( "--sample_id")
+    parser.add_argument( "--sample_name")
     parser.add_argument( "--preprocess_qc_metrics")
     parser.add_argument( "--irma_typing")
     parser.add_argument( "--irma_assembly_qc_metrics")
@@ -35,43 +35,43 @@ def create_list_from_write_lines_input(write_lines_input):
 if __name__ == '__main__':
 
     options = getOptions()
-    sample_id_txt = options.sample_id
+    sample_name_txt = options.sample_name
     preprocess_qc_metrics_txt = options.preprocess_qc_metrics
     irma_typing_txt = options.irma_typing
     irma_qc_metrics_txt = options.irma_assembly_qc_metrics
     project_name = options.project_name
     analysis_date = options.analysis_date
 
-    sample_id_list = create_list_from_write_lines_input(write_lines_input = sample_id_txt)
+    sample_name_list = create_list_from_write_lines_input(write_lines_input = sample_name_txt)
     preprocess_qc_metrics_list = create_list_from_write_lines_input(write_lines_input = preprocess_qc_metrics_txt)
     irma_typing_list = create_list_from_write_lines_input(write_lines_input = irma_typing_txt)
     irma_qc_metrics_list= create_list_from_write_lines_input(write_lines_input = irma_qc_metrics_txt)
 
     preprocess_qc_metrics_df_list = []
     for preprocess_qc_metrics in preprocess_qc_metrics_list:
-        df = pd.read_csv(preprocess_qc_metrics, dtype = {'sample_id' : object})
+        df = pd.read_csv(preprocess_qc_metrics, dtype = {'sample_name' : object})
         preprocess_qc_metrics_df_list.append(df)
     preprocess_qc_metrics_df = pd.concat(preprocess_qc_metrics_df_list).reset_index(drop = True)
-    preprocess_qc_metrics_df = preprocess_qc_metrics_df.set_index('sample_id')
+    preprocess_qc_metrics_df = preprocess_qc_metrics_df.set_index('sample_name')
 
     irma_typing_df_list = []
     for irma_typing in irma_typing_list:
-        df = pd.read_csv(irma_typing, dtype = {'sample_id' : object})
+        df = pd.read_csv(irma_typing, dtype = {'sample_name' : object})
         irma_typing_df_list.append(df)
     irma_typing_df = pd.concat(irma_typing_df_list).reset_index(drop=True)
-    irma_typing_df = irma_typing_df.set_index('sample_id')
+    irma_typing_df = irma_typing_df.set_index('sample_name')
 
     irma_qc_metrics_df_list = []
     first_item = irma_qc_metrics_list[0]
     if first_item != "" and len(irma_qc_metrics_list) != 1:
         for irma_qc_metrics in irma_qc_metrics_list:
-            df = pd.read_csv(irma_qc_metrics, dtype = {'sample_id' : object})
+            df = pd.read_csv(irma_qc_metrics, dtype = {'sample_name' : object})
             irma_qc_metrics_df_list.append(df)
         irma_qc_metrics_df = pd.concat(irma_qc_metrics_df_list).reset_index(drop = True)
-        irma_qc_metrics_df = irma_qc_metrics_df.set_index('sample_id')
+        irma_qc_metrics_df = irma_qc_metrics_df.set_index('sample_name')
     else:
         # somehow need to create a fake sample so that the headers get included:
-        adict = {'sample_id' : ['dummy'], 
+        adict = {'sample_name' : ['dummy'], 
         'total_segments' : [0], 
         'total_flu_mapped_reads':[0], 
         'HA_per_cov' :[0],
@@ -121,7 +121,7 @@ if __name__ == '__main__':
         'ivar_min_qual':[0]}
 
         irma_qc_metrics_df = pd.DataFrame(adict)
-        irma_qc_metrics_df = irma_qc_metrics_df.set_index('sample_id')
+        irma_qc_metrics_df = irma_qc_metrics_df.set_index('sample_name')
 
 
 
@@ -131,9 +131,9 @@ if __name__ == '__main__':
     df = df.reset_index()
     df['percent_flu_mapped_reads'] = round((df.total_flu_mapped_reads / df.read_pairs_cleaned) * 100 , 2)
     df['project_name'] = project_name
-    
+
     # order columns
-    col_order = ['sample_id', 'project_name', 'type', 'HA_subytpe', 'NA_subtype',
+    col_order = ['sample_name', 'project_name', 'type', 'HA_subtype', 'NA_subtype',
     'total_segments', 'total_flu_mapped_reads', 'percent_flu_mapped_reads',
     'read_pairs_cleaned',
     'HA_per_cov','HA_mean_depth', 'HA_num_mapped_reads', 'HA_seq_len', 'HA_expected_len',
@@ -161,7 +161,7 @@ if __name__ == '__main__':
     df["analysis_date"] = analysis_date
 
     #drop dummy sample if exists:
-    df = df[df.sample_id != "dummy"]
+    df = df[df.sample_name != "dummy"]
 
     #outfile
     outfile = '%s_sequencing_results.csv' % project_name

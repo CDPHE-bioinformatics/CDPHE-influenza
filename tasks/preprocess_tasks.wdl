@@ -7,7 +7,7 @@ task fastqc {
     }
 
     input {
-        String sample_id
+        String sample_name
         File fastq_R1
         File? fastq_R2
         String read_type
@@ -46,11 +46,11 @@ task fastqc {
             echo $read_pairs | tee READ_PAIRS
 
             # rename files 
-            if [ ${fastq_R1_name} != ~{sample_id}_R1 ]; then 
-                mv ${fastq_R1_name}_fastqc.html ~{sample_id}_R1_fastqc.html
-                mv ${fastq_R1_name}_fastqc.zip ~{sample_id}_R1_fastqc.zip
-                mv ${fastq_R2_name}_fastqc.html ~{sample_id}_R2_fastqc.html
-                mv ${fastq_R2_name}_fastqc.zip ~{sample_id}_R2_fastqc.zip
+            if [ ${fastq_R1_name} != ~{sample_name}_R1 ]; then 
+                mv ${fastq_R1_name}_fastqc.html ~{sample_name}_R1_fastqc.html
+                mv ${fastq_R1_name}_fastqc.zip ~{sample_name}_R1_fastqc.zip
+                mv ${fastq_R2_name}_fastqc.html ~{sample_name}_R2_fastqc.html
+                mv ${fastq_R2_name}_fastqc.zip ~{sample_name}_R2_fastqc.zip
             fi
         
         elif [ ~{read_type} == "single" ]; then
@@ -74,9 +74,9 @@ task fastqc {
             echo 0 | tee READ2_LEN
 
             # rename files 
-             if [ ${fastq_R1_name} != ~{sample_id}_R1 ]; then
-                mv ${fastq_R1_name}_fastqc.html ~{sample_id}_R1_fastqc.html
-                mv ${fastq_R1_name}_fastqc.zip ~{sample_id}_R1_fastqc.zip
+             if [ ${fastq_R1_name} != ~{sample_name}_R1 ]; then
+                mv ${fastq_R1_name}_fastqc.html ~{sample_name}_R1_fastqc.html
+                mv ${fastq_R1_name}_fastqc.zip ~{sample_name}_R1_fastqc.zip
             fi
         fi
 
@@ -84,10 +84,10 @@ task fastqc {
 
     >>>
     output {
-        File fastqc1_html = "~{sample_id}_R1_fastqc.html"
-        File fastqc1_zip = "~{sample_id}_R1_fastqc.zip"
-        File? fastqc2_html = "~{sample_id}_R2_fastqc.html"
-        File? fastqc2_zip = "~{sample_id}_R2_fastqc.zip"
+        File fastqc1_html = "~{sample_name}_R1_fastqc.html"
+        File fastqc1_zip = "~{sample_name}_R1_fastqc.zip"
+        File? fastqc2_html = "~{sample_name}_R2_fastqc.html"
+        File? fastqc2_zip = "~{sample_name}_R2_fastqc.zip"
  
         # these outputs will go into the concatenated preprocess qc metrics file
         Int total_reads_R1 = read_string("READ1_SEQS")
@@ -117,7 +117,7 @@ task seqyclean {
     }
     input {
         File adapters_and_contaminants
-        String sample_id
+        String sample_name
         File fastq_R1
         File? fastq_R2
         String read_type
@@ -128,22 +128,22 @@ task seqyclean {
 
         # run seqyclean
         if [ ~{read_type} == "paired" ]; then
-            seqyclean -minlen 70 -qual 30 30 -gz -1 ~{fastq_R1} -2 ~{fastq_R2} -c ~{adapters_and_contaminants} -o ~{sample_id}_clean
+            seqyclean -minlen 70 -qual 30 30 -gz -1 ~{fastq_R1} -2 ~{fastq_R2} -c ~{adapters_and_contaminants} -o ~{sample_name}_clean
         elif [ ~{read_type} == "single" ]; then
-            seqyclean -minlen 70 -qual 30 30 -gz -U ~{fastq_R1} -c ~{adapters_and_contaminants} -o ~{sample_id}_clean
-            mv ~{sample_id}_clean_SE.fastq.gz ~{sample_id}_clean_PE1.fastq.gz # change name so matches output
+            seqyclean -minlen 70 -qual 30 30 -gz -U ~{fastq_R1} -c ~{adapters_and_contaminants} -o ~{sample_name}_clean
+            mv ~{sample_name}_clean_SE.fastq.gz ~{sample_name}_clean_PE1.fastq.gz # change name so matches output
         fi
         
         # pull version out of the summary file
-        awk 'NR==2 {print $1}' ~{sample_id}_clean_SummaryStatistics.tsv | tee VERSION
+        awk 'NR==2 {print $1}' ~{sample_name}_clean_SummaryStatistics.tsv | tee VERSION
     >>>
 
     output {
         String seqyclean_version = read_string("VERSION")
         String seqyclean_docker = "~{docker}"
-        File fastq_R1_cleaned = "${sample_id}_clean_PE1.fastq.gz"
-        File? fastq_R2_cleaned = "${sample_id}_clean_PE2.fastq.gz"
-        File seqyclean_summary = "${sample_id}_clean_SummaryStatistics.tsv"
+        File fastq_R1_cleaned = "${sample_name}_clean_PE1.fastq.gz"
+        File? fastq_R2_cleaned = "${sample_name}_clean_PE2.fastq.gz"
+        File seqyclean_summary = "${sample_name}_clean_SummaryStatistics.tsv"
     }
     runtime {
         docker: "~{docker}"
@@ -162,7 +162,7 @@ task concat_preprocess_qc_metrics {
 
     input {
         File python_script
-        String sample_id
+        String sample_name
         String read_type
         
         String fastqc_version
@@ -204,7 +204,7 @@ task concat_preprocess_qc_metrics {
                 --seqyclean_version "~{seqyclean_version}" \
                 --seqyclean_docker "~{seqyclean_docker}" \
                 --read_type "~{read_type}" \
-                --sample_id "~{sample_id}"
+                --sample_name "~{sample_name}"
         
         elif [ ~{read_type} == "single" ]; then
             python ~{python_script} \
@@ -219,14 +219,14 @@ task concat_preprocess_qc_metrics {
                 --seqyclean_version "~{seqyclean_version}" \
                 --seqyclean_docker "~{seqyclean_docker}" \
                 --read_type "~{read_type}" \
-                --sample_id "~{sample_id}"
+                --sample_name "~{sample_name}"
         
         fi
 
     >>>
 
     output {
-        File preprocess_qc_metrics = "~{sample_id}_preprocess_qc_metrics.csv"
+        File preprocess_qc_metrics = "~{sample_name}_preprocess_qc_metrics.csv"
     }
 
     runtime {

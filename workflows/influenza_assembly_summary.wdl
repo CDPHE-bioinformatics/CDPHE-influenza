@@ -6,7 +6,7 @@ import "../tasks/transfer_tasks.wdl" as transfer
 workflow influenza_assembly_summary{
     
     input {
-        Array[String] sample_id
+        Array[String] sample_name
         Array[String] project_name_array
         Array[File] preprocess_qc_metrics
         Array[File] irma_typing
@@ -23,7 +23,7 @@ workflow influenza_assembly_summary{
 
     call summary.summary as summary {
         input:
-            sample_id = sample_id,
+            sample_name = sample_name,
             preprocess_qc_metrics = preprocess_qc_metrics,
             irma_typing = irma_typing,
             irma_assembly_qc_metrics = irma_assembly_qc_metrics,
