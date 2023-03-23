@@ -1,5 +1,6 @@
 version 1.0
 
+# ignore this comment
 # import tasks
 import "../tasks/preprocess_tasks.wdl" as fastq_preprocess
 import "../tasks/irma_task.wdl" as irma
