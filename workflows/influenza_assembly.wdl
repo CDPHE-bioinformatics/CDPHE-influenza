@@ -2,7 +2,7 @@ version 1.0
 
 # import tasks
 import "../tasks/preprocess_tasks.wdl" as fastq_preprocess
-import "../tasks/irma_task.wdl" as irma
+import "../tasks/irma_task.wdl" as irma_task
 import "../tasks/ivar_task.wdl" as ivar
 import "../tasks/post_assembly_tasks.wdl" as post_assembly_qc
 import "../tasks/transfer_tasks.wdl" as transfer
@@ -79,7 +79,7 @@ workflow influenza_assembly {
     }
 
     # 2- run irma
-    call irma.irma as irma {
+    call irma_task.irma as irma {
         input:
             sample_name = sample_name,
             read_type = read_type,
@@ -87,7 +87,7 @@ workflow influenza_assembly {
             fastq_R2 = seqyclean.fastq_R2_cleaned
     }
 
-    call irma.irma_subtyping_results as irma_subtyping_results {
+    call irma_task.irma_subtyping_results as irma_subtyping_results {
         input:
             irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv,
             sample_name = sample_name,

@@ -50,6 +50,7 @@ task irma {
                 subtype=$(head -n 1 $file | cut -d "_" -f 3 )
 
                 echo "~{sample_name},${TYPE},${gene_segment},${subtype}\n" >> ~{sample_name}_irma_assembled_gene_segments.csv
+            done
         fi
 
 
@@ -114,11 +115,11 @@ task irma_subtyping_results {
 
     command <<<
         python ~{python_script} \
-            --irma_assembled_gene_segments_csv ~{irma_assembled_gene_segments_csv} \
-            --sample_name ~{sample_name} \
-            --irma_version ~{irma_version} \
-            --irma_docker ~{irma_docker} \
-            --irma_module ~{irma_module}
+            --irma_assembled_gene_segments_csv "~{irma_assembled_gene_segments_csv}" \
+            --sample_name "~{sample_name}" \
+            --irma_version "~{irma_version}" \
+            --irma_docker "~{irma_docker}" \
+            --irma_module "~{irma_module}"
     >>>
 
     output {
