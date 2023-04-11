@@ -205,7 +205,7 @@ workflow influenza_assembly {
         File irma_typing = irma_subtyping.irma_typing
         String irma_type = irma_subtyping_results.irma_type
         String irma_ha_subtype = irma_subtyping.irma_ha_subtype
-        String irma_na_subtype = irma_subtyping,irma_na_subtype
+        String irma_na_subtype = irma_subtyping.irma_na_subtype
 
         # output from ivar_consensus and samtools
         Array[File]? irma_sorted_bams = irma_samtools_mapped_reads.sorted_bam
