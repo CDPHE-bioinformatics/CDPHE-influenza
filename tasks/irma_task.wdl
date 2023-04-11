@@ -30,7 +30,7 @@ task irma {
         if compgen -G "~{sample_name}/*.fasta"; then
             proceed=yes
         else 
-            echo "~{sample_name},${type},${gene_segment},${subtype}\n" > ~{sample_name}_irma_assembled_gene_segments.csv
+            echo "sample_name,TYPE,gene_segment,subtype\n" > ~{sample_name}_irma_assembled_gene_segments.csv
             echo "~{sample_name},no IRMA assembly generated,none" >> ~{sample_name}_irma_assembled_gene_segments.csv
 
         fi
@@ -41,7 +41,7 @@ task irma {
         if [ $proceed == 'yes' ]; then
             for file in ~{sample_name}/*.fasta; do
                 # grab type
-                type=$(head -n 1 $file | cut -d "_" -f 1 | cut -d ">" -f 2)
+                TYPE=$(head -n 1 $file | cut -d "_" -f 1 | cut -d ">" -f 2)
 
                 #grab gene segment
                 gene_segment=$(head -n 1 $file | cut -d "_" -f 2 )
@@ -49,7 +49,7 @@ task irma {
                 # grab subtype (ok if doesn't exist)
                 subtype=$(head -n 1 $file | cut -d "_" -f 3 )
 
-                echo "~{sample_name},${type},${gene_segment},${subtype}\n" >> ~{sample_name}_irma_assembled_gene_segments.csv
+                echo "~{sample_name},${TYPE},${gene_segment},${subtype}\n" >> ~{sample_name}_irma_assembled_gene_segments.csv
         fi
 
 
@@ -89,7 +89,7 @@ task irma {
     }
 
     runtime {
-        docker: "staphb/irma:latest"
+        docker: "~{docker}"
         memory: "8 GiB"
         cpu: 2
         disks: "local-disk 50 SSD"
