@@ -206,7 +206,7 @@ task concat_preprocess_qc_metrics {
                 --read_length_R1_raw "~{read_length_R1_raw}" \
                 --read_length_R2_raw "~{read_length_R2_raw}" \
                 --read_pairs_raw "~{read_pairs_raw}" \
-                --total_reads_raw "~{total_reads_raw" \
+                --total_reads_raw "~{total_reads_raw}" \
                 --total_reads_R1_cleaned "~{total_reads_R1_cleaned}" \
                 --total_reads_R2_cleaned "~{total_reads_R2_cleaned}" \
                 --read_length_R1_cleaned "~{read_length_R1_cleaned}" \
