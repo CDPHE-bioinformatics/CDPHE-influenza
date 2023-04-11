@@ -20,11 +20,13 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--read_length_R1_raw")
     parser.add_argument( "--read_length_R2_raw", default = "")
     parser.add_argument( "--read_pairs_raw")
+    parser.add_argument( "--total_reads_raw")
     parser.add_argument( "--total_reads_R1_cleaned")
     parser.add_argument( "--total_reads_R2_cleaned", default = "")
     parser.add_argument( "--read_length_R1_cleaned")
     parser.add_argument( "--read_length_R2_cleaned", default = "")
     parser.add_argument( "--read_pairs_cleaned")
+    parser.add_argument( "--total_reads_cleaned")
     parser.add_argument( "--seqyclean_version")
     parser.add_argument( "--seqyclean_docker")
     parser.add_argument( "--read_type")
@@ -49,12 +51,14 @@ if __name__ == '__main__':
     read_length_R1_raw = options.read_length_R1_raw
     read_length_R2_raw = options.read_length_R2_raw
     read_pairs_raw = options.read_pairs_raw
+    total_reads_raw = options.total_reads_raw
 
     total_reads_R1_cleaned = options.total_reads_R1_cleaned
     total_reads_R2_cleaned = options.total_reads_R2_cleaned
     read_length_R1_cleaned = options.read_length_R1_cleaned
     read_length_R2_cleaned = options.read_length_R2_cleaned
     read_pairs_cleaned = options.read_pairs_cleaned
+    total_reads_cleaned = options.total_reads_cleaned
 
     seqyclean_version = options.seqyclean_version
     seqyclean_docker = options.seqyclean_docker
@@ -70,12 +74,14 @@ if __name__ == '__main__':
     df['total_reads_R1_raw'] = total_reads_R1_raw
     df['total_reads_R2_raw'] = total_reads_R1_raw
     df["read_pairs_raw"] = read_pairs_raw
+    df["total_reads_raw"] = total_reads_raw
     
     df['read_length_R1_cleaned'] = read_length_R1_cleaned
     df['read_length_R2_cleaned'] = read_length_R2_cleaned
     df['total_reads_R1_cleaned'] = total_reads_R1_cleaned
     df['total_reads_R2_cleaned'] = total_reads_R1_cleaned
     df["read_pairs_cleaned"] = read_pairs_cleaned
+    df["total_reads_cleaned"] = total_reads_cleaned
 
     df['fastqc_version'] = fastqc_version
     df['fastqc_docker'] = fastqc_docker

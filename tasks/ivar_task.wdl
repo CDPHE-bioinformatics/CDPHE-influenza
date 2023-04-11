@@ -12,7 +12,7 @@ task ivar_consensus {
     }
 
     #record parameters
-    Int ivar_min_depth = 10
+    Int ivar_min_depth = 25
     Float ivar_min_freq = 0.5
     Int ivar_min_qual = 20
     

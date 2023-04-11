@@ -37,6 +37,15 @@ This repository is in active development. This document describes the Colorado D
 
 - **Stage 1**: Baseline assembly using IRMA (Version 1.0.0 release). This will include a basic assembly pipeline that preprocesses raw fastq data from both SE and PE illumina data, generates assemblies using IRMA, generates conesensus assemblies using iVar, calculates percent coverage and mean depth for each gene segment, and generates a summary output.
 
+    **update versioin 1.1.0 (4/11/2023):**
+    - base calling changed to 25x depth from of 10x depth per CDC guidelines for calling base changes
+    - incorporates sequencing workbook information
+    - add total flu reads raw and total flu reads cleaned (for paired reads this simply mulitples the number of paired reads by 2)
+    - accounts for mixed type calling (i.e. some segments can be A and some can be B) by IRMA for mixed samples
+    - typo fixes
+
+    <br/>
+
 - **Stage 2** (Active deveopment): Building on the baseline assembly pipeline, during this stage we will expand beyond IRMA's subtyping capability, which currently only subtypes influenza A, by incorporating subyting using abricate. This will provide a lineage for influenza B viruses. Then using the subytping information, we will perform variant calling agains the vacciine strain. 
 
 
@@ -88,6 +97,7 @@ We have our workflow setup so that the following data files are stored in our wo
 | influenza_concat_preprocess_qc_metrics_py  |concat_preprocess_qc_metrics_py | concat_preprocess_qc_metrics.py|
 | influenza_calc_percent_cov_py | calc_percent_cov_py | calculate_percnet_cov.py
 | influenza_concat_post_assemby_qc_metrics_py | concat_post_assembly_qc_py | concat_post_assembly_qc.py| 
+| influenza_irma_subtyping_results_py | irma_subtyping_results_py| irma_subtyping_results.py|
 | influenza_summary_py | summary_py | summary.py|
 
 <br/>
@@ -132,6 +142,7 @@ Use the ``influenza_assembly_inputs_PE.json`` or ``influenza_assembly_inputs_SE.
 │   │   ├── {smaple_id}_preprocess_qc_metrics.csv
 |   ├── irma
 │   │   ├── {sample_name} (repeat for each sample)
+|   |   |   ├── {sample_name}_irma_assembled_gene_segments.csv
 |   |   |   ├── {sample_name}_assembly_qc_metrics.csv
 |   |   |   ├── assemblies
 |   |   |   |   ├── {sample_name}_A_HA_H3.fasta
@@ -189,6 +200,7 @@ This workflow is run on the entity sample. The workflow can be broken down into 
 |Task Name | Description |
 |----------|-------------|
 | irma | Runs CDC's IRMA to assemble influenza gene segements. Outputs transfered inlcude assembly files (fasta), alignment files (bam), and variant files (vcf). The influenza (A, B, C, D) type and subtype (for influenza A) is also captured from the output. The default parameters for IRMA are used. See above under IRMA overview for a description of these parameters. Output files are stored as an array.|
+|irma_subtying_results| This task uses a python script to format the irma typing and subtyping results in a tabular form.|
 
 <br/>
 
@@ -257,6 +269,7 @@ This workflow is run on the entity sample. The workflow can be broken down into 
 | irma_type | N/A | influenza type called by IRMA; options A, B, N/A|
 | irma_ha_subtype | N/A | if influenza type == "A" then it is the influenza subtype for the HA gene called by IRMA; commonly "H1" or "H3"|
 | irma_na_subtype | N/A | if influenza type == "A" then it is the influenza subtype for the NA gene called by IRMA; commonly "N1" or "N2" |
+|irma_assmbled_gene_segments | {sample_name}_irma_assembled_gene_segments.csv | csv file with the each assembled gene segment listed along with the type and (if applicable) the subtype of that that gene segment.| 
 |irma_typing| {sample_name}_irma_typing.csv | csv file with the sample id, irma type, irma ha subytpe and irma na subtype listed in a tabluar format|
 |irma_assemblies| {sample_name}_{flu_type}\_{gene_segment}.fasta | array of consensus assembly fasta files. Each assembled gene segment has a fasta file. The fasta header is formatted as : ">{sample_name}_{flu_type}\_{gene_segment}"|
 |irma_bam_files| {sample_name}_{flu_type}\_{gene_semgnet}.bam | Array of bam files. Each assembled gene segment has a bam file. The reference sequence is the final iterative plurality consensus |
@@ -309,7 +322,7 @@ This workflow is run on the entity sample_set. The workflow can be broken down i
 
 |Task Name | Description |
 |----------|-------------|
-| transfer| Transfers the summary files to the specified GCP bucket. See xx for directory structure |
+| transfer| Transfers the summary files to the specified GCP bucket. See above for directory structure |
 
 <br/>
 

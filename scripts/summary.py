@@ -19,6 +19,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--irma_assembly_qc_metrics")
     parser.add_argument( "--project_name")
     parser.add_argument( "--analysis_date")
+    parser.add_argument( "--workbook_path")
     options = parser.parse_args(args)
     return options
 
@@ -41,11 +42,14 @@ if __name__ == '__main__':
     irma_qc_metrics_txt = options.irma_assembly_qc_metrics
     project_name = options.project_name
     analysis_date = options.analysis_date
+    workbook_path = options.workbook_path
 
     sample_name_list = create_list_from_write_lines_input(write_lines_input = sample_name_txt)
     preprocess_qc_metrics_list = create_list_from_write_lines_input(write_lines_input = preprocess_qc_metrics_txt)
     irma_typing_list = create_list_from_write_lines_input(write_lines_input = irma_typing_txt)
     irma_qc_metrics_list= create_list_from_write_lines_input(write_lines_input = irma_qc_metrics_txt)
+
+    workbook = pd.read_csv(workbook_path, sep = '\t', dtype = {'hsn' : object; "sample_name" : object})
 
     preprocess_qc_metrics_df_list = []
     for preprocess_qc_metrics in preprocess_qc_metrics_list:
@@ -126,16 +130,20 @@ if __name__ == '__main__':
 
 
     # join
-    df = preprocess_qc_metrics_df.join(irma_typing_df, how = 'outer')
+    df = workbook.join(preprocess_qc_metrics_df, how = 'outer')
+    df = df.join(irma_typing_df, how = 'outer')
     df = df.join(irma_qc_metrics_df,how = 'outer')
     df = df.reset_index()
-    df['percent_flu_mapped_reads'] = round((df.total_flu_mapped_reads / df.read_pairs_cleaned) * 100 , 2)
-    df['project_name'] = project_name
+    df["analysis_date"] = analysis_date
+    df['percent_flu_mapped_reads'] = round((df.total_flu_mapped_reads / df.total_reads_cleaned) * 100 , 2)
+    # df['project_name'] = project_name
 
     # order columns
-    col_order = ['sample_name', 'project_name', 'type', 'HA_subtype', 'NA_subtype',
+    columns = df.columns
+    columns.sort()
+    col_order = ['hsn', 'sample_name', 'project_name', 'analysis_date', 'type', 'HA_subtype', 'NA_subtype',
     'total_segments', 'total_flu_mapped_reads', 'percent_flu_mapped_reads',
-    'read_pairs_cleaned',
+    'total_reads_cleaned',
     'HA_per_cov','HA_mean_depth', 'HA_num_mapped_reads', 'HA_seq_len', 'HA_expected_len',
     'NA_per_cov', 'NA_mean_depth', 'NA_num_mapped_reads', 'NA_seq_len',
     'NA_expected_len', 'MP_per_cov', 'MP_mean_depth', 'MP_num_mapped_reads',
@@ -149,7 +157,7 @@ if __name__ == '__main__':
     'PB2_expected_len',
     'read_type', 'total_read_diff', 'read_length_R1_raw',
     'read_length_R2_raw', 'total_reads_R1_raw', 'total_reads_R2_raw',
-    'read_pairs_raw', 'read_length_R1_cleaned', 'read_length_R2_cleaned',
+    'read_pairs_raw', 'total_reads_raws', 'read_length_R1_cleaned', 'read_length_R2_cleaned',
     'total_reads_R1_cleaned', 'total_reads_R2_cleaned',
     'read_pairs_cleaned', 
     'fastqc_version', 'fastqc_docker',
@@ -157,14 +165,17 @@ if __name__ == '__main__':
     'irma_version', 'irma_docker', 'irma_module', 
     'ivar_version', 'ivar_docker', 'ivar_min_depth', 'ivar_min_freq', 'ivar_min_qual']
 
-    df = df[col_order]
-    df["analysis_date"] = analysis_date
+    for n, column in enumerate(col_order):
+        columns.remove(column)
+        columns.insert(n, column)
 
+    df = df[columns]
+    
     #drop dummy sample if exists:
     df = df[df.sample_name != "dummy"]
 
     #outfile
-    outfile = '%s_sequencing_results.csv' % project_name
+    outfile = '%s_sequencing_results_%s.csv' %  (project_name, analysis_date)
     df.to_csv(outfile, index = False)
 
 
