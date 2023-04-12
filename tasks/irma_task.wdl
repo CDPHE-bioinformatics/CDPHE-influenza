@@ -51,7 +51,6 @@ task irma {
 
                 echo "~{sample_name},${TYPE},${gene_segment},${subtype}\n" >> ~{sample_name}_irma_assembled_gene_segments.csv
             done
-        fi
 
 
             # rename header and file name for fasta
@@ -74,8 +73,8 @@ task irma {
                 mv "${file}" "${new_name}"
             done
 
-        fi
-
+        fi 
+        
         # create an output file with all the irma info
         echo "irma_version,irma_module,irma_docker" > 'irma_runtime.csv'
         echo "${version},~{module},~{docker}"
