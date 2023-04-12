@@ -23,7 +23,7 @@ task irma {
         if [ ~{read_type} == 'paired' ]; then
             IRMA ~{irma_module} ~{fastq_R1} ~{fastq_R2} ~{sample_name}
         elif [ ~{read_type} == 'single' ]; then
-            IRMA ~{irma_module} ~{fastq_R1} ~{sample_name}
+            IRMA ~{module} ~{fastq_R1} ~{sample_name}
         fi
         
         # determine if assemly was successful
