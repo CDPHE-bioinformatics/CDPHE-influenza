@@ -157,7 +157,7 @@ workflow influenza_assembly {
             preprocess_qc_metrics = concat_preprocess_qc_metrics.preprocess_qc_metrics,
 
             # irma, ivar, and post assembly qc metrics files
-            irma_assembled_gene_segments_csv = irma.irma_assembed_gene_segments_csv,
+            irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv,
             irma_assemblies = irma.irma_assemblies,
             irma_bam_files = irma.irma_bam_files,
             irma_vcfs = irma.irma_vcfs,
