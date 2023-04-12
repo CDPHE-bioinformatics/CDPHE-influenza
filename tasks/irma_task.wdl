@@ -21,7 +21,7 @@ task irma {
 
         # run IRMA
         if [ ~{read_type} == 'paired' ]; then
-            IRMA ~{irma_module} ~{fastq_R1} ~{fastq_R2} ~{sample_name}
+            IRMA ~{module} ~{fastq_R1} ~{fastq_R2} ~{sample_name}
         elif [ ~{read_type} == 'single' ]; then
             IRMA ~{module} ~{fastq_R1} ~{sample_name}
         fi
@@ -78,7 +78,7 @@ task irma {
 
         # create an output file with all the irma info
         echo "irma_version,irma_module,irma_docker" > 'irma_runtime.csv'
-        echo "${version},~{irma_module},~{docker}"
+        echo "${version},~{module},~{docker}"
 
     >>>
 
