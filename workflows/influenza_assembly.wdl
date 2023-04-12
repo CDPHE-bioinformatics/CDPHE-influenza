@@ -91,9 +91,7 @@ workflow influenza_assembly {
         input:
             irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv,
             sample_name = sample_name,
-            irma_version = irma.irma_version,
-            irma_docker = irma.irma_docker,
-            irma_module = irma.irma_module,
+            irma_runtime_csv = irma.irma_runtime_csv,
             python_script = irma_subtyping_results_py
 
     }
@@ -200,6 +198,7 @@ workflow influenza_assembly {
         Array[File] irma_vcfs = irma.irma_vcfs
         String irma_version = irma.irma_version
         String irma_docker = irma.irma_docker
+        String irma_module = irma.irma_module
 
         # output from irma_subtyping_results
         File irma_typing = irma_subtyping.irma_typing

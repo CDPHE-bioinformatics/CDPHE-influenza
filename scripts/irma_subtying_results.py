@@ -17,9 +17,7 @@ def getOptions(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Parses command.")
     parser.add_argument( "--irma_assembled_gene_segments_csv")
     parser.add_argument( "--sample_name")
-    parser.add_argument( "--irma_version")
-    parser.add_argument( "--irma_docker")
-    parser.add_argument( "--irma_module")
+    parser.add_argumetn( "--irma_runtime_csv")
     options = parser.parse_args(args)
     return options
 
@@ -29,10 +27,12 @@ if __name__ == '__main__':
     options = getOptions()
     irma_assembled_gene_segments_csv = options.irma_assembled_gene_segments_csv
     sample_name = options.sample_name
-    irma_version = options.irma_version
-    irma_docker = options.irma_docker
-    irma_module = options.irma_module
+    irma_runtime_csv = options.irma_runtime_csv
 
+    irma_runtime_df = pd.read_csv(irma_runtime_csv)
+    irma_version = irma_runtime_df.irma_version[0]
+    irma_module = irma_runtime_df.irma_module[0]
+    irma_docker = irma_runtime_df.irma_docker[0]
 
     df = pd.read_csv(irma_assembled_gene_segments_csv, dtype = {'sample_name' : object})
     df = df.fillna('none')
@@ -58,13 +58,13 @@ if __name__ == '__main__':
     # put all the info together
 
     summary_df = pd.DataFrame()
-    summary_df['sample_name'] = sample_name
-    summary_df['type'] = TYPE
-    summary_df['HA_subtype'] = HA_subtype
-    summary_df['NA_sbutype'] = NA_subtype
-    summary_df['irma_module'] = irma_module
-    summary_df['irma_docker'] = irma_docker
-    summary_df['irma_version'] = irma_version
+    summary_df['sample_name'] = [sample_name]
+    summary_df['type'] = [TYPE]
+    summary_df['HA_subtype'] = [HA_subtype]
+    summary_df['NA_sbutype'] = [NA_subtype]
+    summary_df['irma_module'] = [irma_module]
+    summary_df['irma_docker'] = [irma_docker]
+    summary_df['irma_version'] = [irma_version]
 
     outfile = f'{sample_name}_irma_typing.csv'
     summary_df.to_csv(outfile, index = False)

@@ -10,7 +10,7 @@ task irma {
         File fastq_R1
         File? fastq_R2
         String read_type
-        String irma_module = "FLU"
+        String module = "FLU"
         String docker = "staphb/irma:1.0.3"
 
     }
@@ -76,6 +76,10 @@ task irma {
 
         fi
 
+        # create an output file with all the irma info
+        echo "irma_version,irma_module,irma_docker" > 'irma_runtime.csv'
+        echo "${version},~{irma_module},~{docker}"
+
     >>>
 
     output {
@@ -84,9 +88,11 @@ task irma {
         Array[File] irma_assemblies = glob("~{sample_name}*.fasta")
         Array[File] irma_bam_files = glob("~{sample_name}*.bam")
         Array[File] irma_vcfs = glob("~{sample_name}*.vcf")
+        File irma_runtime_csv = "irma_runtime.csv"
         String irma_version = read_string("VERSION")
         String irma_docker = "~{docker}"
-        String irma_module = "~{irma_module}"
+        String irma_module = "~{module}"
+        
     }
 
     runtime {
@@ -106,9 +112,7 @@ task irma_subtyping_results {
     input {
         File irma_assembled_gene_segments_csv
         String sample_name
-        String irma_version
-        String irma_docker
-        String irma_module
+        File irma_runtime_csv
 
         File python_script
     }
@@ -117,9 +121,7 @@ task irma_subtyping_results {
         python ~{python_script} \
             --irma_assembled_gene_segments_csv "~{irma_assembled_gene_segments_csv}" \
             --sample_name "~{sample_name}" \
-            --irma_version "~{irma_version}" \
-            --irma_docker "~{irma_docker}" \
-            --irma_module "~{irma_module}"
+            --irma_runtime_csv "~{irma_runtime_csv}"
     >>>
 
     output {
