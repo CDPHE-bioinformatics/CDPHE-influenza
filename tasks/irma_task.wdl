@@ -74,10 +74,10 @@ task irma {
             done
 
         fi 
-        
+
         # create an output file with all the irma info
         echo "irma_version,irma_module,irma_docker" > 'irma_runtime.csv'
-        echo "${version},~{module},~{docker}"
+        echo "${version},~{module},~{docker}" >> 'irma_runtime.csv'
 
     >>>
 

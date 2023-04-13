@@ -17,7 +17,7 @@ def getOptions(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Parses command.")
     parser.add_argument( "--irma_assembled_gene_segments_csv")
     parser.add_argument( "--sample_name")
-    parser.add_argumetn( "--irma_runtime_csv")
+    parser.add_argument( "--irma_runtime_csv")
     options = parser.parse_args(args)
     return options
 
