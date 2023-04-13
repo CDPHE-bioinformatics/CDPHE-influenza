@@ -28,7 +28,7 @@ task irma {
         
         # determine if assemly was successful
         if compgen -G "~{sample_name}/*.fasta"; then
-            echo "sample_name,gene_segment,flu_type,subtype" > ~{sample_name}_irma_assembled_gene_segments.csv
+            echo "sample_name,flu_type,gene_segment,subtype" > ~{sample_name}_irma_assembled_gene_segments.csv
             for file in ~{sample_name}/*.fasta; do
                 # grab type
                 TYPE=$(head -n 1 $file | cut -d "_" -f 1 | cut -d ">" -f 2)
@@ -65,7 +65,7 @@ task irma {
         
         else 
             echo "sample_name,flu_type,gene_segment,subtype" > ~{sample_name}_irma_assembled_gene_segments.csv
-            echo "~{sample_name},no IRMA assembly generated,none" >> ~{sample_name}_irma_assembled_gene_segments.csv
+            echo "~{sample_name},no IRMA assembly generated,none,none" >> ~{sample_name}_irma_assembled_gene_segments.csv
 
         fi 
 
