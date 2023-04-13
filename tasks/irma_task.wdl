@@ -30,14 +30,14 @@ task irma {
         if compgen -G "~{sample_name}/*.fasta"; then
             proceed=yes
         else 
-            echo "sample_name,TYPE,gene_segment,subtype\n" > ~{sample_name}_irma_assembled_gene_segments.csv
+            echo "sample_name,flu_type,gene_segment,subtype" > ~{sample_name}_irma_assembled_gene_segments.csv
             echo "~{sample_name},no IRMA assembly generated,none" >> ~{sample_name}_irma_assembled_gene_segments.csv
 
         fi
 
         # if succesful then create an output file that records each gene segment assembled 
         ## start the table
-        echo "sample_name,gene_segment,flu_type,subtype\n" > ~{sample_name}_assembled_gene_segments.csv
+        echo "sample_name,gene_segment,flu_type,subtype" > ~{sample_name}_assembled_gene_segments.csv
         if [ $proceed == 'yes' ]; then
             for file in ~{sample_name}/*.fasta; do
                 # grab type
@@ -49,7 +49,7 @@ task irma {
                 # grab subtype (ok if doesn't exist)
                 subtype=$(head -n 1 $file | cut -d "_" -f 3 )
 
-                echo "~{sample_name},${TYPE},${gene_segment},${subtype}\n" >> ~{sample_name}_irma_assembled_gene_segments.csv
+                echo "~{sample_name},${TYPE},${gene_segment},${subtype}" >> ~{sample_name}_irma_assembled_gene_segments.csv
             done
 
 

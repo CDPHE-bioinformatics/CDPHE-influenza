@@ -76,11 +76,11 @@ if __name__ == '__main__':
 
     HA_subtype_outfile = 'HA_SUBTYPE.txt'
     with open(HA_subtype_outfile, 'w') as f:
-        f.writelines(f'HA_subtype')
+        f.writelines(f'{HA_subtype}')
 
     NA_subtype_outfile = 'NA_SUBTYPE.txt'
     with open(NA_subtype_outfile, 'w') as f:
-        f.writelines(f'NA_subtype')
+        f.writelines(f'{NA_subtype}')
 
 
 
