@@ -38,7 +38,7 @@ if __name__ == '__main__':
     df = df.fillna('none')
 
     # check for mixed types
-    TYPES = df.TYPE.unique().tolist()
+    TYPES = df.flu_type.unique().tolist()
     if len(TYPES) > 1 :
         TYPE = 'mixed'
     else:
@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
     summary_df = pd.DataFrame()
     summary_df['sample_name'] = [sample_name]
-    summary_df['type'] = [TYPE]
+    summary_df['flu_type'] = [TYPE]
     summary_df['HA_subtype'] = [HA_subtype]
     summary_df['NA_sbutype'] = [NA_subtype]
     summary_df['irma_module'] = [irma_module]

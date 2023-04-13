@@ -37,7 +37,7 @@ task irma {
 
         # if succesful then create an output file that records each gene segment assembled 
         ## start the table
-        echo "sample_name,gene_segment,TYPE,subtype\n" > ~{sample_name}_assembled_gene_segments.csv
+        echo "sample_name,gene_segment,flu_type,subtype\n" > ~{sample_name}_assembled_gene_segments.csv
         if [ $proceed == 'yes' ]; then
             for file in ~{sample_name}/*.fasta; do
                 # grab type
