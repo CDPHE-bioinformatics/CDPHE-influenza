@@ -49,7 +49,9 @@ if __name__ == '__main__':
     irma_typing_list = create_list_from_write_lines_input(write_lines_input = irma_typing_txt)
     irma_qc_metrics_list= create_list_from_write_lines_input(write_lines_input = irma_qc_metrics_txt)
 
-    workbook = pd.read_csv(workbook_path, sep = '\t', dtype = {'hsn' : object; "sample_name" : object})
+    workbook = pd.read_csv(workbook_path, sep = '\t', dtype = {'hsn' : object, "sample_name" : object})
+    workbook = workbook.drop(columns = ['read_type'])
+    workbook = workbook.set_index('sample_name')
 
     preprocess_qc_metrics_df_list = []
     for preprocess_qc_metrics in preprocess_qc_metrics_list:
@@ -139,9 +141,9 @@ if __name__ == '__main__':
     # df['project_name'] = project_name
 
     # order columns
-    columns = df.columns
+    columns = df.columns.tolist()
     columns.sort()
-    col_order = ['hsn', 'sample_name', 'project_name', 'analysis_date', 'type', 'HA_subtype', 'NA_subtype',
+    col_order = ['hsn', 'sample_name', 'project_name', 'analysis_date', 'flu_type', 'HA_subtype', 'NA_subtype',
     'total_segments', 'total_flu_mapped_reads', 'percent_flu_mapped_reads',
     'total_reads_cleaned',
     'HA_per_cov','HA_mean_depth', 'HA_num_mapped_reads', 'HA_seq_len', 'HA_expected_len',
@@ -157,7 +159,7 @@ if __name__ == '__main__':
     'PB2_expected_len',
     'read_type', 'total_read_diff', 'read_length_R1_raw',
     'read_length_R2_raw', 'total_reads_R1_raw', 'total_reads_R2_raw',
-    'read_pairs_raw', 'total_reads_raws', 'read_length_R1_cleaned', 'read_length_R2_cleaned',
+    'read_pairs_raw', 'total_reads_raw', 'read_length_R1_cleaned', 'read_length_R2_cleaned',
     'total_reads_R1_cleaned', 'total_reads_R2_cleaned',
     'read_pairs_cleaned', 
     'fastqc_version', 'fastqc_docker',
@@ -166,6 +168,7 @@ if __name__ == '__main__':
     'ivar_version', 'ivar_docker', 'ivar_min_depth', 'ivar_min_freq', 'ivar_min_qual']
 
     for n, column in enumerate(col_order):
+        print(column)
         columns.remove(column)
         columns.insert(n, column)
 

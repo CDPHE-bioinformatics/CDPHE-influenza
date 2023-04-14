@@ -61,7 +61,7 @@ if __name__ == '__main__':
     summary_df['sample_name'] = [sample_name]
     summary_df['flu_type'] = [TYPE]
     summary_df['HA_subtype'] = [HA_subtype]
-    summary_df['NA_sbutype'] = [NA_subtype]
+    summary_df['NA_subtype'] = [NA_subtype]
     summary_df['irma_module'] = [irma_module]
     summary_df['irma_docker'] = [irma_docker]
     summary_df['irma_version'] = [irma_version]

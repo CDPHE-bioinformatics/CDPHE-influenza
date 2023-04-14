@@ -30,7 +30,7 @@ task summary {
     >>>
 
     output {
-        File sequencing_results_csv = "~{project_name}_sequencing_results_*.csv" 
+        File sequencing_results_csv = "~{project_name}_sequencing_results.csv" 
     }
 
     runtime {
