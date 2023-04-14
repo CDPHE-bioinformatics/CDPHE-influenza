@@ -49,7 +49,7 @@ if __name__ == '__main__':
     NA_subtype = 'none'
 
     for row in range(df.shape[0]):
-        gene_segment = df.gene_segement[row] 
+        gene_segment = df.gene_segment[row] 
         if gene_segment == 'HA':
             HA_subtype = df.subtype[row]
         elif gene_segment == 'NA':

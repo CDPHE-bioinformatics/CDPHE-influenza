@@ -175,7 +175,7 @@ if __name__ == '__main__':
     df = df[df.sample_name != "dummy"]
 
     #outfile
-    outfile = '%s_sequencing_results_%s.csv' %  (project_name, analysis_date)
+    outfile = '%s_sequencing_results.csv' %  (project_name)
     df.to_csv(outfile, index = False)
 
 
