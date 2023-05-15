@@ -63,14 +63,14 @@ workflow influenza_assembly {
             read_length_R1_raw = fastqc_raw.read_length_R1,
             read_length_R2_raw = fastqc_raw.read_length_R2,
             read_pairs_raw = fastqc_raw.read_pairs,
-            total_reads_raw = fastqc_raw.total_reads,
+            # total_reads_raw = fastqc_raw.total_reads,
 
             total_reads_R1_cleaned = fastqc_cleaned.total_reads_R1,
             total_reads_R2_cleaned = fastqc_cleaned.total_reads_R2,
             read_length_R1_cleaned = fastqc_cleaned.read_length_R1,
             read_length_R2_cleaned = fastqc_cleaned.read_length_R2,
             read_pairs_cleaned = fastqc_cleaned.read_pairs,
-            total_reads_cleaned = fastqc_cleaned.total_reads,
+            # total_reads_cleaned = fastqc_cleaned.total_reads,
 
             seqyclean_version = seqyclean.seqyclean_version,
             seqyclean_docker = seqyclean.seqyclean_docker

@@ -45,9 +45,9 @@ task fastqc {
 
             echo $read_pairs | tee READ_PAIRS
 
-            # calculate the total number of reads(i.e. READ_PAIRS * 2 for paired data; else *1 for SE)
-            total_reads=$((2*READ_PAIRS))
-            echo $total_reads | tee TOTAL_READS
+            # # calculate the total number of reads(i.e. READ_PAIRS * 2 for paired data; else *1 for SE)
+            # total_reads=$((2*READ_PAIRS))
+            # echo $total_reads | tee TOTAL_READS
 
             # rename files 
             if [ ${fastq_R1_name} != ~{sample_name}_R1 ]; then 
@@ -73,8 +73,8 @@ task fastqc {
     
             echo $READ1_SEQS| tee READ_PAIRS
 
-            # calculate the total number of reads(i.e. for SE data it's the same as READ1_SEQS)
-            echo $READ1_SEQS | tee TOTAL_READS
+            # # calculate the total number of reads(i.e. for SE data it's the same as READ1_SEQS)
+            # echo $READ1_SEQS | tee TOTAL_READS
             
             # create dummy variables for second read so WDL is happy
             echo 0 | tee READ2_SEQS
@@ -104,7 +104,7 @@ task fastqc {
         String read_length_R2 = read_string('READ2_LEN')
         
         String read_pairs = read_string("READ_PAIRS")
-        String total_reads = read_string("TOTAL_READS")
+        # String total_reads = read_string("TOTAL_READS")
         String fastqc_version = read_string("VERSION")
         String fastqc_docker = "~{docker}"
     } 
