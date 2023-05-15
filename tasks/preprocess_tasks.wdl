@@ -181,14 +181,14 @@ task concat_preprocess_qc_metrics {
         String read_length_R1_raw 
         String read_length_R2_raw 
         String read_pairs_raw
-        # String total_reads_raw
+
 
         Int total_reads_R1_cleaned
         Int total_reads_R2_cleaned
         String read_length_R1_cleaned
         String read_length_R2_cleaned
         String read_pairs_cleaned
-        # String total_reads_cleaned
+
 
         String seqyclean_version
         String seqyclean_docker
@@ -206,12 +206,10 @@ task concat_preprocess_qc_metrics {
                 --read_length_R1_raw "~{read_length_R1_raw}" \
                 --read_length_R2_raw "~{read_length_R2_raw}" \
                 --read_pairs_raw "~{read_pairs_raw}" \
-                # --total_reads_raw "~{total_reads_raw}" \
                 --total_reads_R1_cleaned "~{total_reads_R1_cleaned}" \
                 --total_reads_R2_cleaned "~{total_reads_R2_cleaned}" \
                 --read_length_R1_cleaned "~{read_length_R1_cleaned}" \
                 --read_length_R2_cleaned "~{read_length_R2_cleaned}" \
-                # --total_reads_cleaned "~{total_reads_cleaned}" \
                 --read_pairs_cleaned "~{read_pairs_cleaned}" \
                 --seqyclean_version "~{seqyclean_version}" \
                 --seqyclean_docker "~{seqyclean_docker}" \
@@ -225,11 +223,9 @@ task concat_preprocess_qc_metrics {
                 --total_reads_R1_raw "~{total_reads_R1_raw}" \
                 --read_length_R1_raw "~{read_length_R1_raw}" \
                 --read_pairs_raw "~{read_pairs_raw}" \
-                # --total_reads_raw "~{total_reads_raw}" \
                 --total_reads_R1_cleaned "~{total_reads_R1_cleaned}" \
                 --read_length_R1_cleaned "~{read_length_R1_cleaned}" \
                 --read_pairs_cleaned "~{read_pairs_cleaned}" \
-                # --total_reads_clenaed "~{total_reads_cleaned}" \
                 --seqyclean_version "~{seqyclean_version}" \
                 --seqyclean_docker "~{seqyclean_docker}" \
                 --read_type "~{read_type}" \
