@@ -1,9 +1,8 @@
 version 1.0
 
-# ignore this comment
 # import tasks
 import "../tasks/preprocess_tasks.wdl" as fastq_preprocess
-import "../tasks/irma_task.wdl" as irma
+import "../tasks/irma_task.wdl" as irma_task
 import "../tasks/ivar_task.wdl" as ivar
 import "../tasks/post_assembly_tasks.wdl" as post_assembly_qc
 import "../tasks/transfer_tasks.wdl" as transfer
@@ -21,6 +20,7 @@ workflow influenza_assembly {
 
         # python scripts
         File concat_preprocess_qc_metrics_py
+        File irma_subtyping_results_py
         File calc_percent_cov_py
         File concat_post_assembly_qc_metrics_py
     }
@@ -64,6 +64,7 @@ workflow influenza_assembly {
             read_length_R2_raw = fastqc_raw.read_length_R2,
             read_pairs_raw = fastqc_raw.read_pairs,
 
+
             total_reads_R1_cleaned = fastqc_cleaned.total_reads_R1,
             total_reads_R2_cleaned = fastqc_cleaned.total_reads_R2,
             read_length_R1_cleaned = fastqc_cleaned.read_length_R1,
@@ -77,7 +78,7 @@ workflow influenza_assembly {
     }
 
     # 2- run irma
-    call irma.irma as irma {
+    call irma_task.irma as irma {
         input:
             sample_name = sample_name,
             read_type = read_type,
@@ -85,8 +86,17 @@ workflow influenza_assembly {
             fastq_R2 = seqyclean.fastq_R2_cleaned
     }
 
+    call irma_task.irma_subtyping_results as irma_subtyping_results {
+        input:
+            irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv,
+            sample_name = sample_name,
+            irma_runtime_csv = irma.irma_runtime_csv,
+            python_script = irma_subtyping_results_py
+
+    }
+
     # Proceed with post assembly QC metrics if irma assembly was successful
-    if (irma.irma_type != "no IRMA assembly generated") {
+    if (irma_subtyping_results.irma_type != "no IRMA assembly generated") {
         # 3- post assembly QC metrics
         ## scatter over bam file array
         scatter (bam_file in select_all(irma.irma_bam_files)) {
@@ -146,6 +156,7 @@ workflow influenza_assembly {
             preprocess_qc_metrics = concat_preprocess_qc_metrics.preprocess_qc_metrics,
 
             # irma, ivar, and post assembly qc metrics files
+            irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv,
             irma_assemblies = irma.irma_assemblies,
             irma_bam_files = irma.irma_bam_files,
             irma_vcfs = irma.irma_vcfs,
@@ -175,20 +186,24 @@ workflow influenza_assembly {
         File fastqc1_html_cleaned = fastqc_cleaned.fastqc1_html
         File fastqc1_zip_cleaned = fastqc_cleaned.fastqc1_zip
         File? fastqc2_html_cleaned = fastqc_cleaned.fastqc2_html
-        File? fastqc2_zip_cleaned = fastqc_raw.fastqc2_zip
+        File? fastqc2_zip_cleaned = fastqc_cleaned.fastqc2_zip
 
         File preprocess_qc_metrics = concat_preprocess_qc_metrics.preprocess_qc_metrics
 
         # output from irma
-        String irma_type = irma.irma_type
-        String irma_ha_subtype = irma.irma_ha_subtype
-        String irma_na_subtype = irma.irma_na_subtype
-        File irma_typing = irma.irma_typing
+        File irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv
         Array[File] irma_assemblies = irma.irma_assemblies
         Array[File] irma_bam_files = irma.irma_bam_files
         Array[File] irma_vcfs = irma.irma_vcfs
         String irma_version = irma.irma_version
         String irma_docker = irma.irma_docker
+        String irma_module = irma.irma_module
+
+        # output from irma_subtyping_results
+        File irma_typing = irma_subtyping_results.irma_typing
+        String irma_type = irma_subtyping_results.irma_type
+        String irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
+        String irma_na_subtype = irma_subtyping_results.irma_na_subtype
 
         # output from ivar_consensus and samtools
         Array[File]? irma_sorted_bams = irma_samtools_mapped_reads.sorted_bam

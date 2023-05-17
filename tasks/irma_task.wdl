@@ -10,7 +10,7 @@ task irma {
         File fastq_R1
         File? fastq_R2
         String read_type
-        String irma_module = "FLU"
+        String module = "FLU"
         String docker = "staphb/irma:1.0.3"
 
     }
@@ -21,41 +21,26 @@ task irma {
 
         # run IRMA
         if [ ~{read_type} == 'paired' ]; then
-            IRMA ~{irma_module} ~{fastq_R1} ~{fastq_R2} ~{sample_name}
+            IRMA ~{module} ~{fastq_R1} ~{fastq_R2} ~{sample_name}
         elif [ ~{read_type} == 'single' ]; then
-            IRMA ~{irma_module} ~{fastq_R1} ~{sample_name}
+            IRMA ~{module} ~{fastq_R1} ~{sample_name}
         fi
         
         # determine if assemly was successful
         if compgen -G "~{sample_name}/*.fasta"; then
-            proceed=yes
-        else 
-            TYPE="no IRMA assembly generated"
-            HA_SUBTYPE=""
-            NA_SUBTYPE=""
-        fi
+            echo "sample_name,flu_type,gene_segment,subtype" > ~{sample_name}_irma_assembled_gene_segments.csv
+            for file in ~{sample_name}/*.fasta; do
+                # grab type
+                TYPE=$(head -n 1 $file | cut -d "_" -f 1 | cut -d ">" -f 2)
 
-        # if succesful then determine type; if type == A then grab subtype
-        if [ $proceed == 'yes' ]; then
-            TYPE=$(basename $(find ~{sample_name}/*.fasta | head -n 1 ) | cut -d "_" -f 1)
+                #grab gene segment
+                gene_segment=$(head -n 1 $file | cut -d "_" -f 2 )
 
-            ## Type == A then grab subtype if exists
-            if [ $TYPE == "A" ]; then
-                if compgen -G "~{sample_name}/*_HA*.fasta"; then
-                    HA_SUBTYPE=$(basename $(find ~{sample_name}/*HA*.fasta | head -n 1 ) | cut -d "_" -f 3 | cut -d "." -f1)
-                else
-                    HA_SUBTYPE=""
-                fi
+                # grab subtype (ok if doesn't exist)
+                subtype=$(head -n 1 $file | cut -d "_" -f 3 )
 
-                if compgen -G "~{sample_name}/*_NA*.fasta"; then
-                    NA_SUBTYPE=$(basename $(find ~{sample_name}/*NA*.fasta | head -n 1 ) | cut -d "_" -f 3 | cut -d "." -f1)
-                else
-                    NA_SUBTYPE=""
-                fi
-            else
-                HA_SUBTYPE=""
-                NA_SUBTYPE=""
-            fi
+                echo "~{sample_name},${TYPE},${gene_segment},${subtype}" >> ~{sample_name}_irma_assembled_gene_segments.csv
+            done
 
             # rename header and file name for fasta
             ## also create an array of the segment names
@@ -77,34 +62,34 @@ task irma {
                 mv "${file}" "${new_name}"
             done
 
-        fi
+        
+        else 
+            echo "sample_name,flu_type,gene_segment,subtype" > ~{sample_name}_irma_assembled_gene_segments.csv
+            echo "~{sample_name},no IRMA assembly generated,none,none" >> ~{sample_name}_irma_assembled_gene_segments.csv
 
-        # print variables to files so can read output
-        echo ${TYPE} > TYPE.txt
-        echo ${HA_SUBTYPE} > HA_SUBTYPE.txt
-        echo ${NA_SUBTYPE} > NA_SUBTYPE.txt
+        fi 
 
-        # create irma_typing file
-        echo "sample_name,type,HA_subtype,NA_subtype,irma_module,irma_docker,irma_version" > ~{sample_name}_irma_typing.csv
-        echo "~{sample_name},${TYPE},${HA_SUBTYPE},${NA_SUBTYPE},~{irma_module},~{docker},${version}" >> ~{sample_name}_irma_typing.csv
-
+        # create an output file with all the irma info
+        echo "irma_version,irma_module,irma_docker" > 'irma_runtime.csv'
+        echo "${version},~{module},~{docker}" >> 'irma_runtime.csv'
 
     >>>
 
     output {
-        String irma_type = read_string("TYPE.txt")
-        String irma_ha_subtype = read_string("HA_SUBTYPE.txt")
-        String irma_na_subtype = read_string("NA_SUBTYPE.txt")
-        File irma_typing = "~{sample_name}_irma_typing.csv"
+
+        File irma_assembled_gene_segments_csv = "~{sample_name}_irma_assembled_gene_segments.csv"
         Array[File] irma_assemblies = glob("~{sample_name}*.fasta")
         Array[File] irma_bam_files = glob("~{sample_name}*.bam")
         Array[File] irma_vcfs = glob("~{sample_name}*.vcf")
+        File irma_runtime_csv = "irma_runtime.csv"
         String irma_version = read_string("VERSION")
         String irma_docker = "~{docker}"
+        String irma_module = "~{module}"
+        
     }
 
     runtime {
-        docker: "staphb/irma:latest"
+        docker: "~{docker}"
         memory: "8 GiB"
         cpu: 2
         disks: "local-disk 50 SSD"
@@ -112,3 +97,38 @@ task irma {
   }
 }
 
+task irma_subtyping_results {
+    meta {
+        description: "taking the assembled gene segments info to pull out the type and subtype; added this task to account for potentially mixed types"
+    }
+
+    input {
+        File irma_assembled_gene_segments_csv
+        String sample_name
+        File irma_runtime_csv
+
+        File python_script
+    }
+
+    command <<<
+        python ~{python_script} \
+            --irma_assembled_gene_segments_csv "~{irma_assembled_gene_segments_csv}" \
+            --sample_name "~{sample_name}" \
+            --irma_runtime_csv "~{irma_runtime_csv}"
+    >>>
+
+    output {
+        File irma_typing = "~{sample_name}_irma_typing.csv"
+        String irma_type = read_string("TYPE.txt")
+        String irma_ha_subtype = read_string("HA_SUBTYPE.txt")
+        String irma_na_subtype = read_string("NA_SUBTYPE.txt")
+    }
+        
+    runtime {
+        docker: "mchether/py3-bio:v2"
+        memory: "16 GB"
+        cpu:    4
+        disks: "local-disk 100 SSD"
+        dx_instance_type: "mem1_ssd1_v2_x2"
+    }
+}

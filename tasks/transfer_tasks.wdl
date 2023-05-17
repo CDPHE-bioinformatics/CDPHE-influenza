@@ -25,6 +25,7 @@ task transfer_assembly_wdl{
         File? fastqc2_zip_cleaned
 
         # irma assembly outputs
+        File irma_assembled_gene_segments_csv
         Array[File] irma_assemblies
         Array[File] irma_bam_files
         Array[File] irma_vcfs
@@ -61,6 +62,7 @@ task transfer_assembly_wdl{
         gsutil -m cp ~{preprocess_qc_metrics} ~{out_path}/preprocess_qc_metrics/
 
         # transfer irma
+        gsutil -m cp ~{irma_assembled_gene_segments_csv} ~{out_path}/irma/~{sample_name}/
         gsutil -m cp ~{sep = " " irma_assemblies} ~{out_path}/irma/~{sample_name}/assemblies/
         gsutil -m cp ~{sep = " " irma_bam_files} ~{out_path}/irma/~{sample_name}/bam_files/
         gsutil -m cp ~{sep = " " irma_vcfs} ~{out_path}/irma/~{sample_name}/vcf_files/

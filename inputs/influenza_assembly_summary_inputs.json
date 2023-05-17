@@ -5,4 +5,6 @@
 "influenza_assembly_summary.project_name_array":"${this.sample_names.project_name}",
 "influenza_assembly_summary.sample_name":"${this.sample_names.sample_name}",
 "influenza_assembly_summary.run_date_array" : "$this.sample_names.transfer_date}",
-"influenza_assembly_summary.summary_py":"${workspace.influenza_summary_py}"}
+"influenza_assembly_summary.summary_py":"${workspace.influenza_summary_py}",
+"influenza_assembly_summary.workbook_path_array" : "this.sample_names.workbook_path"
+}

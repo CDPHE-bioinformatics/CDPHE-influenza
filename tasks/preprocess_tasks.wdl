@@ -45,6 +45,10 @@ task fastqc {
 
             echo $read_pairs | tee READ_PAIRS
 
+            # # calculate the total number of reads(i.e. READ_PAIRS * 2 for paired data; else *1 for SE)
+            # total_reads=$((2*READ_PAIRS))
+            # echo $total_reads | tee TOTAL_READS
+
             # rename files 
             if [ ${fastq_R1_name} != ~{sample_name}_R1 ]; then 
                 mv ${fastq_R1_name}_fastqc.html ~{sample_name}_R1_fastqc.html
@@ -68,6 +72,9 @@ task fastqc {
             READ1_SEQS=$(unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
     
             echo $READ1_SEQS| tee READ_PAIRS
+
+            # # calculate the total number of reads(i.e. for SE data it's the same as READ1_SEQS)
+            # echo $READ1_SEQS | tee TOTAL_READS
             
             # create dummy variables for second read so WDL is happy
             echo 0 | tee READ2_SEQS
@@ -97,6 +104,7 @@ task fastqc {
         String read_length_R2 = read_string('READ2_LEN')
         
         String read_pairs = read_string("READ_PAIRS")
+        # String total_reads = read_string("TOTAL_READS")
         String fastqc_version = read_string("VERSION")
         String fastqc_docker = "~{docker}"
     } 
@@ -174,11 +182,13 @@ task concat_preprocess_qc_metrics {
         String read_length_R2_raw 
         String read_pairs_raw
 
+
         Int total_reads_R1_cleaned
         Int total_reads_R2_cleaned
         String read_length_R1_cleaned
         String read_length_R2_cleaned
         String read_pairs_cleaned
+
 
         String seqyclean_version
         String seqyclean_docker

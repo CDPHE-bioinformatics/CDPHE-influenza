@@ -6,5 +6,6 @@
     "influenza_assembly.adapters_and_contaminants":"${workspace.adapters_and_contaminants}",
     "influenza_assembly.sample_name":"${this.sample_id}",
     "influenza_assembly.fastq_R1":"${this.fastq_1}",
-    "influenza_assembly.concat_post_assembly_qc_metrics_py":"${workspace.influenza_concat_post_assembly_qc_metrics_py}"
+    "influenza_assembly.concat_post_assembly_qc_metrics_py":"${workspace.influenza_concat_post_assembly_qc_metrics_py}",
+    "influenza_assembly.irma_subtyping_results_py":"${workspace.influenza_irma_subytping_results_py}"
 }
