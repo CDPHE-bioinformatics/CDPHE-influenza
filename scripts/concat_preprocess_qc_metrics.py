@@ -75,9 +75,9 @@ if __name__ == '__main__':
     df['total_reads_R2_raw'] = total_reads_R1_raw
     df["read_pairs_raw"] = read_pairs_raw
     if read_type == 'paired':
-        df["total_reads_raw"] = read_pairs_raw * 2
+        df["total_reads_raw"] = int(read_pairs_raw) * 2
     elif read_type == 'single':
-        df["total_reads_raw"] = read_pairs_raw
+        df["total_reads_raw"] = int(read_pairs_raw) 
     
     df['read_length_R1_cleaned'] = read_length_R1_cleaned
     df['read_length_R2_cleaned'] = read_length_R2_cleaned
@@ -85,9 +85,9 @@ if __name__ == '__main__':
     df['total_reads_R2_cleaned'] = total_reads_R1_cleaned
     df["read_pairs_cleaned"] = read_pairs_cleaned
     if read_type == 'paired':
-        df["total_reads_cleaned"] = read_pairs_cleaned * 2
+        df["total_reads_cleaned"] = int(read_pairs_cleaned) * 2
     elif read_type == 'single':
-        df["total_reads_cleaned"] = read_pairs_cleaned
+        df["total_reads_cleaned"] = int(read_pairs_cleaned)
 
     df['fastqc_version'] = fastqc_version
     df['fastqc_docker'] = fastqc_docker
