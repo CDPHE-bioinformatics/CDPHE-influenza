@@ -44,7 +44,7 @@ task irma {
             ## also create an array of the segment names
             for file in ~{sample_name}/*.fasta; do
                 # grab base name and drop .fasta
-                segment=$(basename ${file%.*})
+                segment=$(basename ${file} | cut -d "." -f 1)
                 # echo $segement >> segment_list.txt
                 header_name=$(echo ~{sample_name}_${segment})
                 sed -i "s/>.*/>${header_name}/" ${file}

@@ -21,7 +21,7 @@ task ivar_consensus {
     command <<<
 
     # create name for sorted bam file
-    prefix=$(basename ~{bam_file%.*})
+    prefix=$(basename ~{bam_file} | cut -d "." -f 1)
     
     # pull sample id, segment name, and gene name from original ba file
     segment_name=$(echo "${prefix/${sample_name}/*}" | cut -d "_" -f 2-)
