@@ -32,6 +32,7 @@ ref_len_dict = {'A_MP': 982,'A_NP': 1497,'A_NS': 863,'A_PA': 2151,'A_PB1': 2274,
 def getOptions(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Parses command.")
     parser.add_argument( "--fasta_file")
+    parser.add_argument('--sample_name')
     options = parser.parse_args(args)
     return options
 
@@ -40,26 +41,24 @@ def get_fasta_file_basename(fasta_file_path):
     basename = fasta_file_path.split('/')[-1] # strip directories
     return basename
 
-def get_segment_name(fasta_file_path):
+def get_segment_name(fasta_file_path, sample_name):
     basename = fasta_file_path.split('/')[-1] # strip directories
-    strip_sample_name = '_'.join(basename.split('_')[1:]) # strip sample id
-    segment_name = strip_sample_name.split('.')[0] # strip .fasta
+    segment_name = '_'.join(basename.split(sample_name)[1].split('_')[1:]).split('.')[0] # A_HA_H3, A_MP etc.
 
     return segment_name
 
-def get_gene_name(fasta_file_path):
+def get_gene_name(fasta_file_path, sample_name):
     basename = fasta_file_path.split('/')[-1] # strip directories
-    strip_sample_name = '_'.join(basename.split('_')[1:]) # strip sample id
-    segment_name = strip_sample_name.split('.')[0] # strip .fasta 
-    gene_name = segment_name.split('_')[1]
+    segment_name = '_'.join(basename.split(sample_name)[1].split('_')[1:]).split('.')[0]
+    gene_name = segment_name.split('_')[1] #HA, MP etc
     
     return gene_name
 
-def get_sample_name(fasta_file_path):
-    basename = fasta_file_path.split('/')[-1] # strip directories
-    sample_name = basename.split('_')[0] # pull out sample id
+# def get_sample_name(fasta_file_path):
+#     basename = fasta_file_path.split('/')[-1] # strip directories
+#     sample_name = basename.split('_')[0] # pull out sample id
 
-    return sample_name
+#     return sample_name
 
 def get_seq_len(fasta_file_path):
     # read in fasta file

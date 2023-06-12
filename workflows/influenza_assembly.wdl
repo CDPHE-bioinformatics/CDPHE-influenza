@@ -103,12 +103,14 @@ workflow influenza_assembly {
             ## determine number mapped reads and mean depth using samtools
             call post_assembly_qc.samtools_mapped_reads as irma_samtools_mapped_reads { 
                 input:
-                    bam_file = bam_file
+                    bam_file = bam_file,
+                    sample_name = sample_name
             }
             ## generate consensus sequence using ivar (so can control base calling parameters)
             call ivar.ivar_consensus as irma_ivar_consensus {
                 input:
-                bam_file = bam_file
+                bam_file = bam_file,
+                sample_name = sample_name
             }
         }
         
@@ -117,7 +119,8 @@ workflow influenza_assembly {
             call post_assembly_qc.calc_percent_coverage as irma_percent_coverage { 
                 input:
                     fasta_file  = fasta_file,
-                    python_script = calc_percent_cov_py
+                    python_script = calc_percent_cov_py,
+                    sample_name = sample_name
                     
             }
         }

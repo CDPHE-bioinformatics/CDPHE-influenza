@@ -31,14 +31,12 @@ task irma {
             echo "sample_name,flu_type,gene_segment,subtype" > ~{sample_name}_irma_assembled_gene_segments.csv
             for file in ~{sample_name}/*.fasta; do
                 # grab type
-                TYPE=$(head -n 1 $file | cut -d "_" -f 1 | cut -d ">" -f 2)
-
-                #grab gene segment
-                gene_segment=$(head -n 1 $file | cut -d "_" -f 2 )
-
-                # grab subtype (ok if doesn't exist)
-                subtype=$(head -n 1 $file | cut -d "_" -f 3 )
-
+                # read in header of fasta file and grab type, gene_segment and subtype (ok if subtype doesn't exist)
+                header=$(head -n 1 $file)
+                TYPE=$(echo "${header/~{sample_name}/*}" | cut -d "_" -f 2)
+                gene_segment=$(echo "${header/~{sample_name}/*}" | cut -d "_" -f 3)
+                subtype=$(echo "${header/~{sample_name}/*}" | cut -d "_" -f 4)
+                   
                 echo "~{sample_name},${TYPE},${gene_segment},${subtype}" >> ~{sample_name}_irma_assembled_gene_segments.csv
             done
 
@@ -52,13 +50,15 @@ task irma {
                 sed -i "s/>.*/>${header_name}/" ${file}
 
                 # rename file
-                new_name=$(echo ~{sample_name}_$(basename $file)_irma)
+                new_name=$(echo ~{sample_name}_$(basename $file)_irma.fasta)
                 mv "${file}" "${new_name}"
             done
 
             # rename bam and vcf files
             for file in ~{sample_name}/*{.vcf,.bam,.bai}; do
-                new_name=$(echo ~{sample_name}_$(basename $file))
+                base_name=$(basename ${file%.*})
+                extension="${file##*.}"
+                new_name=$(echo ~{sample_name}_${base_name}.${extension})
                 mv "${file}" "${new_name}"
             done
 
