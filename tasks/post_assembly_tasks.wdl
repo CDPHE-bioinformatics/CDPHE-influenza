@@ -13,7 +13,7 @@ task samtools_mapped_reads {
     command <<<
 
         # create name for sorted bam file
-        prefix=$(basename ~{bam_file%.*})
+        prefix=$(basename ~{bam_file} | cut -d "." -f 1)
         sorted_bam=$(echo ${prefix}.sorted.bam)
         
         # pull sample id, segment name, and gene name from original ba file
