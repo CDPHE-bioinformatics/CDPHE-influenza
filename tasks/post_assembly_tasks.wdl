@@ -67,7 +67,7 @@ task calc_percent_coverage{
 
     command <<<
 
-    python ~{python_script} --fasta_file ~{fasta_file} --sample_name ~{sample_name}
+    python ~{python_script} --fasta_file "~{fasta_file}" --sample_name "~{sample_name}"
     
     >>>
 

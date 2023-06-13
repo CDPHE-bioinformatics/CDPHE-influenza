@@ -101,12 +101,12 @@ if __name__ == '__main__':
 
     options = getOptions()
     fasta_file_path = options.fasta_file
+    sample_name = options.sample_name
 
     basename = get_fasta_file_basename(fasta_file_path = fasta_file_path)
 
-    segment_name = get_segment_name(fasta_file_path=fasta_file_path)
-    sample_name = get_sample_name(fasta_file_path=fasta_file_path)
-    gene_name = get_gene_name(fasta_file_path=fasta_file_path)
+    segment_name = get_segment_name(fasta_file_path=fasta_file_path, sample_name = sample_name)
+    gene_name = get_gene_name(fasta_file_path=fasta_file_path, sample_name = sample_name)
 
     seq_len = get_seq_len(fasta_file_path=fasta_file_path)
     per_cov = calc_percent_cov(seq_len=seq_len, 
