@@ -33,7 +33,7 @@ task irma {
                 # grab type
                 # read in header of fasta file and grab type, gene_segment and subtype (ok if subtype doesn't exist)
                 header=$(head -n 1 $file)
-                TYPE=$(echo "${header/~{sample_name}/*}" | cut -d "_" -f 1)
+                TYPE=$(echo "${header/~{sample_name}/*}" | cut -d "_" -f 1 | cut -d ">" -f 2)
                 gene_segment=$(echo "${header/~{sample_name}/*}" | cut -d "_" -f 2)
                 subtype=$(echo "${header/~{sample_name}/*}" | cut -d "_" -f 3)
                    

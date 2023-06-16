@@ -35,6 +35,7 @@ if __name__ == '__main__':
     irma_docker = irma_runtime_df.irma_docker[0]
 
     df = pd.read_csv(irma_assembled_gene_segments_csv, dtype = {'sample_name' : object})
+    df = df.dropna()
     df = df.fillna('none')
 
     # check for mixed types
