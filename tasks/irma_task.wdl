@@ -32,10 +32,15 @@ task irma {
             for file in ~{sample_name}/*.fasta; do
                 # grab type
                 # read in header of fasta file and grab type, gene_segment and subtype (ok if subtype doesn't exist)
-                header=$(head -n 1 $file)
-                TYPE=$(echo "${header/~{sample_name}/*}" | cut -d "_" -f 1 | cut -d ">" -f 2)
-                gene_segment=$(echo "${header/~{sample_name}/*}" | cut -d "_" -f 2)
-                subtype=$(echo "${header/~{sample_name}/*}" | cut -d "_" -f 3)
+                # header=$(head -n 1 $file)
+                # TYPE=$(echo $header | cut -d "_" -f 1 | cut -d ">" -f 2)
+                # gene_segment=$(echo $header | cut -d "_" -f 2)
+                # subtype=$(echo $header | cut -d "_" -f 3)
+
+                segment=$(basename ${file%.*} | cut -d "." -f 1)
+                TYPE=$(echo ${segment} | cut -d "_" -f 1)
+                gene_segment=$(echo ${segment} | cut -d "_" -f 2)
+                subtype=$(echo ${segment} | cut -d "_" -f 3)
                    
                 echo "~{sample_name},${TYPE},${gene_segment},${subtype}" >> ~{sample_name}_irma_assembled_gene_segments.csv
             done
