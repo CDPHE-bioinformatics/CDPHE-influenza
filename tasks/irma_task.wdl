@@ -48,6 +48,8 @@ task irma {
             # rename header and file name for fasta
             ## also create an array of the segment names
             for file in ~{sample_name}/*.fasta; do
+                # base_name=$(basename ${file%.*})
+                # extension="${file##*.}"
                 # grab base name and drop .fasta
                 segment=$(basename ${file} | cut -d "." -f 1)
                 # echo $segement >> segment_list.txt
@@ -55,7 +57,7 @@ task irma {
                 sed -i "s/>.*/>${header_name}/" ${file}
 
                 # rename file
-                new_name=$(echo ~{sample_name}_$(basename $file)_irma.fasta)
+                new_name=$(echo ~{sample_name}_${segment}_irma.fasta)
                 mv "${file}" "${new_name}"
             done
 
