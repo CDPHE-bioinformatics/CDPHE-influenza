@@ -30,6 +30,7 @@ task irma {
         if compgen -G "~{sample_name}/*.fasta"; then
             echo "sample_name,flu_type,gene_segment,subtype" > ~{sample_name}_irma_assembled_gene_segments.csv
             for file in ~{sample_name}/*.fasta; do
+            echo ${file}
                 # grab type
                 # read in header of fasta file and grab type, gene_segment and subtype (ok if subtype doesn't exist)
                 # header=$(head -n 1 $file)
