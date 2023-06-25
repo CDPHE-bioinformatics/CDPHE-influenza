@@ -7,6 +7,7 @@ task samtools_mapped_reads {
 
     input {
         File bam_file
+        String sample_name
     }
 
     command <<<
@@ -16,9 +17,8 @@ task samtools_mapped_reads {
         sorted_bam=$(echo ${prefix}.sorted.bam)
         
         # pull sample id, segment name, and gene name from original ba file
-        sample_name=$(basename ~{bam_file} | cut -d "_" -f 1)
-        segment_name=$(basename ~{bam_file} | cut -d "." -f 1 | cut -d "_" -f 2-)
-        gene_name=$(basename ~{bam_file} | cut -d "." -f 1 | cut -d "_" -f 3)
+        segment_name=$(echo "${prefix/~{sample_name}/*}" | cut -d "_" -f 2)
+        gene_name=$(echo "${prefix/~{sample_name}/*}" | cut -d "_" -f 3)
 
         # create sorted bam file
         samtools sort ~{bam_file} -o ${sorted_bam}
@@ -61,12 +61,15 @@ task calc_percent_coverage{
     input{
         File python_script
         File fasta_file
+        String sample_name
 
     }
 
     command <<<
 
-    python ~{python_script} --fasta_file ~{fasta_file}
+    python ~{python_script} \
+    --fasta_file "~{fasta_file}" \
+    --sample_name "~{sample_name}"
     
     >>>
 

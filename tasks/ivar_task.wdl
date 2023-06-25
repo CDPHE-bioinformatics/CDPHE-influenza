@@ -8,6 +8,7 @@ task ivar_consensus {
 
     input {
         File bam_file
+        String sample_name
         String docker = "andersenlabapps/ivar:1.3.1"
     }
 
@@ -19,18 +20,19 @@ task ivar_consensus {
 
     command <<<
 
-    # pull sample id and segment info from bam file; create prefix for consensus fasta file
-    sample_name=$(basename ~{bam_file} | cut -d "_" -f 1)
-    segment_name=$(basename ~{bam_file} | cut -d "." -f 1 | cut -d "_" -f 2-)
-    ivar_prefix=$(basename ~{bam_file} | cut -d "." -f 1)
+    # create name for sorted bam file
+    prefix=$(basename ~{bam_file} | cut -d "." -f 1)
+    
+    # pull sample id, segment name, and gene name from original ba file
+    segment_name=$(echo "${prefix/${sample_name}/*}" | cut -d "_" -f 2-)
     
     # generate consensus; first sort bam file
     samtools sort ~{bam_file} -o sorted.bam
     samtools mpileup -A --a -B -Q ~{ivar_min_qual} sorted.bam | \
-    ivar consensus -p ${ivar_prefix} -q ~{ivar_min_qual} -t ~{ivar_min_freq} -m ~{ivar_min_depth} | tee ${ivar_prefix}_ivar_output.txt
+    ivar consensus -p ${prefix} -q ~{ivar_min_qual} -t ~{ivar_min_freq} -m ~{ivar_min_depth} | tee ${prefix}_ivar_output.txt
     
     # fasta will be named prefix.fa
-    cat ${ivar_prefix}.fa # for troubleshooting purposes print fasta contents to screen
+    cat ${prefix}.fa # for troubleshooting purposes print fasta contents to screen
 
     # rename consesnus header
     header_name=$(echo ${sample_name}_${segment_name})

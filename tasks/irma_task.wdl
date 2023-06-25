@@ -30,35 +30,43 @@ task irma {
         if compgen -G "~{sample_name}/*.fasta"; then
             echo "sample_name,flu_type,gene_segment,subtype" > ~{sample_name}_irma_assembled_gene_segments.csv
             for file in ~{sample_name}/*.fasta; do
+            echo ${file}
                 # grab type
-                TYPE=$(head -n 1 $file | cut -d "_" -f 1 | cut -d ">" -f 2)
+                # read in header of fasta file and grab type, gene_segment and subtype (ok if subtype doesn't exist)
+                # header=$(head -n 1 $file)
+                # TYPE=$(echo $header | cut -d "_" -f 1 | cut -d ">" -f 2)
+                # gene_segment=$(echo $header | cut -d "_" -f 2)
+                # subtype=$(echo $header | cut -d "_" -f 3)
 
-                #grab gene segment
-                gene_segment=$(head -n 1 $file | cut -d "_" -f 2 )
-
-                # grab subtype (ok if doesn't exist)
-                subtype=$(head -n 1 $file | cut -d "_" -f 3 )
-
+                segment=$(basename ${file%.*} | cut -d "." -f 1)
+                TYPE=$(echo ${segment} | cut -d "_" -f 1)
+                gene_segment=$(echo ${segment} | cut -d "_" -f 2)
+                subtype=$(echo ${segment} | cut -d "_" -f 3)
+                   
                 echo "~{sample_name},${TYPE},${gene_segment},${subtype}" >> ~{sample_name}_irma_assembled_gene_segments.csv
             done
 
             # rename header and file name for fasta
             ## also create an array of the segment names
             for file in ~{sample_name}/*.fasta; do
+                # base_name=$(basename ${file%.*})
+                # extension="${file##*.}"
                 # grab base name and drop .fasta
-                segment=$(basename ${file%.*})
+                segment=$(basename ${file} | cut -d "." -f 1)
                 # echo $segement >> segment_list.txt
                 header_name=$(echo ~{sample_name}_${segment})
                 sed -i "s/>.*/>${header_name}/" ${file}
 
                 # rename file
-                new_name=$(echo ~{sample_name}_$(basename $file)_irma)
+                new_name=$(echo ~{sample_name}_${segment}_irma.fasta)
                 mv "${file}" "${new_name}"
             done
 
             # rename bam and vcf files
             for file in ~{sample_name}/*{.vcf,.bam,.bai}; do
-                new_name=$(echo ~{sample_name}_$(basename $file))
+                base_name=$(basename ${file%.*})
+                extension="${file##*.}"
+                new_name=$(echo ~{sample_name}_${base_name}.${extension})
                 mv "${file}" "${new_name}"
             done
 
