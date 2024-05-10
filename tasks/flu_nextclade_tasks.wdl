@@ -8,7 +8,7 @@ task nextclade_ha {
     input {
         File ivar_seg_ha_fasta
         String irma_type
-        String? irma_ha_subtype
+        String irma_ha_subtype
         String sample_name
         
 
@@ -86,7 +86,7 @@ task nextclade_na {
     input {
         File ivar_seg_na_fasta
         String irma_type
-        String? irma_na_subtype
+        String irma_na_subtype
         String sample_name
         
 
