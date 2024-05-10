@@ -38,6 +38,17 @@ task transfer_assembly_wdl{
         # post assembly qc outputs
         File? irma_qc_metrics
 
+        # nextclade
+        File? na_nextclade_json
+        File? na_nextclade_tsv
+        File? na_translation_fasta
+
+        File? ha_nextclade_json
+        File? ha_nextclade_tsv
+        File? ha_HA1_translation_fasta
+        File? ha_HA2_translation_fasta
+        FIle? ha_SigPep_translation_fasta
+
     }
     
     String out_path = sub(bucket_path, "/$", "") # fix if have a / at end
@@ -75,6 +86,16 @@ task transfer_assembly_wdl{
         # transfer post assembly qc
         gsutil -m cp ~{irma_qc_metrics} ~{out_path}/irma/~{sample_name}/
 
+        # transfer nextclade
+        gustil -m cp -{na_nextclade_json} ~{out_path}/irma/~{sample_name}/nextclade/
+        gustil -m cp -{na_nextclade_tsv} ~{out_path}/irma/~{sample_name}/nextclade/
+        gustil -m cp -{na_translation_fasta} ~{out_path}/irma/~{sample_name}/nextclade/
+        gustil -m cp -{ha_nextclade_json} ~{out_path}/irma/~{sample_name}/nextclade/
+        gustil -m cp -{ha_nextclade_tsv} ~{out_path}/irma/~{sample_name}/nextclade/
+        gustil -m cp -{ha_HA1_translation_fasta} ~{out_path}/irma/~{sample_name}/nextclade/
+        gustil -m cp -{ha_HA2_translation_fasta} ~{out_path}/irma/~{sample_name}/nextclade/
+        gustil -m cp -{ha_SigPep_translation_fasta} ~{out_path}/irma/~{sample_name}/nextclade/
+        
         # transfer date
         transferdate=`date`
         echo $transferdate | tee TRANSFERDATE
