@@ -6,6 +6,7 @@ import "../tasks/irma_task.wdl" as irma_task
 import "../tasks/ivar_task.wdl" as ivar
 import "../tasks/post_assembly_tasks.wdl" as post_assembly_qc
 import "../tasks/transfer_tasks.wdl" as transfer
+import "../tasks/flu_nextclade_tasks.wdl" as nextclade
 
 # begin workflow
 workflow influenza_assembly {
@@ -123,7 +124,31 @@ workflow influenza_assembly {
                     sample_name = sample_name
                     
             }
+
+    
         }
+
+        # run nextclade ha and nextclade na if exists
+         if (defined(irma_ivar_consensus.ivar_seg_ha_fasta)) {
+            call nextclade.nextclade_ha as nextclade_ha{
+                input:
+                    ivar_seg_ha_fasta = irma_ivar_consensus.ivar_seg_ha_fasta
+                    irma_type = irma_subtyping_results.irma_type
+                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
+                    sample_name = sample_name
+            }
+
+         }
+
+         if (defined(irma_ivar_consensus.ivar_seg_na_fasta)) {
+            call nextclade.nextclade_na as nextclade_na{
+                input:
+                    ivar_seg_na_fasta = irma_ivar_consensus.ivar_seg_hna_fasta
+                    irma_type = irma_subtyping_results.irma_type
+                    irma_na_subtype = irma_subtyping_results.irma_na_subtype
+                    sample_name = sample_name
+            }
+         }
 
         # concantenate post assembly qc metrics (coverage, depth) into a single file
         call post_assembly_qc.concat_post_qc_metrics as irma_concat_post_qc_metrics{
@@ -135,6 +160,8 @@ workflow influenza_assembly {
                 ivar_parameters = irma_ivar_consensus.ivar_parameters
 
         }
+
+       
     
     }
     # 5 - Transfer some intermediate files and all final files to gcp bucket
@@ -169,6 +196,17 @@ workflow influenza_assembly {
             irma_ivar_outputs = irma_ivar_consensus.ivar_output,
 
             irma_qc_metrics = irma_concat_post_qc_metrics.qc_metrics_summary
+
+            # nextclade
+            na_nextclade_json = nextclade_na.na_nextclade_json
+            na_nextclade_tsv = nextclade_na.na_nextclade_tsv
+            na_translation_fasta = nextclade_na.na_translation_fasta
+
+            ha_nextclade_json = nextclade_ha.ha_nextclade_json
+            ha_nextclade_tsv = nextclade_ha.ha_nextclade_tsv
+            ha_HA1_translation_fasta = nextclade_ha.ha_HA1_translation_fasta
+            ha_HA2_translation_fasta = nextclade_ha.ha_HA2_translation_fasta
+            ha_SigPep_translation_fasta = nextclade_ha.ha_SigPep_translation_fasta
     }
 
 
@@ -217,6 +255,17 @@ workflow influenza_assembly {
         Array[File]? irma_bam_results = irma_samtools_mapped_reads.bam_results
         Array[File]? irma_per_cov_results = irma_percent_coverage.perc_cov_results
         File? irma_assembly_qc_metrics = irma_concat_post_qc_metrics.qc_metrics_summary
+
+        # output from nextclade
+        File? na_nextclade_json = nextclade_na.na_nextclade_json
+        File? na_nextclade_tsv = nextclade_na.na_nextclade_tsv
+        File? na_translation_fasta = nextclade_na.na_translation_fasta
+
+        File? ha_nextclade_json = nextclade_ha.ha_nextclade_json
+        File? ha_nextclade_tsv = nextclade_ha.ha_nextclade_tsv
+        File? ha_HA1_translation_fasta = nextclade_ha.ha_HA1_translation_fasta
+        File? ha_HA2_translation_fasta = nextclade_ha.ha_HA2_translation_fasta
+        FIle? ha_SigPep_translation_fasta = nextclade_ha.ha_SigPep_translation_fasta
         
         # output from transfer
         String transfer_date=transfer_assembly_wdl.transfer_date
