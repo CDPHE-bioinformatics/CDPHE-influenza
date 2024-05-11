@@ -92,7 +92,7 @@ def create_output(sample_name, basename, segment_name, gene_name, seq_len, per_c
     col_order = ['sample_name', 'base_name', 'segment_name', 'gene_name', 'description', 'value']
     df = df[col_order]
 
-    outfile='perc_cov_results.csv' 
+    outfile=f'{sample_name}_percent_coverage_results.csv' 
     df.to_csv(outfile, index = False)
 
 
