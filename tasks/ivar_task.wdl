@@ -48,8 +48,8 @@ task ivar_consensus {
 
     output {
         File ivar_consensus_fasta = select_first(glob("*.fa"))
-        File? ivar_seg_ha_assembly = "~{sample_name}_HA*fa"
-        File? ivar_seg_na_assembly = "~{sample_name}_NA*fa"
+        File? ivar_seg_ha_fasta = "~{sample_name}_HA*fa"
+        File? ivar_seg_na_fasta = "~{sample_name}_NA*fa"
         File ivar_output = select_first(glob("*_ivar_output.txt"))
         String ivar_docker = "~{docker}"
         String ivar_version = read_string("ivar_version.txt")

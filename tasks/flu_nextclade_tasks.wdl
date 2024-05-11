@@ -14,20 +14,21 @@ task nextclade_ha {
 
     }
 
+
     command <<<
 
     # Check the value of irma_type and assign dataset accordingly
-    if [ "~irma_type" = "A" ]; then
+    if [ "~{irma_type}" = "A" ]; then
         # Check the value of irma_ha_subtype if irma_type is "A"
-        if [ "$irma_ha_subtype" = "H1" ]; then
+        if [ "~{irma_ha_subtype}" = "H1" ]; then
             dataset="flu_h1n1pdm_ha"
-        elif [ "$irma_ha_subtype" = "H3" ]; then
+        elif [ "~{irma_ha_subtype}" = "H3" ]; then
             dataset="flu_h3n2_ha"
         else
-            echo "Invalid irma_ha_subtype: $irma_ha_subtype"
+            echo 'Invalid irma_ha_subtype: "~{irma_ha_subtype}"'
             exit 1  # Exit the script with an error status
         fi
-    elif [ "~irma_type" = "B" ]; then
+    elif [ "~{irma_type}" = "B" ]; then
         dataset="flu_vic_ha"
     else
         echo "Invalid irma_type: $irma_type"
@@ -41,9 +42,7 @@ task nextclade_ha {
 
     #2- run nextclade
     nextclade run \
-        --input-dataset data/flu_ha \
-        --output-all=. \
-        ~{ivar_seg_ha_fasta}
+        --input-dataset data/flu_ha --output-all=. "~{ivar_seg_ha_fasta}"
 
     # 3- rename files
     mv nextclade.json "~{sample_name}_ha_nextclade.json"
@@ -91,38 +90,36 @@ task nextclade_na {
         
 
     }
+    
 
     command <<<
 
     # Check the value of irma_type and assign dataset accordingly
-    if [ "~irma_type" = "A" ]; then
+    if [ "~{irma_type}" = "A" ]; then
         # Check the value of irma_ha_subtype if irma_type is "A"
-        if [ "$irma_na_subtype" = "N1" ]; then
+        if [ "~{irma_na_subtype}" = "N1" ]; then
             dataset="flu_h1n1pdm_na"
-        elif [ "$irma_na_subtype" = "N2" ]; then
+        elif [ "~{irma_na_subtype}" = "N2" ]; then
             dataset="flu_h3n2_na"
         else
-            echo "Invalid irma_na_subtype: $irma_na_subtype"
+            echo 'Invalid irma_na_subtype: "~{irma_na_subtype}"'
             exit 1  # Exit the script with an error status
 
         fi
-    elif [ "~irma_type" = "B" ]; then
+    elif [ "~{irma_type}" = "B" ]; then
         dataset="flu_vic_na"
     else
-        echo "Invalid irma_type: $irma_type"
+        echo "Invalid irma_type: ~{irma_type}"
         exit 1  # Exit the script with an error status
     fi
         
 
     # run nextclade:
     # 1- download the dataset
-    nextclade dataset get --name ${dataset} --output_dir "data/flu_ha"
+    nextclade dataset get --name ${dataset} --output_dir "data/flu_na"
 
     #2- run nextclade
-    nextclade run \
-        --input-dataset data/flu_ha \
-        --output-all=. \
-        ~{ivar_seg_ha_fasta}
+    nextclade run --input-dataset data/flu_ha --output-all=. "~{ivar_seg_na_fasta}"
 
     # 3- rename files
     mv nextclade.json "~{sample_name}_na_nextclade.json"

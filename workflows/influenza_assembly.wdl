@@ -130,22 +130,24 @@ workflow influenza_assembly {
 
         # run nextclade ha and nextclade na if exists
          if (defined(irma_ivar_consensus.ivar_seg_ha_fasta)) {
+            File ivar_seg_ha_fasta = select_first(irma_ivar_consensus.ivar_seg_ha_fasta)
             call nextclade.nextclade_ha as nextclade_ha{
                 input:
-                    ivar_seg_ha_fasta = irma_ivar_consensus.ivar_seg_ha_fasta
-                    irma_type = irma_subtyping_results.irma_type
-                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
-                    sample_name = sample_name
+                    ivar_seg_ha_fasta = ivar_seg_ha_fasta,
+                    irma_type = irma_subtyping_results.irma_type,
+                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype,
+                    sample_name = sample_name,
             }
 
          }
 
          if (defined(irma_ivar_consensus.ivar_seg_na_fasta)) {
+            File ivar_seg_na_fasta = select_first(irma_ivar_consensus.ivar_seg_na_fasta)
             call nextclade.nextclade_na as nextclade_na{
                 input:
-                    ivar_seg_na_fasta = irma_ivar_consensus.ivar_seg_hna_fasta
-                    irma_type = irma_subtyping_results.irma_type
-                    irma_na_subtype = irma_subtyping_results.irma_na_subtype
+                    ivar_seg_na_fasta = ivar_seg_na_fasta,
+                    irma_type = irma_subtyping_results.irma_type,
+                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
                     sample_name = sample_name
             }
          }
@@ -195,17 +197,17 @@ workflow influenza_assembly {
             irma_ivar_assemblies = irma_ivar_consensus.ivar_consensus_fasta,
             irma_ivar_outputs = irma_ivar_consensus.ivar_output,
 
-            irma_qc_metrics = irma_concat_post_qc_metrics.qc_metrics_summary
+            irma_qc_metrics = irma_concat_post_qc_metrics.qc_metrics_summary,
 
             # nextclade
-            na_nextclade_json = nextclade_na.na_nextclade_json
-            na_nextclade_tsv = nextclade_na.na_nextclade_tsv
-            na_translation_fasta = nextclade_na.na_translation_fasta
+            na_nextclade_json = nextclade_na.na_nextclade_json,
+            na_nextclade_tsv = nextclade_na.na_nextclade_tsv,
+            na_translation_fasta = nextclade_na.na_translation_fasta,
 
-            ha_nextclade_json = nextclade_ha.ha_nextclade_json
-            ha_nextclade_tsv = nextclade_ha.ha_nextclade_tsv
-            ha_HA1_translation_fasta = nextclade_ha.ha_HA1_translation_fasta
-            ha_HA2_translation_fasta = nextclade_ha.ha_HA2_translation_fasta
+            ha_nextclade_json = nextclade_ha.ha_nextclade_json,
+            ha_nextclade_tsv = nextclade_ha.ha_nextclade_tsv,
+            ha_HA1_translation_fasta = nextclade_ha.ha_HA1_translation_fasta,
+            ha_HA2_translation_fasta = nextclade_ha.ha_HA2_translation_fasta,
             ha_SigPep_translation_fasta = nextclade_ha.ha_SigPep_translation_fasta
     }
 
@@ -265,7 +267,7 @@ workflow influenza_assembly {
         File? ha_nextclade_tsv = nextclade_ha.ha_nextclade_tsv
         File? ha_HA1_translation_fasta = nextclade_ha.ha_HA1_translation_fasta
         File? ha_HA2_translation_fasta = nextclade_ha.ha_HA2_translation_fasta
-        FIle? ha_SigPep_translation_fasta = nextclade_ha.ha_SigPep_translation_fasta
+        File? ha_SigPep_translation_fasta = nextclade_ha.ha_SigPep_translation_fasta
         
         # output from transfer
         String transfer_date=transfer_assembly_wdl.transfer_date

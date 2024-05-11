@@ -47,7 +47,7 @@ task transfer_assembly_wdl{
         File? ha_nextclade_tsv
         File? ha_HA1_translation_fasta
         File? ha_HA2_translation_fasta
-        FIle? ha_SigPep_translation_fasta
+        File? ha_SigPep_translation_fasta
 
     }
     
@@ -87,14 +87,14 @@ task transfer_assembly_wdl{
         gsutil -m cp ~{irma_qc_metrics} ~{out_path}/irma/~{sample_name}/
 
         # transfer nextclade
-        gustil -m cp -{na_nextclade_json} ~{out_path}/irma/~{sample_name}/nextclade/
-        gustil -m cp -{na_nextclade_tsv} ~{out_path}/irma/~{sample_name}/nextclade/
-        gustil -m cp -{na_translation_fasta} ~{out_path}/irma/~{sample_name}/nextclade/
-        gustil -m cp -{ha_nextclade_json} ~{out_path}/irma/~{sample_name}/nextclade/
-        gustil -m cp -{ha_nextclade_tsv} ~{out_path}/irma/~{sample_name}/nextclade/
-        gustil -m cp -{ha_HA1_translation_fasta} ~{out_path}/irma/~{sample_name}/nextclade/
-        gustil -m cp -{ha_HA2_translation_fasta} ~{out_path}/irma/~{sample_name}/nextclade/
-        gustil -m cp -{ha_SigPep_translation_fasta} ~{out_path}/irma/~{sample_name}/nextclade/
+        gustil -m cp ~{na_nextclade_json} ~{out_path}/irma/~{sample_name}/nextclade/
+        gustil -m cp ~{na_nextclade_tsv} ~{out_path}/irma/~{sample_name}/nextclade/
+        gustil -m cp ~{na_translation_fasta} ~{out_path}/irma/~{sample_name}/nextclade/
+        gustil -m cp ~{ha_nextclade_json} ~{out_path}/irma/~{sample_name}/nextclade/
+        gustil -m cp ~{ha_nextclade_tsv} ~{out_path}/irma/~{sample_name}/nextclade/
+        gustil -m cp ~{ha_HA1_translation_fasta} ~{out_path}/irma/~{sample_name}/nextclade/
+        gustil -m cp ~{ha_HA2_translation_fasta} ~{out_path}/irma/~{sample_name}/nextclade/
+        gustil -m cp ~{ha_SigPep_translation_fasta} ~{out_path}/irma/~{sample_name}/nextclade/
         
         # transfer date
         transferdate=`date`
