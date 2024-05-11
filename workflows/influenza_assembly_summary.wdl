@@ -11,11 +11,13 @@ workflow influenza_assembly_summary{
         Array[File] preprocess_qc_metrics
         Array[File] irma_typing
         Array[File] irma_assembly_qc_metrics
+        Array[File] nextclade_na_tsv
+        Array[File] nextclade_ha_tsv
         # Array[String] bucket_path_array
         String out_bucket_path
         Array[String] analysis_date_array
-        Array[File] nextclade_tsv
 
+        # python scripts
         File summary_py
     }
 
@@ -29,7 +31,10 @@ workflow influenza_assembly_summary{
             preprocess_qc_metrics = preprocess_qc_metrics,
             irma_typing = irma_typing,
             irma_assembly_qc_metrics = irma_assembly_qc_metrics,
-            nextclade_tsv = nextclade_tsv,
+            nextclade_na_tsv = nextclade_na_tsv,
+            nextclade_ha_tsv = nextclade_ha_tsv,
+
+            
             python_script = summary_py,
             project_name = project_name,
             analysis_date = analysis_date

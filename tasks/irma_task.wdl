@@ -9,8 +9,8 @@ task irma {
         String sample_name
         File fastq_R1
         File? fastq_R2
-        String module = "FLU"
-        String docker = "staphb/irma:1.0.3"
+        # String module = "FLU"
+        # String docker = "staphb/irma:1.0.3"
 
     }
     command <<<
@@ -19,7 +19,7 @@ task irma {
         version=$(cat VERSION)
 
         # run IRMA
-        IRMA ~{module} ~{fastq_R1} ~{fastq_R2} ~{sample_name}
+        IRMA FLU ~{fastq_R1} ~{fastq_R2} ~{sample_name}
         
         # determine if assembly was successful
         if compgen -G "~{sample_name}/*.fasta"; then
@@ -122,7 +122,7 @@ task irma {
     }
 
     runtime {
-        docker: "~{docker}"
+        docker: "staphb/irma:1.0.3"
         memory: "8 GiB"
         cpu: 2
         disks: "local-disk 50 SSD"

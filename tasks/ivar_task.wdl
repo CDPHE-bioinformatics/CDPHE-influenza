@@ -9,7 +9,7 @@ task ivar_consensus {
     input {
         File? bam_file
         String sample_name
-        String docker = "andersenlabapps/ivar:1.3.1"
+        # String docker = "andersenlabapps/ivar:1.3.1"
     }
 
     #record parameters
@@ -65,7 +65,7 @@ task ivar_consensus {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker: "~{docker}"
+        docker: "andersenlabapps/ivar:1.3.1"
     }
 
 }

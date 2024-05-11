@@ -17,7 +17,8 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--preprocess_qc_metrics")
     parser.add_argument( "--irma_typing")
     parser.add_argument( "--irma_assembly_qc_metrics")
-    parser.add_argument( "--nextclade_tsv")
+    parser.add_argument( "--nextclade_na_tsv")
+    parser.add_argument( "--nextclade_ha_tsv")
     parser.add_argument( "--project_name")
     parser.add_argument( "--analysis_date")
     options = parser.parse_args(args)
@@ -40,7 +41,8 @@ if __name__ == '__main__':
     preprocess_qc_metrics_txt = options.preprocess_qc_metrics
     irma_typing_txt = options.irma_typing
     irma_qc_metrics_txt = options.irma_assembly_qc_metrics
-    nextclade_tsv_txt = options.nextclade_tsv
+    nextclade_na_tsv_txt = options.nextclade_na_tsv
+    nextclade_ha_tsv_txt = options.nextclade_ha_tsv
     project_name = options.project_name
     analysis_date = options.analysis_date
 
@@ -48,8 +50,10 @@ if __name__ == '__main__':
     preprocess_qc_metrics_list = create_list_from_write_lines_input(write_lines_input = preprocess_qc_metrics_txt)
     irma_typing_list = create_list_from_write_lines_input(write_lines_input = irma_typing_txt)
     irma_qc_metrics_list= create_list_from_write_lines_input(write_lines_input = irma_qc_metrics_txt)
-    nextclade_tsv_list = create_list_from_write_lines_input(write_lies_input = nextclade_tsv_txt)
+    nextclade_na_tsv_list = create_list_from_write_lines_input(write_lines_input = nextclade_na_tsv_txt)
+    nextclade_ha_tsv_list = create_list_from_write_lines_inputs(write_lines_input = nextclade_ha_tsv_txt)
 
+    # preprocess
     preprocess_qc_metrics_df_list = []
     for preprocess_qc_metrics in preprocess_qc_metrics_list:
         df = pd.read_csv(preprocess_qc_metrics, dtype = {'sample_name' : object})
@@ -57,6 +61,7 @@ if __name__ == '__main__':
     preprocess_qc_metrics_df = pd.concat(preprocess_qc_metrics_df_list).reset_index(drop = True)
     preprocess_qc_metrics_df = preprocess_qc_metrics_df.set_index('sample_name')
 
+    # irma subtyping
     irma_typing_df_list = []
     for irma_typing in irma_typing_list:
         df = pd.read_csv(irma_typing, dtype = {'sample_name' : object})
@@ -64,10 +69,12 @@ if __name__ == '__main__':
     irma_typing_df = pd.concat(irma_typing_df_list).reset_index(drop=True)
     irma_typing_df = irma_typing_df.set_index('sample_name')
 
-    nextclade_df_list = []
-    for nextclade_tsv in nextclade_tsv_list:
+    # na nextclade
+    nextclade_na_df_list = []
+    for nextclade_tsv in nextclade_na_tsv_list:
+        sample_name = nextclade_tsv.split('_ha')[0]
         df = pd.read_csv(nextclade_tsv, sep ='\t')
-        df['sample_name'] = df['seqName']
+        df['sample_name'] = sample_name
         df['nextclade_coverage'] = df['coverage']
         # add missing columns
         # NA: add subclade, short-clade (for Bvic, H1N1, and H3N2)
@@ -85,12 +92,56 @@ if __name__ == '__main__':
                     'totalAminoacidDeletions', 'totalAminoacidInsertions', 'totalUnknownAa', 
                     'nextclade_coverage','aaSubstitutions', 'aaDeletions', 'aaInsertions',
                     'warnings', 'errors']
+        # add "na" prefix to all column headers
+        rename_cols = {}
+        for col in col_keep:
+            if col != 'sample_name':
+                new_column = f'NA_{col}'
+                rename_cols[col] = new_column
+
         df = df[col_keep]
-        nextclade_df_list.append(df)
-    nextclade_df = pd.concat(nextclade_df_list).rest_index(drop = True)
-    nextclade_df = nextclade_df.set_index('sample_name')
+        df = df.rename(columns = rename_cols)
+        nextclade_na_df_list.append(df)
+    nextclade_na_df = pd.concat(nextclade_na_df_list).rest_index(drop = True)
+    nextclade_na_df = nextclade_na_df.set_index('sample_name')
 
+    # ha nextclade
+    nextclade_ha_df_list = []
+    for nextclade_tsv in nextclade_ha_tsv_list:
+        sample_name = nextclade_tsv.split('_ha')[0]
+        df = pd.read_csv(nextclade_tsv, sep ='\t')
+        df['sample_name'] = sample_name
+        df['nextclade_coverage'] = df['coverage']
+        # add missing columns
+        # NA: add subclade, short-clade (for Bvic, H1N1, and H3N2)
+        # HA: add short-clade (For bvic only)
+        if "subclade" not in df.columns:
+            print('DNE')
+            df['subclade'] = ""
+        if "short-clade" not in df.columns:
+            print('DNE')
+            df['short-clade'] = ""
+        # reorder columns
+        col_keep = ['sample_name', 'clade', 'short-clade', 'subclade', 
+                    'totalSubstitutions','totalDeletions', 'totalInsertions', 
+                    'totalFrameShifts', 'totalMissing','totalNonACGTNs', 'totalAminoacidSubstitutions',
+                    'totalAminoacidDeletions', 'totalAminoacidInsertions', 'totalUnknownAa', 
+                    'nextclade_coverage','aaSubstitutions', 'aaDeletions', 'aaInsertions',
+                    'warnings', 'errors']
+        # add "nha" prefix to all column headers
+        rename_cols = {}
+        for col in col_keep:
+            if col != 'sample_name':
+                new_column = f'HA_{col}'
+                rename_cols[col] = new_column
 
+        df = df[col_keep]
+        df = df.rename(columns = rename_cols)
+        nextclade_ha_df_list.append(df)
+    nextclade_ha_df = pd.concat(nextclade_ha_df_list).rest_index(drop = True)
+    nextclade_ha_df = nextclade_ha_df.set_index('sample_name')
+
+    # irma
     irma_qc_metrics_df_list = []
     first_item = irma_qc_metrics_list[0]
     if first_item != "" and len(irma_qc_metrics_list) != 1:
@@ -158,7 +209,8 @@ if __name__ == '__main__':
     # join
     df = preprocess_qc_metrics_df.join(irma_typing_df, how = 'outer')
     df = df.join(irma_qc_metrics_df,how = 'outer')
-    df = df.join(nextclade_df, how = 'outer')
+    df = df.join(nextclade_ha_df, how = 'outer')
+    df = df.join(nextclade_na_df, how = 'outer')
     df = df.reset_index()
     df["analysis_date"] = analysis_date
     df['percent_flu_mapped_reads'] = round((df.total_flu_mapped_reads / df.total_reads_cleaned) * 100 , 2)
@@ -190,12 +242,9 @@ if __name__ == '__main__':
     'seqyclean_version', 'seqyclean_docker',
     'irma_version', 'irma_docker', 'irma_module', 
     'ivar_version', 'ivar_docker', 'ivar_min_depth', 'ivar_min_freq', 'ivar_min_qual',
-    'clade', 'short-clade', 'subclade', 
-                    'totalSubstitutions','totalDeletions', 'totalInsertions', 
-                    'totalFrameShifts', 'totalMissing','totalNonACGTNs', 'totalAminoacidSubstitutions',
-                    'totalAminoacidDeletions', 'totalAminoacidInsertions', 'totalUnknownAa', 
-                    'nextclade_coverage','aaSubstitutions', 'aaDeletions', 'aaInsertions',
-                    'warnings', 'errors']
+    
+    'HA_clade', 'HA_short-clade', 'HA_subclade', 'HA_totalSubstitutions', 'HA_totalDeletions', 'HA_totalInsertions', 'HA_totalFrameShifts', 'HA_totalMissing', 'HA_totalNonACGTNs', 'HA_totalAminoacidSubstitutions', 'HA_totalAminoacidDeletions', 'HA_totalAminoacidInsertions', 'HA_totalUnknownAa', 'HA_nextclade_coverage', 'HA_aaSubstitutions', 'HA_aaDeletions', 'HA_aaInsertions', 'HA_warnings', 'HA_errors',
+    'NA_clade', 'NA_short-clade', 'NA_subclade', 'NA_totalSubstitutions', 'NA_totalDeletions', 'NA_totalInsertions', 'NA_totalFrameShifts', 'NA_totalMissing', 'NA_totalNonACGTNs', 'NA_totalAminoacidSubstitutions', 'NA_totalAminoacidDeletions', 'NA_totalAminoacidInsertions', 'NA_totalUnknownAa', 'NA_nextclade_coverage', 'NA_aaSubstitutions', 'NA_aaDeletions', 'NA_aaInsertions', 'NA_warnings', 'NA_errors']
 
     for n, column in enumerate(col_order):
         print(column)

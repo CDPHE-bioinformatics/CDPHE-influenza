@@ -38,12 +38,12 @@ def getOptions(args=sys.argv[1:]):
     options = parser.parse_args(args)
     return options
 
-def create_list_from_write_lines_input(write_lines_input):
-    list = []
-    with open(write_lines_input, 'r') as f:
-        for line in f:
-            list.append(line.strip())
-    return list
+# def create_list_from_write_lines_input(write_lines_input):
+#     list = []
+#     with open(write_lines_input, 'r') as f:
+#         for line in f:
+#             list.append(line.strip())
+#     return list
 
 def create_col_headers(segment_list, metric_variables):
     header_list = ['sample_name', 'total_segments', 'total_flu_mapped_reads']
@@ -59,8 +59,11 @@ if __name__ == '__main__':
 
     options = getOptions()
     sample_name = options.sample_name
-    mapped_reads_csv_txt = options.mapped_reads_csv_array
-    percent_coverage_csvs_txt = options.percent_coverage_csv_array
+    mapped_reads_csv_file_list = options.mapped_reads_csv_array
+    percent_coverage_csv_file_list= options.percent_coverage_csv_array
+    print(mapped_reads_csv_file_list)
+    print()
+    print(percent_coverage_csv_file_list)
     
 
     # set up the pandas dataframe
@@ -70,8 +73,9 @@ if __name__ == '__main__':
     df.at[0, 'sample_name'] = sample_name
 
     # get a list of file paths
-    mapped_reads_csv_file_list = create_list_from_write_lines_input(write_lines_input = mapped_reads_csv_txt)
-    percent_coverage_csv_file_list = create_list_from_write_lines_input(write_lines_input = percent_coverage_csvs_txt)
+    # mapped_reads_csv_file_list = create_list_from_write_lines_input(write_lines_input = mapped_reads_csv_txt)
+    # percent_coverage_csv_file_list = create_list_from_write_lines_input(write_lines_input = percent_coverage_csvs_txt)
+    # mapped_reads_csv_file_list = mapped_reads_csv_txt
     
     # insert bam results into data frame
     # track number of gene segments assemblied and total mapped reads
