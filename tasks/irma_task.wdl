@@ -43,6 +43,7 @@ task irma {
             for file in ~{sample_name}/*.fasta; do
                 # grab base name and drop .fasta
                 segment=$(basename ${file} | cut -d "." -f 1)
+                gene=$(echo ${segment} | cut -d "_" -f 2)
                 # echo $segement >> segment_list.txt
                 header_name=$(echo ~{sample_name}_${segment})
                 sed -i "s/>.*/>${header_name}/" ${file}
@@ -51,7 +52,7 @@ task irma {
                 cat ${fiile} >> ~{sample_name}_all_assembled_segments.fasta
 
                 # rename file
-                new_name=$(echo ~{sample_name}_${segment}_irma.fasta)
+                new_name=$(echo ~{sample_name}_${gene}_irma.fasta)
                 mv "${file}" "${new_name}"
 
             
@@ -60,8 +61,9 @@ task irma {
             # rename bam and vcf files
             for file in ~{sample_name}/*{.vcf,.bam,.bai}; do
                 base_name=$(basename ${file%.*})
+                gene=$(echo $base_name | cut -d "_" -f 2)
                 extension="${file##*.}"
-                new_name=$(echo ~{sample_name}_${base_name}.${extension})
+                new_name=$(echo ~{sample_name}_${gene}.${extension})
                 mv "${file}" "${new_name}"
             done
 
@@ -84,34 +86,34 @@ task irma {
         File? irma_all_assembled_segments_fasta = "~{sample_name}_all_assembled_segments.fasta"
         
         # assemblies
-        File? irma_seg_ha_fasta = select_first(glob("~{sample_name}_HA*.fasta"))
-        File? irma_seg_na_fasta = select_first(glob("~{sample_name}_HA*.fasta"))
-        File? irma_seg_pb1_fasta = select_first(glob("~{sample_name}_HA*.fasta"))
-        File? irma_seg_pb2_fasta = select_first(glob("~{sample_name}_HA*.fasta"))
-        File? irma_seg_np_fasta = select_first(glob("~{sample_name}_HA*.fasta"))
-        File? irma_seg_pa_fasta = select_first(glob("~{sample_name}_HA*.fasta"))
-        File? irma_seg_ns_fasta = select_first(glob("~{sample_name}_HA*.fasta"))
-        File? irma_seg_mp_fasta = select_first(glob("~{sample_name}_HA*.fasta"))
+        File? irma_seg_ha_fasta = "~{sample_name}_HA_irma.fasta"
+        File? irma_seg_na_fasta = "~{sample_name}_NA_irma.fasta"
+        File? irma_seg_pb1_fasta = "~{sample_name}_PB1_irma.fasta"
+        File? irma_seg_pb2_fasta = "~{sample_name}_PB2_irma.fasta"
+        File? irma_seg_np_fasta = "~{sample_name}_NP_irma.fasta"
+        File? irma_seg_pa_fasta = "~{sample_name}_PA_irma.fasta"
+        File? irma_seg_ns_fasta = "~{sample_name}_NS_irma.fasta"
+        File? irma_seg_mp_fasta = "~{sample_name}_MP_irma.fasta"
 
         # alignments
-        File? irma_seg_ha_bam = select_first(glob("~{sample_name}_HA*.bam"))
-        File? irma_seg_na_bam = select_first(glob("~{sample_name}_HA*.bam"))
-        File? irma_seg_pb1_bam = select_first(glob("~{sample_name}_HA*.bam"))
-        File? irma_seg_pb2_bam = select_first(glob("~{sample_name}_HA*.bam"))
-        File? irma_seg_np_bam = select_first(glob("~{sample_name}_HA*.bam"))
-        File? irma_seg_pa_bam = select_first(glob("~{sample_name}_HA*.bam"))
-        File? irma_seg_ns_bam = select_first(glob("~{sample_name}_HA*.bam"))
-        File? irma_seg_mp_bam = select_first(glob("~{sample_name}_HA*.bam"))
+        File? irma_seg_ha_bam = "~{sample_name}_HA.bam"
+        File? irma_seg_na_bam = "~{sample_name}_NA.bam"
+        File? irma_seg_pb1_bam = "~{sample_name}_PB1.bam"
+        File? irma_seg_pb2_bam = "~{sample_name}_PB2.bam"
+        File? irma_seg_np_bam = "~{sample_name}_NP.bam"
+        File? irma_seg_pa_bam = "~{sample_name}_PA.bam"
+        File? irma_seg_ns_bam = "~{sample_name}_NS.bam"
+        File? irma_seg_mp_bam = "~{sample_name}_MP.bam"
 
         # vcfs
-        File? irma_seg_ha_vcf = select_first(glob("~{sample_name}_HA*.vcf"))
-        File? irma_seg_na_vcf = select_first(glob("~{sample_name}_HA*.vcf"))
-        File? irma_seg_pb1_vcf = select_first(glob("~{sample_name}_HA*.vcf"))
-        File? irma_seg_pb2_vcf = select_first(glob("~{sample_name}_HA*.vcf"))
-        File? irma_seg_np_vcf = select_first(glob("~{sample_name}_HA*.vcf"))
-        File? irma_seg_pa_vcf = select_first(glob("~{sample_name}_HA*.vcf"))
-        File? irma_seg_ns_vcf = select_first(glob("~{sample_name}_HA*.vcf"))
-        File? irma_seg_mp_vcf = select_first(glob("~{sample_name}_HA*.vcf"))
+        File? irma_seg_ha_vcf = "~{sample_name}_HA.vcf"
+        File? irma_seg_na_vcf = "~{sample_name}_NA.vcf"
+        File? irma_seg_pb1_vcf = "~{sample_name}_PB1.vcf"
+        File? irma_seg_pb2_vcf = "~{sample_name}_PB2.vcf"
+        File? irma_seg_np_vcf = "~{sample_name}_NP.vcf"
+        File? irma_seg_pa_vcf = "~{sample_name}_PA.vcf"
+        File? irma_seg_ns_vcf = "~{sample_name}_NS.vcf"
+        File? irma_seg_mp_vcf = "~{sample_name}_MP.vcf"
 
         # runtime
         File irma_runtime_csv = "irma_runtime.csv"
