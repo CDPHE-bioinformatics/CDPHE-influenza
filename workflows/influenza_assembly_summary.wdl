@@ -14,6 +14,7 @@ workflow influenza_assembly_summary{
         Array[String] bucket_path_array
         Array[String] analysis_date_array
         Array[File] workbook_path_array
+        Array[File] nextclade_tsv
 
         File summary_py
     }
@@ -29,10 +30,12 @@ workflow influenza_assembly_summary{
             preprocess_qc_metrics = preprocess_qc_metrics,
             irma_typing = irma_typing,
             irma_assembly_qc_metrics = irma_assembly_qc_metrics,
+            nextclade_tsv = nextclade_tsv,
             python_script = summary_py,
             project_name = project_name,
             analysis_date = analysis_date,
             workbook_path = workbook_path
+        
     }
 
     call transfer.transfer_assembly_summary_wdl as summary_transfer {

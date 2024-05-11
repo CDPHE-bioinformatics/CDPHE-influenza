@@ -10,6 +10,7 @@ task summary {
         Array[File] preprocess_qc_metrics
         Array[File] irma_typing
         Array[File] irma_assembly_qc_metrics
+        Array[File] nextclade_tsv
         File python_script
         String project_name
         String analysis_date
@@ -23,6 +24,7 @@ task summary {
         --preprocess_qc_metrics ~{write_lines(preprocess_qc_metrics)} \
         --irma_typing ~{write_lines(irma_typing)} \
         --irma_assembly_qc_metrics ~{write_lines(irma_assembly_qc_metrics)} \
+        --nextclade_tsv ~{write_lines(nextclade_tsv) \}
         --project_name "~{project_name}" \
         --analysis_date "~{analysis_date}" \
         --workbook_path "~{workbook_path}"
