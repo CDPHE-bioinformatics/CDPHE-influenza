@@ -28,9 +28,9 @@ task samtools_mapped_reads {
         samtools coverage ${sorted_bam} | tail -1 | cut -f 7 > mean_depth.txt
 
         # create output file
-        echo "sample_name,file_name,segment_name,gene_name,description,value" > mapped_reads.csv
-        echo "~{sample_name},${sorted_bam},${segment_name},${gene_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> mapped_reads.csv
-        echo "~{sample_name},${sorted_bam},${segment_name},${gene_name},mean_depth,$(cat mean_depth.txt)" >> mapped_reads.csv
+        echo "sample_name,base_name,segment_name,gene_name,description,value" > mapped_reads.csv
+        echo "${sample_name},${sorted_bam},${segment_name},${gene_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> mapped_reads.csv
+        echo "${sample_name},${sorted_bam},${segment_name},${gene_name},mean_depth,$(cat mean_depth.txt)" >> mapped_reads.csv
 
 
     >>>
@@ -74,7 +74,7 @@ task calc_percent_coverage{
     >>>
 
     output{
-        File percent_coverage_csv = "percent_coverage_results.csv"
+        File percent_coverage_csv = "~{sample_name}_percent_coverage_results.csv"
     }
 
     runtime {
@@ -95,19 +95,40 @@ task concat_post_qc_metrics{
     input{
         File python_script
         String sample_name
-        Array[File?] mapped_reads_csv_array
-        Array[File?] percent_coverage_csv_array
         
+        # mapped reads
+        File? seg_ha_mapped_reads_csv
+        File? seg_na_mapped_reads_csv
+        File? seg_pb1_mapped_reads_csv
+        File? seg_pb2_mapped_reads_csv
+        File? seg_np_mapped_reads_csv
+        File? seg_pa_mapped_reads_csv
+        File? seg_ns_mapped_reads_csv
+        File? seg_mp_mapped_reads_csv
+
+
+        # percent coverage_results
+        File? seg_ha_percent_coverage_csv 
+        File? seg_na_percent_coverage_csv 
+        File? seg_pb1_percent_coverage_csv 
+        File? seg_pb2_percent_coverage_csv 
+        File? seg_np_percent_coverage_csv 
+        File? seg_pa_percent_coverage_csv 
+        File? seg_ns_percent_coverage_csv 
+        File? seg_mp_percent_coverage_csv 
+
+
+
     }
     
-
+    File ivar_parameters_file = select_first(ivar_parameters)
 
     command <<<
 
     python ~{python_script} \
         --sample_name ~{sample_name} \
-        --mapped_reads_csv_array ~{write_lines(mapped_reads_csv_array)} \
-        --percent_coverage_csv_array ~{write_lines(percent_coverage_csv_array)}
+        --bam_results ~{write_lines(bam_results_array)} \
+        --per_cov_results ~{write_lines(per_cov_results_array)} \
 
 
     >>>

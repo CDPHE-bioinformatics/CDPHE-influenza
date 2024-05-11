@@ -85,14 +85,14 @@ def create_output(sample_name, basename, segment_name, gene_name, seq_len, per_c
     df['description'] = description_list
     df['value'] = value_list
     df['sample_name'] = sample_name
-    df['base_name'] = basename
+    df['file_name'] = basename
     df['segment_name'] = segment_name
     df['gene_name'] = gene_name
     
-    col_order = ['sample_name', 'base_name', 'segment_name', 'gene_name', 'description', 'value']
+    col_order = ['sample_name', 'file_name', 'segment_name', 'gene_name', 'description', 'value']
     df = df[col_order]
 
-    outfile=f'{sample_name}_percent_coverage_results.csv' 
+    outfile=f'percent_coverage_results.csv' 
     df.to_csv(outfile, index = False)
 
 
