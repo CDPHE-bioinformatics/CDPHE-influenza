@@ -35,8 +35,9 @@ task ivar_consensus {
     cat ${prefix}.fa # for troubleshooting purposes print fasta contents to screen
 
     # rename consesnus header
+    # header name should ideally be the same as prefix but whatever...
     header_name=$(echo ${sample_name}_${segment_name})
-    sed -i "s/>.*/>${header_name}/" ${ivar_prefix}.fa
+    sed -i "s/>.*/>${header_name}/" ${prefix}.fa
 
     # output ivar parameters
     ivar version | head -n1 | cut -d " " -f 3 | tee ivar_version.txt
