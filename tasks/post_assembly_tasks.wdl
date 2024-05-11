@@ -106,8 +106,8 @@ task concat_post_qc_metrics{
 
     python ~{python_script} \
         --sample_name "~{sample_name}" \
-        --mapped_reads_csv_array "~{write_lines(mapped_reads_csv_array)}" \
-        --percent_coverage_csv_array "~{write_lines(percent_coverage_csv_array)}"
+        --mapped_reads_csv_array "~{mapped_reads_csv_array}" \
+        --percent_coverage_csv_array "~{percent_coverage_csv_array}"
 
 
     >>>
