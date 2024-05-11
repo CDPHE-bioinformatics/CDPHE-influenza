@@ -348,13 +348,13 @@ workflow influenza_assembly {
                                                             mp_mapped_reads.mapped_reads_csv])
 
         Array[File?] sorted_bam_array = select_all([ha_mapped_reads.sorted_bam,
-            na_mapped_reads.sorted_bam,
-            pb1_mapped_reads.sorted_bam,
-            pb2_mapped_reads.sorted_bam,
-            np_mapped_reads.sorted_bam,
-            pa_mapped_reads.sorted_bam,
-            ns_mapped_reads.sorted_bam,
-            mp_mapped_reads.sorted_bam])
+                                                        na_mapped_reads.sorted_bam,
+                                                        pb1_mapped_reads.sorted_bam,
+                                                        pb2_mapped_reads.sorted_bam,
+                                                        np_mapped_reads.sorted_bam,
+                                                        pa_mapped_reads.sorted_bam,
+                                                        ns_mapped_reads.sorted_bam,
+                                                        mp_mapped_reads.sorted_bam])
 
         # percent coverage - percent coverage csv
         Array[File?] percent_coverage_csv_array = select_all([ha_calc_percent_coverage.percent_coverage_csv,
@@ -373,7 +373,7 @@ workflow influenza_assembly {
                 python_script = concat_post_assembly_qc_metrics_py,
                 sample_name = sample_name,
                 percent_coverage_csv_array = percent_coverage_csv_array,
-                mapped_reads_csv_array = mapped_reads_csv_array,
+                mapped_reads_csv_array = mapped_reads_csv_array
         }
     }
     
