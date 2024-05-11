@@ -11,18 +11,17 @@ workflow influenza_assembly_summary{
         Array[File] preprocess_qc_metrics
         Array[File] irma_typing
         Array[File] irma_assembly_qc_metrics
-        Array[String] bucket_path_array
+        # Array[String] bucket_path_array
+        String out_bucket_path
         Array[String] analysis_date_array
-        Array[File] workbook_path_array
         Array[File] nextclade_tsv
 
         File summary_py
     }
 
-    String bucket_path = select_first(bucket_path_array)
+    # String bucket_path = select_first(bucket_path_array)
     String project_name = select_first(project_name_array)
     String analysis_date = select_first(analysis_date_array)
-    String workbook_path = select_first(workbook_path_array)
 
     call summary.summary as summary {
         input:
@@ -33,15 +32,14 @@ workflow influenza_assembly_summary{
             nextclade_tsv = nextclade_tsv,
             python_script = summary_py,
             project_name = project_name,
-            analysis_date = analysis_date,
-            workbook_path = workbook_path
+            analysis_date = analysis_date
         
     }
 
     call transfer.transfer_assembly_summary_wdl as summary_transfer {
         input:
             sequencing_results_csv = summary.sequencing_results_csv,
-            bucket_path = bucket_path
+            bucket_path = out_bucket_path
     }
 
     output {

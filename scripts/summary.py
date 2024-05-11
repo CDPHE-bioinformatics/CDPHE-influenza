@@ -17,9 +17,9 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--preprocess_qc_metrics")
     parser.add_argument( "--irma_typing")
     parser.add_argument( "--irma_assembly_qc_metrics")
+    parser.add_argument( "--nextclade_tsv")
     parser.add_argument( "--project_name")
     parser.add_argument( "--analysis_date")
-    parser.add_argument( "--workbook_path")
     options = parser.parse_args(args)
     return options
 
@@ -40,18 +40,15 @@ if __name__ == '__main__':
     preprocess_qc_metrics_txt = options.preprocess_qc_metrics
     irma_typing_txt = options.irma_typing
     irma_qc_metrics_txt = options.irma_assembly_qc_metrics
+    nextclade_tsv_txt = options.nextclade_tsv
     project_name = options.project_name
     analysis_date = options.analysis_date
-    workbook_path = options.workbook_path
 
     sample_name_list = create_list_from_write_lines_input(write_lines_input = sample_name_txt)
     preprocess_qc_metrics_list = create_list_from_write_lines_input(write_lines_input = preprocess_qc_metrics_txt)
     irma_typing_list = create_list_from_write_lines_input(write_lines_input = irma_typing_txt)
     irma_qc_metrics_list= create_list_from_write_lines_input(write_lines_input = irma_qc_metrics_txt)
-
-    workbook = pd.read_csv(workbook_path, sep = '\t', dtype = {'hsn' : object, "sample_name" : object})
-    workbook = workbook.drop(columns = ['read_type'])
-    workbook = workbook.set_index('sample_name')
+    nextclade_tsv_list = create_list_from_write_lines_input(write_lies_input = nextclade_tsv_txt)
 
     preprocess_qc_metrics_df_list = []
     for preprocess_qc_metrics in preprocess_qc_metrics_list:
@@ -66,6 +63,33 @@ if __name__ == '__main__':
         irma_typing_df_list.append(df)
     irma_typing_df = pd.concat(irma_typing_df_list).reset_index(drop=True)
     irma_typing_df = irma_typing_df.set_index('sample_name')
+
+    nextclade_df_list = []
+    for nextclade_tsv in nextclade_tsv_list:
+        df = pd.read_csv(nextclade_tsv, sep ='\t')
+        df['sample_name'] = df['seqName']
+        df['nextclade_coverage'] = df['coverage']
+        # add missing columns
+        # NA: add subclade, short-clade (for Bvic, H1N1, and H3N2)
+        # HA: add short-clade (For bvic only)
+        if "subclade" not in df.columns:
+            print('DNE')
+            df['subclade'] = ""
+        if "short-clade" not in df.columns:
+            print('DNE')
+            df['short-clade'] = ""
+        # reorder columns
+        col_keep = ['sample_name', 'clade', 'short-clade', 'subclade', 
+                    'totalSubstitutions','totalDeletions', 'totalInsertions', 
+                    'totalFrameShifts', 'totalMissing','totalNonACGTNs', 'totalAminoacidSubstitutions',
+                    'totalAminoacidDeletions', 'totalAminoacidInsertions', 'totalUnknownAa', 
+                    'nextclade_coverage','aaSubstitutions', 'aaDeletions', 'aaInsertions',
+                    'warnings', 'errors']
+        df = df[col_keep]
+        nextclade_df_list.append(df)
+    nextclade_df = pd.concat(nextclade_df_list).rest_index(drop = True)
+    nextclade_df = nextclade_df.set_index('sample_name')
+
 
     irma_qc_metrics_df_list = []
     first_item = irma_qc_metrics_list[0]
@@ -132,9 +156,9 @@ if __name__ == '__main__':
 
 
     # join
-    df = workbook.join(preprocess_qc_metrics_df, how = 'outer')
-    df = df.join(irma_typing_df, how = 'outer')
+    df = preprocess_qc_metrics_df.join(irma_typing_df, how = 'outer')
     df = df.join(irma_qc_metrics_df,how = 'outer')
+    df = df.join(nextclade_df, how = 'outer')
     df = df.reset_index()
     df["analysis_date"] = analysis_date
     df['percent_flu_mapped_reads'] = round((df.total_flu_mapped_reads / df.total_reads_cleaned) * 100 , 2)
@@ -165,7 +189,13 @@ if __name__ == '__main__':
     'fastqc_version', 'fastqc_docker',
     'seqyclean_version', 'seqyclean_docker',
     'irma_version', 'irma_docker', 'irma_module', 
-    'ivar_version', 'ivar_docker', 'ivar_min_depth', 'ivar_min_freq', 'ivar_min_qual']
+    'ivar_version', 'ivar_docker', 'ivar_min_depth', 'ivar_min_freq', 'ivar_min_qual',
+    'clade', 'short-clade', 'subclade', 
+                    'totalSubstitutions','totalDeletions', 'totalInsertions', 
+                    'totalFrameShifts', 'totalMissing','totalNonACGTNs', 'totalAminoacidSubstitutions',
+                    'totalAminoacidDeletions', 'totalAminoacidInsertions', 'totalUnknownAa', 
+                    'nextclade_coverage','aaSubstitutions', 'aaDeletions', 'aaInsertions',
+                    'warnings', 'errors']
 
     for n, column in enumerate(col_order):
         print(column)

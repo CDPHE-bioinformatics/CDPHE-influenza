@@ -14,7 +14,6 @@ task summary {
         File python_script
         String project_name
         String analysis_date
-        File workbook_path
     }
 
     command <<<
@@ -26,8 +25,7 @@ task summary {
         --irma_assembly_qc_metrics ~{write_lines(irma_assembly_qc_metrics)} \
         --nextclade_tsv ~{write_lines(nextclade_tsv) \}
         --project_name "~{project_name}" \
-        --analysis_date "~{analysis_date}" \
-        --workbook_path "~{workbook_path}"
+        --analysis_date "~{analysis_date}" 
 
     >>>
 
