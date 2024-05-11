@@ -20,23 +20,16 @@ task irma {
         version=$(cat VERSION)
 
         # run IRMA
-        if [ ~{read_type} == 'paired' ]; then
-            IRMA ~{module} ~{fastq_R1} ~{fastq_R2} ~{sample_name}
-        elif [ ~{read_type} == 'single' ]; then
-            IRMA ~{module} ~{fastq_R1} ~{sample_name}
-        fi
+        IRMA ~{module} ~{fastq_R1} ~{fastq_R2} ~{sample_name}
         
-        # determine if assemly was successful
+        # determine if assembly was successful
         if compgen -G "~{sample_name}/*.fasta"; then
             echo "sample_name,flu_type,gene_segment,subtype" > ~{sample_name}_irma_assembled_gene_segments.csv
             for file in ~{sample_name}/*.fasta; do
             echo ${file}
                 # grab type
-                # read in header of fasta file and grab type, gene_segment and subtype (ok if subtype doesn't exist)
-                # header=$(head -n 1 $file)
-                # TYPE=$(echo $header | cut -d "_" -f 1 | cut -d ">" -f 2)
-                # gene_segment=$(echo $header | cut -d "_" -f 2)
-                # subtype=$(echo $header | cut -d "_" -f 3)
+                # read in header of fasta file and grab type (e.g. A,B), 
+                # gene_segment (e.g. HA, NA, PB1) and subtype (e.g. N2, H1) (ok if subtype doesn't exist)
 
                 segment=$(basename ${file%.*} | cut -d "." -f 1)
                 TYPE=$(echo ${segment} | cut -d "_" -f 1)
@@ -49,17 +42,20 @@ task irma {
             # rename header and file name for fasta
             ## also create an array of the segment names
             for file in ~{sample_name}/*.fasta; do
-                # base_name=$(basename ${file%.*})
-                # extension="${file##*.}"
                 # grab base name and drop .fasta
                 segment=$(basename ${file} | cut -d "." -f 1)
                 # echo $segement >> segment_list.txt
                 header_name=$(echo ~{sample_name}_${segment})
                 sed -i "s/>.*/>${header_name}/" ${file}
 
+                # add file contents to concatenated fasta file
+                cat ${fiile} >> ~{sample_name}_all_assembled_segments.fasta
+
                 # rename file
                 new_name=$(echo ~{sample_name}_${segment}_irma.fasta)
                 mv "${file}" "${new_name}"
+
+            
             done
 
             # rename bam and vcf files
@@ -86,9 +82,39 @@ task irma {
     output {
 
         File irma_assembled_gene_segments_csv = "~{sample_name}_irma_assembled_gene_segments.csv"
-        Array[File] irma_assemblies = glob("~{sample_name}*.fasta")
-        Array[File] irma_bam_files = glob("~{sample_name}*.bam")
-        Array[File] irma_vcfs = glob("~{sample_name}*.vcf")
+        File? irma_all_assembled_segments_fasta = "~{sample_name}_all_assembled_segments.fasta"
+        
+        # assemblies
+        File? irma_seg_ha_fasta = "~{sample_name}_HA*.fasta"
+        File? irma_seg_na_fasta = "~{sample_name}_HA*.fasta"
+        File? irma_seg_pb1_fasta = "~{sample_name}_HA*.fasta"
+        File? irma_seg_pb2_fasta = "~{sample_name}_HA*.fasta"
+        File? irma_seg_np_fasta = "~{sample_name}_HA*.fasta"
+        File? irma_seg_pa_fasta = "~{sample_name}_HA*.fasta"
+        File? irma_seg_ns_fasta = "~{sample_name}_HA*.fasta"
+        File? irma_seg_mp_fasta = "~{sample_name}_HA*.fasta"
+
+        # alignments
+        File? irma_seg_ha_bam = "~{sample_name}_HA*.bam"
+        File? irma_seg_na_bam = "~{sample_name}_HA*.bam"
+        File? irma_seg_pb1_bam = "~{sample_name}_HA*.bam"
+        File? irma_seg_pb2_bam = "~{sample_name}_HA*.bam"
+        File? irma_seg_np_bam = "~{sample_name}_HA*.bam"
+        File? irma_seg_pa_bam = "~{sample_name}_HA*.bam"
+        File? irma_seg_ns_bam = "~{sample_name}_HA*.bam"
+        File? irma_seg_mp_bam = "~{sample_name}_HA*.bam"
+
+        # vcfs
+        File? irma_seg_ha_vcf = "~{sample_name}_HA*.vcf"
+        File? irma_seg_na_vcf = "~{sample_name}_HA*.vcf"
+        File? irma_seg_pb1_vcf = "~{sample_name}_HA*.vcf"
+        File? irma_seg_pb2_vcf = "~{sample_name}_HA*.vcf"
+        File? irma_seg_np_vcf = "~{sample_name}_HA*.vcf"
+        File? irma_seg_pa_vcf = "~{sample_name}_HA*.vcf"
+        File? irma_seg_ns_vcf = "~{sample_name}_HA*.vcf"
+        File? irma_seg_mp_vcf = "~{sample_name}_HA*.vcf"
+
+        # runtime
         File irma_runtime_csv = "irma_runtime.csv"
         String irma_version = read_string("VERSION")
         String irma_docker = "~{docker}"

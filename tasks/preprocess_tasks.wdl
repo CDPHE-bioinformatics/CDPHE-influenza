@@ -18,83 +18,51 @@ task fastqc {
         # grab version
         fastqc --version | tee VERSION
 
-        if [ ~{read_type} == "paired" ]; then
+        # get basename of fastq file
+        fastq_R1_name=$(basename ~{fastq_R1} | cut -d "." -f 1 | cut -d "." -f 1)
+        fastq_R2_name=$(basename ~{fastq_R2} | cut -d "." -f 1 | cut -d "." -f 1)
 
-            # get basename of fastq file
-            fastq_R1_name=$(basename ~{fastq_R1} | cut -d "." -f 1 | cut -d "." -f 1)
-            fastq_R2_name=$(basename ~{fastq_R2} | cut -d "." -f 1 | cut -d "." -f 1)
+        # run fastqc
+        fastqc --outdir $PWD ~{fastq_R1} ~{fastq_R2}
 
-            # run fastqc
-            fastqc --outdir $PWD ~{fastq_R1} ~{fastq_R2}
+        # pull some info from the zip file regarding number of reads and read length
+        unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ1_LEN
+        unzip -p ${fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ2_LEN
 
-            # pull some info from the zip file regarding number of reads and read length
-            unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ1_LEN
-            unzip -p ${fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ2_LEN
+        unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
+        unzip -p ${fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ2_SEQS
 
-            unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
-            unzip -p ${fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ2_SEQS
+        READ1_SEQS=$(unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
+        READ2_SEQS=$(unzip -p ${fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
 
-            READ1_SEQS=$(unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
-            READ2_SEQS=$(unzip -p ${fastq_R2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
-
-            if [ $READ1_SEQS == $READ2_SEQS ]; then
-                read_pairs=$READ1_SEQS
-            else
-                read_pairs="Uneven pairs: R1=$READ1_SEQS, R2=$READ2_SEQS"
-            fi
-
-            echo $read_pairs | tee READ_PAIRS
-
-            # # calculate the total number of reads(i.e. READ_PAIRS * 2 for paired data; else *1 for SE)
-            # total_reads=$((2*READ_PAIRS))
-            # echo $total_reads | tee TOTAL_READS
-
-            # rename files 
-            if [ ${fastq_R1_name} != ~{sample_name}_R1 ]; then 
-                mv ${fastq_R1_name}_fastqc.html ~{sample_name}_R1_fastqc.html
-                mv ${fastq_R1_name}_fastqc.zip ~{sample_name}_R1_fastqc.zip
-                mv ${fastq_R2_name}_fastqc.html ~{sample_name}_R2_fastqc.html
-                mv ${fastq_R2_name}_fastqc.zip ~{sample_name}_R2_fastqc.zip
-            fi
-        
-        elif [ ~{read_type} == "single" ]; then
-           # get basename of fastq file
-            fastq_R1_name=$(basename ~{fastq_R1} | cut -d "." -f 1 | cut -d "." -f 1)
-
-            # run fastqc
-            fastqc --outdir $PWD ~{fastq_R1}
-
-            # pull some info from the zip file regarding number of reads and read length
-            unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Sequence length" | cut -f 2 | tee READ1_LEN
-
-            unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
-
-            READ1_SEQS=$(unzip -p ${fastq_R1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
-    
-            echo $READ1_SEQS| tee READ_PAIRS
-
-            # # calculate the total number of reads(i.e. for SE data it's the same as READ1_SEQS)
-            # echo $READ1_SEQS | tee TOTAL_READS
-            
-            # create dummy variables for second read so WDL is happy
-            echo 0 | tee READ2_SEQS
-            echo 0 | tee READ2_LEN
-
-            # rename files 
-             if [ ${fastq_R1_name} != ~{sample_name}_R1 ]; then
-                mv ${fastq_R1_name}_fastqc.html ~{sample_name}_R1_fastqc.html
-                mv ${fastq_R1_name}_fastqc.zip ~{sample_name}_R1_fastqc.zip
-            fi
+        if [ $READ1_SEQS == $READ2_SEQS ]; then
+            read_pairs=$READ1_SEQS
+        else
+            read_pairs="Uneven pairs: R1=$READ1_SEQS, R2=$READ2_SEQS"
         fi
 
+        echo $read_pairs | tee READ_PAIRS
 
+        # # calculate the total number of reads(i.e. READ_PAIRS * 2 for paired data; else *1 for SE)
+        # total_reads=$((2*READ_PAIRS))
+        # echo $total_reads | tee TOTAL_READS
+
+        # rename files 
+        if [ ${fastq_R1_name} != ~{sample_name}_R1 ]; then 
+            mv ${fastq_R1_name}_fastqc.html ~{sample_name}_R1_fastqc.html
+            mv ${fastq_R1_name}_fastqc.zip ~{sample_name}_R1_fastqc.zip
+            mv ${fastq_R2_name}_fastqc.html ~{sample_name}_R2_fastqc.html
+            mv ${fastq_R2_name}_fastqc.zip ~{sample_name}_R2_fastqc.zip
+        fi
+        
+        
 
     >>>
     output {
         File fastqc1_html = "~{sample_name}_R1_fastqc.html"
         File fastqc1_zip = "~{sample_name}_R1_fastqc.zip"
-        File? fastqc2_html = "~{sample_name}_R2_fastqc.html"
-        File? fastqc2_zip = "~{sample_name}_R2_fastqc.zip"
+        File fastqc2_html = "~{sample_name}_R2_fastqc.html"
+        File fastqc2_zip = "~{sample_name}_R2_fastqc.zip"
  
         # these outputs will go into the concatenated preprocess qc metrics file
         Int total_reads_R1 = read_string("READ1_SEQS")
@@ -197,41 +165,24 @@ task concat_preprocess_qc_metrics {
 
     command <<<
 
-        if [ ~{read_type} == "paired" ]; then 
-            python ~{python_script} \
-                --fastqc_version "~{fastqc_version}" \
-                --fastqc_docker "~{fastqc_docker}" \
-                --total_reads_R1_raw "~{total_reads_R1_raw}" \
-                --total_reads_R2_raw "~{total_reads_R2_raw}" \
-                --read_length_R1_raw "~{read_length_R1_raw}" \
-                --read_length_R2_raw "~{read_length_R2_raw}" \
-                --read_pairs_raw "~{read_pairs_raw}" \
-                --total_reads_R1_cleaned "~{total_reads_R1_cleaned}" \
-                --total_reads_R2_cleaned "~{total_reads_R2_cleaned}" \
-                --read_length_R1_cleaned "~{read_length_R1_cleaned}" \
-                --read_length_R2_cleaned "~{read_length_R2_cleaned}" \
-                --read_pairs_cleaned "~{read_pairs_cleaned}" \
-                --seqyclean_version "~{seqyclean_version}" \
-                --seqyclean_docker "~{seqyclean_docker}" \
-                --read_type "~{read_type}" \
-                --sample_name "~{sample_name}"
+        python ~{python_script} \
+            --fastqc_version "~{fastqc_version}" \
+            --fastqc_docker "~{fastqc_docker}" \
+            --total_reads_R1_raw "~{total_reads_R1_raw}" \
+            --total_reads_R2_raw "~{total_reads_R2_raw}" \
+            --read_length_R1_raw "~{read_length_R1_raw}" \
+            --read_length_R2_raw "~{read_length_R2_raw}" \
+            --read_pairs_raw "~{read_pairs_raw}" \
+            --total_reads_R1_cleaned "~{total_reads_R1_cleaned}" \
+            --total_reads_R2_cleaned "~{total_reads_R2_cleaned}" \
+            --read_length_R1_cleaned "~{read_length_R1_cleaned}" \
+            --read_length_R2_cleaned "~{read_length_R2_cleaned}" \
+            --read_pairs_cleaned "~{read_pairs_cleaned}" \
+            --seqyclean_version "~{seqyclean_version}" \
+            --seqyclean_docker "~{seqyclean_docker}" \
+            --read_type "~{read_type}" \
+            --sample_name "~{sample_name}"
         
-        elif [ ~{read_type} == "single" ]; then
-            python ~{python_script} \
-                --fastqc_version "~{fastqc_version}" \
-                --fastqc_docker "~{fastqc_docker}" \
-                --total_reads_R1_raw "~{total_reads_R1_raw}" \
-                --read_length_R1_raw "~{read_length_R1_raw}" \
-                --read_pairs_raw "~{read_pairs_raw}" \
-                --total_reads_R1_cleaned "~{total_reads_R1_cleaned}" \
-                --read_length_R1_cleaned "~{read_length_R1_cleaned}" \
-                --read_pairs_cleaned "~{read_pairs_cleaned}" \
-                --seqyclean_version "~{seqyclean_version}" \
-                --seqyclean_docker "~{seqyclean_docker}" \
-                --read_type "~{read_type}" \
-                --sample_name "~{sample_name}"
-        
-        fi
 
     >>>
 

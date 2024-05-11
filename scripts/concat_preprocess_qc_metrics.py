@@ -16,20 +16,19 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--fastqc_version")
     parser.add_argument( "--fastqc_docker")
     parser.add_argument( "--total_reads_R1_raw")
-    parser.add_argument( "--total_reads_R2_raw", default = "")
+    parser.add_argument( "--total_reads_R2_raw")
     parser.add_argument( "--read_length_R1_raw")
-    parser.add_argument( "--read_length_R2_raw", default = "")
+    parser.add_argument( "--read_length_R2_raw")
     parser.add_argument( "--read_pairs_raw")
     # parser.add_argument( "--total_reads_raw")
     parser.add_argument( "--total_reads_R1_cleaned")
-    parser.add_argument( "--total_reads_R2_cleaned", default = "")
+    parser.add_argument( "--total_reads_R2_cleaned")
     parser.add_argument( "--read_length_R1_cleaned")
-    parser.add_argument( "--read_length_R2_cleaned", default = "")
+    parser.add_argument( "--read_length_R2_cleaned")
     parser.add_argument( "--read_pairs_cleaned")
     # parser.add_argument( "--total_reads_cleaned")
     parser.add_argument( "--seqyclean_version")
     parser.add_argument( "--seqyclean_docker")
-    parser.add_argument( "--read_type")
     parser.add_argument( "--sample_name")
     options = parser.parse_args(args)
     return options
@@ -65,7 +64,6 @@ if __name__ == '__main__':
 
     df = pd.DataFrame()
     df.at[0, 'sample_name'] = sample_name
-    df.at[0, 'read_type'] = read_type
 
     df['total_read_diff'] = int(read_pairs_raw) - int(read_pairs_cleaned)
 
@@ -74,20 +72,16 @@ if __name__ == '__main__':
     df['total_reads_R1_raw'] = total_reads_R1_raw
     df['total_reads_R2_raw'] = total_reads_R1_raw
     df["read_pairs_raw"] = read_pairs_raw
-    if read_type == 'paired':
-        df["total_reads_raw"] = int(read_pairs_raw) * 2
-    elif read_type == 'single':
-        df["total_reads_raw"] = int(read_pairs_raw) 
+    df["total_reads_raw"] = int(read_pairs_raw) * 2
+
     
     df['read_length_R1_cleaned'] = read_length_R1_cleaned
     df['read_length_R2_cleaned'] = read_length_R2_cleaned
     df['total_reads_R1_cleaned'] = total_reads_R1_cleaned
     df['total_reads_R2_cleaned'] = total_reads_R1_cleaned
     df["read_pairs_cleaned"] = read_pairs_cleaned
-    if read_type == 'paired':
-        df["total_reads_cleaned"] = int(read_pairs_cleaned) * 2
-    elif read_type == 'single':
-        df["total_reads_cleaned"] = int(read_pairs_cleaned)
+    df["total_reads_cleaned"] = int(read_pairs_cleaned) * 2
+
 
     df['fastqc_version'] = fastqc_version
     df['fastqc_docker'] = fastqc_docker

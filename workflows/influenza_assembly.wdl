@@ -13,16 +13,15 @@ workflow influenza_assembly {
 
     input {
         String sample_name
-        String read_type
         File fastq_R1
-        File? fastq_R2
+        File fastq_R2
         File adapters_and_contaminants
         String bucket_path
 
         # python scripts
         File concat_preprocess_qc_metrics_py
         File irma_subtyping_results_py
-        File calc_percent_cov_py
+        File calc_percent_coverage_py
         File concat_post_assembly_qc_metrics_py
     }
 
@@ -31,13 +30,11 @@ workflow influenza_assembly {
         input:
             sample_name = sample_name,
             fastq_R1 = fastq_R1,
-            fastq_R2 = fastq_R2,
-            read_type = read_type
+            fastq_R2 = fastq_R2
     }
     call fastq_preprocess.seqyclean as seqyclean {
         input:
             sample_name = sample_name,
-            read_type = read_type,
             fastq_R1 = fastq_R1,
             fastq_R2 = fastq_R2,
             adapters_and_contaminants = adapters_and_contaminants  
@@ -46,15 +43,13 @@ workflow influenza_assembly {
         input:
             sample_name = sample_name,
             fastq_R1 = seqyclean.fastq_R1_cleaned,
-            fastq_R2 = seqyclean.fastq_R2_cleaned,
-            read_type = read_type
+            fastq_R2 = seqyclean.fastq_R2_cleaned
     }
     # concatenate all preprocess qc metrics into single file
     call fastq_preprocess.concat_preprocess_qc_metrics as concat_preprocess_qc_metrics{
         input:
             python_script = concat_preprocess_qc_metrics_py,
             sample_name = sample_name,
-            read_type = read_type,
 
             fastqc_version = fastqc_raw.fastqc_version,
             fastqc_docker = fastqc_raw.fastqc_docker,
@@ -96,50 +91,45 @@ workflow influenza_assembly {
 
     }
 
-    # Proceed with post assembly QC metrics if irma assembly was successful
-    if (irma_subtyping_results.irma_type != "no IRMA assembly generated") {
-        # 3- post assembly QC metrics
-        ## scatter over bam file array
-        scatter (bam_file in select_all(irma.irma_bam_files)) {
-            ## determine number mapped reads and mean depth using samtools
-            call post_assembly_qc.samtools_mapped_reads as irma_samtools_mapped_reads { 
-                input:
-                    bam_file = bam_file,
-                    sample_name = sample_name
-            }
-            ## generate consensus sequence using ivar (so can control base calling parameters)
-            call ivar.ivar_consensus as irma_ivar_consensus {
-                input:
-                bam_file = bam_file,
+    # for each successfully assembled gene segment -
+    # 1- samtools
+    # 2 - ivar concensus
+    # 3 - calcualte percent_coverage
+    # 4 - if HA or NA run nextclade
+
+    if (defined(irma.irma_seg_ha_bam)) {
+        call post_assembly_qc.samtools_mapped_reads as ha_mapped_reads {
+            input:
+                bam_file = irma.irma_seg_ha_bam,
                 sample_name = sample_name
-            }
         }
+
+        call ivar.ivar_consensus as ha_ivar_consensus {
+            input:
+                bam_file = irma_seg_ha_bam,
+                sample_name = sample_name
+        }
+
+        call post_assembly_qc.calc_percent_coverage as ha_calc_percent_coverage{
+            input:
+                fasta_file = ha_ivar_consensus.ivar_consensus_fasta,
+                python_script = calc_percent_coverage_py,
+                sample_name = sample_name
+
+        }
+
+        call nextclade.nextclade_ha as nextclade_ha{
+            input:
+                ivar_seg_ha_fasta = ha_ivar_consensus.ivar_consensus_fasta,
+                irma_type = irma_subtyping_results.irma_type,
+                irma_ha_subtype = irma_subtyping_results.irma_ha_subtype,
+                sample_name = sample_name
+        }
+    }
+
         
-        ## scatter over fasta file array using consensus sequences from ivar
-        scatter (fasta_file in select_all(irma_ivar_consensus.ivar_consensus_fasta)) {
-            call post_assembly_qc.calc_percent_coverage as irma_percent_coverage { 
-                input:
-                    fasta_file  = fasta_file,
-                    python_script = calc_percent_cov_py,
-                    sample_name = sample_name
-                    
-            }
+       
 
-    
-        }
-
-        # run nextclade ha and nextclade na if exists
-         if (defined(irma_ivar_consensus.ivar_seg_ha_fasta)) {
-            File ivar_seg_ha_fasta = select_first(irma_ivar_consensus.ivar_seg_ha_fasta)
-            call nextclade.nextclade_ha as nextclade_ha{
-                input:
-                    ivar_seg_ha_fasta = ivar_seg_ha_fasta,
-                    irma_type = irma_subtyping_results.irma_type,
-                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype,
-                    sample_name = sample_name,
-            }
-
-         }
 
          if (defined(irma_ivar_consensus.ivar_seg_na_fasta)) {
             File ivar_seg_na_fasta = select_first(irma_ivar_consensus.ivar_seg_na_fasta)
