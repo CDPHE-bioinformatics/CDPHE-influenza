@@ -77,7 +77,6 @@ workflow influenza_assembly {
     call irma_task.irma as irma {
         input:
             sample_name = sample_name,
-            read_type = read_type,
             fastq_R1 = seqyclean.fastq_R1_cleaned,
             fastq_R2 = seqyclean.fastq_R2_cleaned
     }
@@ -95,7 +94,6 @@ workflow influenza_assembly {
     if (irma_subtyping_results.irma_type != 'no IRMA assembly generated') {
         # for each successfully assembled gene segment run-
         # 1- samtools, 2 - ivar concensus, 3 - calcualte percent_coverage, 4 - if HA or NA run nextclade
-    ,
 
         ####### 1 - HA ########
         if (defined(irma.irma_seg_ha_bam)) {
@@ -107,7 +105,7 @@ workflow influenza_assembly {
 
             call ivar.ivar_consensus as ha_ivar_consensus {
                 input:
-                    bam_file = irma_seg_ha_bam,
+                    bam_file = irma.irma_seg_ha_bam,
                     sample_name = sample_name
             }
 
@@ -138,7 +136,7 @@ workflow influenza_assembly {
 
             call ivar.ivar_consensus as na_ivar_consensus {
                 input:
-                    bam_file = irma_seg_na_bam,
+                    bam_file = irma.irma_seg_na_bam,
                     sample_name = sample_name
             }
 
@@ -154,7 +152,7 @@ workflow influenza_assembly {
                 input:
                     ivar_seg_na_fasta = na_ivar_consensus.ivar_consensus_fasta,
                     irma_type = irma_subtyping_results.irma_type,
-                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype,
+                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
                     sample_name = sample_name
             }
         }    
@@ -169,7 +167,7 @@ workflow influenza_assembly {
 
             call ivar.ivar_consensus as pb1_ivar_consensus {
                 input:
-                    bam_file = irma_seg_pb1_bam,
+                    bam_file = irma.irma_seg_pb1_bam,
                     sample_name = sample_name
             }
 
@@ -190,9 +188,9 @@ workflow influenza_assembly {
                     sample_name = sample_name
             }
 
-            call ivar.ivar_consensus as pb12_ivar_consensus {
+            call ivar.ivar_consensus as pb2_ivar_consensus {
                 input:
-                    bam_file = irma_seg_pb2_bam,
+                    bam_file = irma.irma_seg_pb2_bam,
                     sample_name = sample_name
             }
 
@@ -216,7 +214,7 @@ workflow influenza_assembly {
 
             call ivar.ivar_consensus as np_ivar_consensus {
                 input:
-                    bam_file = irma_seg_np_bam,
+                    bam_file = irma.irma_seg_np_bam,
                     sample_name = sample_name
             }
 
@@ -240,7 +238,7 @@ workflow influenza_assembly {
 
             call ivar.ivar_consensus as pa_ivar_consensus {
                 input:
-                    bam_file = irma_seg_pa_bam,
+                    bam_file = irma.irma_seg_pa_bam,
                     sample_name = sample_name
             }
 
@@ -255,7 +253,7 @@ workflow influenza_assembly {
         } 
         ####### 7 - NS ########
         if (defined(irma.irma_seg_ns_bam)) {
-            call post_assembly_qc.samtools_mapped_reads as nsmapped_reads {
+            call post_assembly_qc.samtools_mapped_reads as ns_mapped_reads {
                 input:
                     bam_file = irma.irma_seg_ns_bam,
                     sample_name = sample_name
@@ -263,7 +261,7 @@ workflow influenza_assembly {
 
             call ivar.ivar_consensus as ns_ivar_consensus {
                 input:
-                    bam_file = irma_seg_ns_bam,
+                    bam_file = irma.irma_seg_ns_bam,
                     sample_name = sample_name
             }
 
@@ -287,7 +285,7 @@ workflow influenza_assembly {
 
             call ivar.ivar_consensus as mp_ivar_consensus {
                 input:
-                    bam_file = irma_seg_mp_bam,
+                    bam_file = irma.irma_seg_mp_bam,
                     sample_name = sample_name
             }
 
@@ -300,7 +298,7 @@ workflow influenza_assembly {
             }
 
         } 
-            # create arrays to better handle groups of files
+        # create arrays to better handle groups of files
         # IRMA - fasta, bam, vcf
         Array[File?] irma_fasta_array = select_all([ irma.irma_seg_ha_fasta,
                                                     irma.irma_seg_na_fasta,
@@ -323,7 +321,7 @@ workflow influenza_assembly {
         Array[File?] irma_vcf_array = select_all([irma.irma_seg_ha_vcf,
                                                     irma.irma_seg_na_vcf,
                                                     irma.irma_seg_pb1_vcf,
-                                                    irma.irma_seg_b2_vcf,
+                                                    irma.irma_seg_pb2_vcf,
                                                     irma.irma_seg_np_vcf,
                                                     irma.irma_seg_pa_vcf,
                                                     irma.irma_seg_ns_vcf,
@@ -374,13 +372,8 @@ workflow influenza_assembly {
             input:
                 python_script = concat_post_assembly_qc_metrics_py,
                 sample_name = sample_name,
-                # percent coverage results
                 percent_coverage_csv_array = percent_coverage_csv_array,
-                # mapped_reads_csv
                 mapped_reads_csv_array = mapped_reads_csv_array,
-               
-
-
         }
     }
     
@@ -409,60 +402,16 @@ workflow influenza_assembly {
 
             # irma
             irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv,
+            irma_all_assembled_segments_fasta = irma.irma_all_assembled_segments_fasta,
+            irma_fasta_array = irma_fasta_array,
+            irma_bam_array = irma_bam_array,
+            irma_vcf_array = irma_vcf_array,
 
-            # irma - assemblies
-            irma_seg_ha_fasta = irma.irma_seg_ha_fasta,
-            irma_seg_na_fasta = irma.irma_seg_na_fasta,
-            irma_seg_pb1_fasta = irma.irma_seg_pb1_fasta,
-            irma_seg_pb2_fasta = irma.irma_seg_pb2_fasta,
-            irma_seg_np_fasta =  irma.irma_seg_np_fasta,
-            irma_seg_pa_fasta = irma.irma_seg_pa_fasta,
-            irma_seg_ns_fasta = irma.irma_seg_ns_fasta,
-            irma_seg_mp_fasta = irma.irma_seg_mp_fasta,
-            irma_all_assembled_segments_fasta = irma.irma_all_assembled_segments_fasta
+            # ivar
+            ivar_fasta_array = ivar_fasta_array,
 
-            # irma - alignments
-            irma_seg_ha_bam = irma.irma_seg_ha_bam,
-            irma_seg_na_bam = irma.irma_seg_na_bam,
-            irma_seg_pb1_bam = irma.irma_seg_pb1_bam,
-            irma_seg_pb2_bam = irma.irma_seg_pb2_bam,
-            irma_seg_np_bam = irma.irma_seg_np_bam,
-            irma_seg_pa_bam = irma.irma_seg_pa_bam,
-            irma_seg_ns_bam = irma.irma_seg_ns_bam,
-            irma_seg_mp_bam  = irma.irma_seg_mp_bam,
-
-            # irma - vcf
-            irma_seg_ha_vcf = irma.irma_seg_ha_vcf,
-            irma_seg_na_vcf = irma.irma_seg_na_vcf,
-            irma_seg_pb1_vcf = irma.irma_seg_pb1_vcf,
-            irma_seg_pb2_vcf = irma.irma_seg_b2_vcf,
-            irma_seg_np_vcf = irma.irma_seg_np_vcf,
-            irma_seg_pa_vcf = irma.irma_seg_pa_vcf,
-            irma_seg_ns_vcf = irma.irma_seg_ns_vcf,
-            irma_seg_mp_vcf = irma.irma_seg_mp_vcf,
-
-            # ivar - assemblies
-            ivar_seg_ha_fasta = ha_ivar_consensus.ivar_consensus_fasta,
-            ivar_seg_na_fasta = na_ivar_consensus.ivar_consensus_fasta,
-            ivar_seg_pb1_fasta = pb1_ivar_consensus.ivar_consensus_fasta,
-            ivar_seg_pb2_fasta = pb2_ivar_consensus.ivar_consensus_fasta,
-            ivar_seg_np_fasta = np_ivar_consensus.ivar_consensus_fasta,
-            ivar_seg_pa_fasta = pa_ivar_consensus.ivar_consensus_fasta,
-            ivar_seg_ns_fasta = ns_ivar_consensus.ivar_consensus_fasta,
-            ivar_seg_mp_fasta = mp_ivar_consensus.ivar_consensus_fasta,
-
-            # sorted bams from samtools
-            irma_seg_ha_bam_sorted = ha_mapped_reads.sorted_bam,
-            irma_seg_na_bam_sorted = na_mapped_reads.sorted_bam,
-            irma_seg_pb1_bam_sorted = pb1_mapped_reads.sorted_bam,
-            irma_seg_pb2_bam_sorted = pb2_mapped_reads.sorted_bam,
-            irma_seg_np_bam_sorted = np_mapped_reads.sorted_bam,
-            irma_seg_pa_bam_sorted = pa_mapped_reads.sorted_bam,
-            irma_seg_ns_bam_sorted = ns_mapped_reads.sorted_bam,
-            irma_seg_mp_bam_sorted = mp_mapped_reads.sorted_bam,
-
-        
-
+            # from samtoosls - sorted bams
+            sorted_bam_array = sorted_bam_array,
 
             irma_qc_metrics = irma_concat_post_qc_metrics.qc_metrics_summary,
 
@@ -486,8 +435,8 @@ workflow influenza_assembly {
 
         File fastqc1_html_raw = fastqc_raw.fastqc1_html
         File fastqc1_zip_raw = fastqc_raw.fastqc1_zip
-        File? fastqc2_html_raw = fastqc_raw.fastqc2_html
-        File? fastqc2_zip_raw = fastqc_raw.fastqc2_zip
+        File fastqc2_html_raw = fastqc_raw.fastqc2_html
+        File fastqc2_zip_raw = fastqc_raw.fastqc2_zip
 
         String seqyclean_version = seqyclean.seqyclean_version
         String seqyclean_docker = seqyclean.seqyclean_docker
@@ -495,45 +444,17 @@ workflow influenza_assembly {
 
         File fastqc1_html_cleaned = fastqc_cleaned.fastqc1_html
         File fastqc1_zip_cleaned = fastqc_cleaned.fastqc1_zip
-        File? fastqc2_html_cleaned = fastqc_cleaned.fastqc2_html
-        File? fastqc2_zip_cleaned = fastqc_cleaned.fastqc2_zip
+        File fastqc2_html_cleaned = fastqc_cleaned.fastqc2_html
+        File fastqc2_zip_cleaned = fastqc_cleaned.fastqc2_zip
 
         File preprocess_qc_metrics = concat_preprocess_qc_metrics.preprocess_qc_metrics
 
         # output from irma
         File irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv
         File? irma_all_assembled_segments_fasta = irma.irma_all_assembled_segments_fasta
-        
-        # assemblies
-        File? irma_seg_ha_fasta = irma.irma_seg_ha_fasta
-        File? irma_seg_na_fasta = irma.irma_seg_na_fasta
-        File? irma_seg_pb1_fasta = irma.irma_seg_pb1_fasta
-        File? irma_seg_pb2_fasta = irma.irma_seg_pb2_fasta
-        File? irma_seg_np_fasta = irma.irma_seg_np_fasta
-        File? irma_seg_pa_fasta = irma.irma_seg_pa_fasta
-        File? irma_seg_ns_fasta = irma.irma_seg_ns_fasta
-        File? irma_seg_mp_fasta = irma.irma_seg_mp_fasta
-
-        # alignments
-        File? irma_seg_ha_bam = irma.irma_seg_ha_bam
-        File? irma_seg_na_bam = irma.irma_seg_na_bam
-        File? irma_seg_pb1_bam = irma.irma_seg_pb1_bam
-        File? irma_seg_pb2_bam = irma_.irma_seg_pb2_bam
-        File? irma_seg_np_bam = irma_.irma_seg_np_bam
-        File? irma_seg_pa_bam = irma.irma_seg_pa_bam
-        File? irma_seg_ns_bam = irma.irma_seg_ns_bam
-        File? irma_seg_mp_bam = irma.irma_seg_mp_bam
-
-        # vcfs
-        File? irma_seg_ha_vcf = irma.irma_seg_ha_vcf
-        File? irma_seg_na_vcf = irma.irma_seg_na_vcf
-        File? irma_seg_pb1_vcf = irma.irma_seg_pb1_vcf
-        File? irma_seg_pb2_vcf = irma.irma_seg_pb2_vcf
-        File? irma_seg_np_vcf = irma.irma_seg_np_vcf
-        File? irma_seg_pa_vcf = irma.irma_seg_pa_vcf
-        File? irma_seg_ns_vcf = irma.irma_seg_ns_vcf
-        File? irma_seg_mp_vcf = irma.irma_seg_mp_vcf
-        
+        Array[File?]? irma_fasta_array_out = irma_fasta_array
+        Array[File?]? irma_bam_array_out = irma_bam_array
+        Array[File?]? irma_vcf_array_out = irma_vcf_array
         String irma_version = irma.irma_version
         String irma_docker = irma.irma_docker
         String irma_module = irma.irma_module
@@ -544,46 +465,11 @@ workflow influenza_assembly {
         String irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
         String irma_na_subtype = irma_subtyping_results.irma_na_subtype
 
-        # output from ivar_consensus
-        File? ivar_seg_ha_fasta = ha_ivar_consensus.ivar_consensus_fasta
-        File? ivar_seg_na_fasta = na_ivar_consensus.ivar_consensus_fasta
-        File? ivar_seg_pb1_fasta = pb1_ivar_consensus.ivar_consensus_fasta
-        File? ivar_seg_pb2_fasta = pb2_ivar_consensus.ivar_consensus_fasta
-        File? ivar_seg_np_fasta = np_ivar_consensus.ivar_consensus_fasta
-        File? ivar_seg_pa_fasta = pa_ivar_consensus.ivar_consensus_fasta
-        File? ivar_seg_ns_fasta = ns_ivar_consensus.ivar_consensus_fasta
-        File? ivar_seg_mp_fasta = mp_ivar_consensus.ivar_consensus_fasta
+        # output from post assembly
+        Array[File?]? ivar_fasta_array_out = ivar_fasta_array
+        Array[File?]? percent_coverage_csv_array_out = percent_coverage_csv_array
+        Array[File?]? sorted_bam_array_out = sorted_bam_array
 
-
-        # output from calculate percent coverage
-        File? seg_ha_percent_coverage_csv = ha_calc_percent_coverage.percent_coverage_csv
-        File? seg_na_percent_coverage_csv = na_calc_percent_coverage.percent_coverage_csv
-        File? seg_pb1_percent_coverage_csv = pb1_calc_percent_coverage.percent_coverage_csv
-        File? seg_pb2_percent_coverage_csv = pb2_calc_percent_coverage.percent_coverage_csv
-        File? seg_np_percent_coverage_csv = np_calc_percent_coverage.percent_coverage_csv
-        File? seg_pa_percent_coverage_csv = pa_calc_percent_coverage.percent_coverage_csv
-        File? seg_ns_percent_coverage_csv = ns_calc_percent_coverage.percent_coverage_csv
-        File? seg_mp_percent_coverage_csv = mp_calc_percent_coverage.percent_coverage_csv
-
-
-        # sorted bams from samtools 
-        File? irma_seg_ha_bam_sorted = ha_mapped_reads.sorted_bam
-        File? irma_seg_na_bam_sorted = na_mapped_reads.sorted_bam
-        File? irma_seg_pb1_bam_sorted = pb1_mapped_reads.sorted_bam
-        File? irma_seg_pb2_bam_sorted = pb2_mapped_reads.sorted_bam
-        File? irma_seg_np_bam_sorted = np_mapped_reads.sorted_bam
-        File? irma_seg_pa_bam_sorted = pa_mapped_reads.sorted_bam
-        File? irma_seg_ns_bam_sorted = ns_mapped_reads.sorted_bam
-        File? irma_seg_mp_bam_sorted = mp_mapped_reads.sorted_bam
-        
-        # mapped reads from samtools
-
-       
-
-        # output from post assembly QC metrics
-        Array[File]? irma_bam_results = irma_samtools_mapped_reads.bam_results
-        Array[File]? irma_per_cov_results = irma_percent_coverage.perc_cov_results
-        File? irma_assembly_qc_metrics = irma_concat_post_qc_metrics.qc_metrics_summary
 
         # output from nextclade
         File? na_nextclade_json = nextclade_na.na_nextclade_json

@@ -12,8 +12,8 @@ task transfer_assembly_wdl{
         # pre-process outputs
         File fastqc1_html_raw
         File fastqc1_zip_raw
-        File? fastqc2_html_raw
-        File? fastqc2_zip_raw
+        File fastqc2_html_raw
+        File fastqc2_zip_raw
 
         File seqyclean_summary
 
@@ -22,18 +22,18 @@ task transfer_assembly_wdl{
         File fastqc1_html_cleaned
         File fastqc1_zip_cleaned
         File? fastqc2_html_cleaned
-        File? fastqc2_zip_cleaned
+        File fastqc2_zip_cleaned
 
         # irma assembly outputs
         File irma_assembled_gene_segments_csv
         File? irma_all_assembled_segments_fasta
-        Array[File]? irma_assemblies
-        Array[File]? irma_bam_files
-        Array[File]? irma_vcfs
+        Array[File?]? irma_fasta_array
+        Array[File?]? irma_bam_array
+        Array[File?]? irma_vcf_array
 
         # ivar & sorted bams
-        Array[File]? ivar_fasta_array
-        Array[File]? sorted_bam_array
+        Array[File?]? ivar_fasta_array
+        Array[File?]? sorted_bam_array
 
         # post assembly qc outputs
         File? irma_qc_metrics

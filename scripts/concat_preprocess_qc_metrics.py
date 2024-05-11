@@ -40,7 +40,7 @@ if __name__ == '__main__':
     options = getOptions()
     sample_name = options.sample_name
     print(sample_name)
-    read_type = options.read_type
+
 
     fastqc_version = options.fastqc_version
     fastqc_docker = options.fastqc_docker

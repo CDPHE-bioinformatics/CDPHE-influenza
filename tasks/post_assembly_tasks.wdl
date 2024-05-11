@@ -6,7 +6,7 @@ task samtools_mapped_reads {
     }
 
     input {
-        File bam_file
+        File? bam_file
         String sample_name
     }
 

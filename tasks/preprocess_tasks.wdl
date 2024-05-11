@@ -9,8 +9,7 @@ task fastqc {
     input {
         String sample_name
         File fastq_R1
-        File? fastq_R2
-        String read_type
+        File fastq_R2
         String docker = 'staphb/fastqc:0.11.9'
     }
 
@@ -95,21 +94,15 @@ task seqyclean {
         File adapters_and_contaminants
         String sample_name
         File fastq_R1
-        File? fastq_R2
-        String read_type
+        File fastq_R2
         String docker = "staphb/seqyclean:1.10.09"
     }
 
     command <<<
 
         # run seqyclean
-        if [ ~{read_type} == "paired" ]; then
-            seqyclean -minlen 70 -qual 30 30 -gz -1 ~{fastq_R1} -2 ~{fastq_R2} -c ~{adapters_and_contaminants} -o ~{sample_name}_clean
-        elif [ ~{read_type} == "single" ]; then
-            seqyclean -minlen 70 -qual 30 30 -gz -U ~{fastq_R1} -c ~{adapters_and_contaminants} -o ~{sample_name}_clean
-            mv ~{sample_name}_clean_SE.fastq.gz ~{sample_name}_clean_PE1.fastq.gz # change name so matches output
-        fi
-        
+        seqyclean -minlen 70 -qual 30 30 -gz -1 ~{fastq_R1} -2 ~{fastq_R2} -c ~{adapters_and_contaminants} -o ~{sample_name}_clean
+       
         # pull version out of the summary file
         awk 'NR==2 {print $1}' ~{sample_name}_clean_SummaryStatistics.tsv | tee VERSION
     >>>
@@ -118,7 +111,7 @@ task seqyclean {
         String seqyclean_version = read_string("VERSION")
         String seqyclean_docker = "~{docker}"
         File fastq_R1_cleaned = "${sample_name}_clean_PE1.fastq.gz"
-        File? fastq_R2_cleaned = "${sample_name}_clean_PE2.fastq.gz"
+        File fastq_R2_cleaned = "${sample_name}_clean_PE2.fastq.gz"
         File seqyclean_summary = "${sample_name}_clean_SummaryStatistics.tsv"
     }
     runtime {
@@ -139,7 +132,6 @@ task concat_preprocess_qc_metrics {
     input {
         File python_script
         String sample_name
-        String read_type
         
         String fastqc_version
         String fastqc_docker
@@ -180,7 +172,6 @@ task concat_preprocess_qc_metrics {
             --read_pairs_cleaned "~{read_pairs_cleaned}" \
             --seqyclean_version "~{seqyclean_version}" \
             --seqyclean_docker "~{seqyclean_docker}" \
-            --read_type "~{read_type}" \
             --sample_name "~{sample_name}"
         
 

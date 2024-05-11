@@ -7,7 +7,7 @@ task ivar_consensus {
     }
 
     input {
-        File bam_file
+        File? bam_file
         String sample_name
         String docker = "andersenlabapps/ivar:1.3.1"
     }
