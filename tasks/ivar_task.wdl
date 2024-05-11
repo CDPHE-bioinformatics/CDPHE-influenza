@@ -9,6 +9,9 @@ task ivar_consensus {
     input {
         File? bam_file
         String sample_name
+        String irma_type
+        String irma_na_subtype
+        String irma_ha_subtype
         # String docker = "andersenlabapps/ivar:1.3.1"
     }
 
@@ -20,10 +23,10 @@ task ivar_consensus {
 
     command <<<
 
-    # create name for sorted bam file
+    # create name for sorted bam file (34345_HA.bam)
     prefix=$(basename ~{bam_file} | cut -d "." -f 1)
     
-    # pull sample id, segment name, and gene name from original ba file
+    # pull sample id, segment name from original ba file
     segment_name=$(echo "${prefix/${sample_name}/*}" | cut -d "_" -f 2-)
     
     # generate consensus; first sort bam file
@@ -36,7 +39,25 @@ task ivar_consensus {
 
     # rename consesnus header
     # header name should ideally be the same as prefix but whatever...
-    header_name=$(echo ${sample_name}_${segment_name})
+    if [ "~{irma_type}" == "A" ]; then
+        if [ "$segment_name" == "HA" ]; then
+            subtype="~{irma_ha_subtype}"
+        elif [ "$segment_name" == "NA" ]; then
+            subtype="~{irma_na_subtype}"
+        else
+            subtype=""  # Default if segment is neither "HA" nor "NA"
+        fi
+    elif [ "$irma_type" == "B" ]; then
+        subtype=""  # Set subtype to empty string if irma_type is "B"
+
+    fi
+    
+    if [${subptype} == ""]; then
+        header_name=$(echo ${sample_name}_~{irma_type}_${segment_name})
+    else
+        header_name=$(echo ${sample_name}_~{irma_type}_${segment_name}_${subtype})
+    fi
+    
     sed -i "s/>.*/>${header_name}/" ${prefix}.fa
 
     # output ivar parameters
