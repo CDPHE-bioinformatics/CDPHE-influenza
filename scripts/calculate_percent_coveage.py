@@ -47,7 +47,8 @@ def get_fasta_header(fasta_file_path):
 
 
 def get_segment_name(header, sample_name):
-    segment_name = header.split(sample_name)[-1]
+    segment_name = header.split(sample_name)[-1].lstrip("_") 
+    # header = 49487387_B_NS, split gets us _B_NS, so need to strip the leading "_" to get B_NS
     return segment_name
 
 def get_gene_name(segment_name):
