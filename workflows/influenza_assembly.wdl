@@ -106,7 +106,10 @@ workflow influenza_assembly {
             call ivar.ivar_consensus as ha_ivar_consensus {
                 input:
                     bam_file = irma.irma_seg_ha_bam,
-                    sample_name = sample_name
+                    sample_name = sample_name,
+                    irma_type = irma_subtyping_results.irma_type,
+                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
+                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
             }
 
             call post_assembly_qc.calc_percent_coverage as ha_calc_percent_coverage{
@@ -137,7 +140,10 @@ workflow influenza_assembly {
             call ivar.ivar_consensus as na_ivar_consensus {
                 input:
                     bam_file = irma.irma_seg_na_bam,
-                    sample_name = sample_name
+                    sample_name = sample_name,
+                    irma_type = irma_subtyping_results.irma_type,
+                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
+                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
             }
 
             call post_assembly_qc.calc_percent_coverage as na_calc_percent_coverage{
@@ -168,7 +174,10 @@ workflow influenza_assembly {
             call ivar.ivar_consensus as pb1_ivar_consensus {
                 input:
                     bam_file = irma.irma_seg_pb1_bam,
-                    sample_name = sample_name
+                    sample_name = sample_name,
+                    irma_type = irma_subtyping_results.irma_type,
+                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
+                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
             }
 
             call post_assembly_qc.calc_percent_coverage as pb1_calc_percent_coverage{
@@ -191,7 +200,10 @@ workflow influenza_assembly {
             call ivar.ivar_consensus as pb2_ivar_consensus {
                 input:
                     bam_file = irma.irma_seg_pb2_bam,
-                    sample_name = sample_name
+                    sample_name = sample_name,
+                    irma_type = irma_subtyping_results.irma_type,
+                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
+                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
             }
 
             call post_assembly_qc.calc_percent_coverage as pb2_calc_percent_coverage{
@@ -215,7 +227,10 @@ workflow influenza_assembly {
             call ivar.ivar_consensus as np_ivar_consensus {
                 input:
                     bam_file = irma.irma_seg_np_bam,
-                    sample_name = sample_name
+                    sample_name = sample_name,
+                    irma_type = irma_subtyping_results.irma_type,
+                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
+                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
             }
 
             call post_assembly_qc.calc_percent_coverage as np_calc_percent_coverage{
@@ -233,7 +248,10 @@ workflow influenza_assembly {
             call post_assembly_qc.samtools_mapped_reads as pa_mapped_reads {
                 input:
                     bam_file = irma.irma_seg_pa_bam,
-                    sample_name = sample_name
+                    sample_name = sample_name,
+                    irma_type = irma_subtyping_results.irma_type,
+                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
+                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
             }
 
             call ivar.ivar_consensus as pa_ivar_consensus {
@@ -262,7 +280,10 @@ workflow influenza_assembly {
             call ivar.ivar_consensus as ns_ivar_consensus {
                 input:
                     bam_file = irma.irma_seg_ns_bam,
-                    sample_name = sample_name
+                    sample_name = sample_name,
+                    irma_type = irma_subtyping_results.irma_type,
+                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
+                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
             }
 
             call post_assembly_qc.calc_percent_coverage as ns_calc_percent_coverage{
@@ -286,7 +307,10 @@ workflow influenza_assembly {
             call ivar.ivar_consensus as mp_ivar_consensus {
                 input:
                     bam_file = irma.irma_seg_mp_bam,
-                    sample_name = sample_name
+                    sample_name = sample_name,
+                    irma_type = irma_subtyping_results.irma_type,
+                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
+                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
             }
 
             call post_assembly_qc.calc_percent_coverage as mp_calc_percent_coverage{
