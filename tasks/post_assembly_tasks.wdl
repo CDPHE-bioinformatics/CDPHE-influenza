@@ -16,9 +16,11 @@ task samtools_mapped_reads {
         prefix=$(basename ~{bam_file} | cut -d "." -f 1)
         sorted_bam=$(echo ${prefix}.sorted.bam)
         
-        # pull sample id, segment name, and gene name from original ba file
+        # # pull sample id, segment name, and gene name from original ba file
+        # these are the same because I don't want to input the type and subtpye into
+        # and downstream that info is not pulled from this file
         segment_name=$(echo "${prefix/~{sample_name}/*}" | cut -d "_" -f 2)
-        gene_name=$(echo "${prefix/~{sample_name}/*}" | cut -d "_" -f 3)
+        gene_name=$(echo "${prefix/~{sample_name}/*}" | cut -d "_" -f 2)
 
         # create sorted bam file
         samtools sort ~{bam_file} -o ${sorted_bam}
@@ -28,10 +30,13 @@ task samtools_mapped_reads {
         samtools coverage ${sorted_bam} | tail -1 | cut -f 7 > mean_depth.txt
 
         # create output file
+        # echo "sample_name,file_name,segment_name,gene_name,description,value" > mapped_reads.csv
+        # echo "~{sample_name},${sorted_bam},${segment_name},${gene_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> mapped_reads.csv
+        # echo "~{sample_name},${sorted_bam},${segment_name},${gene_name},mean_depth,$(cat mean_depth.txt)" >> mapped_reads.csv
+
         echo "sample_name,file_name,segment_name,gene_name,description,value" > mapped_reads.csv
         echo "~{sample_name},${sorted_bam},${segment_name},${gene_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> mapped_reads.csv
         echo "~{sample_name},${sorted_bam},${segment_name},${gene_name},mean_depth,$(cat mean_depth.txt)" >> mapped_reads.csv
-
 
     >>>
 

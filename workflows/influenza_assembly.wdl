@@ -248,16 +248,16 @@ workflow influenza_assembly {
             call post_assembly_qc.samtools_mapped_reads as pa_mapped_reads {
                 input:
                     bam_file = irma.irma_seg_pa_bam,
-                    sample_name = sample_name,
-                    irma_type = irma_subtyping_results.irma_type,
-                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
-                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
+                    sample_name = sample_name
             }
 
             call ivar.ivar_consensus as pa_ivar_consensus {
                 input:
                     bam_file = irma.irma_seg_pa_bam,
-                    sample_name = sample_name
+                    sample_name = sample_name,
+                    irma_type = irma_subtyping_results.irma_type,
+                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
+                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
             }
 
             call post_assembly_qc.calc_percent_coverage as pa_calc_percent_coverage{
