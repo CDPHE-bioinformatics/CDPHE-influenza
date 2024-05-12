@@ -143,7 +143,6 @@ Use the ``influenza_assembly_inputs.json``  template for the ``influenza_assembl
 |   |   |──{sample_name}_all_assembled_segments.fasta #repeat for each sample
 |   ├── irma_assembly_results
 |   |   |──{sample_name}_irma_assembled_gene_segments.csv #repeat for each sample
-|   |   |──{sample_name}_irma_qc_metrics.csv #repeat for each sample
 |   ├── irma_alignments
 |   |   |──{sample_name} #repeat for each sample
 |   |   |   |──{sample_name}_HA.bam
@@ -160,6 +159,8 @@ Use the ``influenza_assembly_inputs.json``  template for the ``influenza_assembl
 |   |   |──{sample_name} #repeat for each sample
 |   |   |   |──{sample_name}_HA.fa # header has full type/subtype description (e.g. A_HA_H3)
 |   |   |   |──{sample_name}_PB1.fa # header has full type/subtype description (e.g. A_PB1)
+|   ├── assembly_qc_metrics
+|   |   |──{sample_name}_qc_metrics.csv #repeat for each sample
 |   ├── sorted_bams
 |   |   |──{sample_name} #repeat for each sample
 |   |   |   |──{sample_name}_HA.sorted.bam 
