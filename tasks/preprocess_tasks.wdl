@@ -10,7 +10,7 @@ task fastqc {
         String sample_name
         File fastq_R1
         File fastq_R2
-        # String docker = 'staphb/fastqc:0.11.9'
+        String docker = 'staphb/fastqc:0.11.9'
     }
 
     command <<<
@@ -95,7 +95,7 @@ task seqyclean {
         String sample_name
         File fastq_R1
         File fastq_R2
-        # String docker = "staphb/seqyclean:1.10.09"
+        String docker = "staphb/seqyclean:1.10.09"
     }
 
     command <<<
