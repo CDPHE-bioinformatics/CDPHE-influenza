@@ -88,9 +88,9 @@ task transfer_assembly_wdl{
         gsutil -m cp ~{irma_qc_metrics} ~{out_path}/irma_assembly_results/
 
         # transfer nextclade
-        gustil -m cp ~{na_nextclade_json} ~{out_path}/nextclade_outp/~{sample_name}/
+        gustil -m cp ~{na_nextclade_json} ~{out_path}/nextclade_out/~{sample_name}/
         gustil -m cp ~{na_nextclade_tsv} ~{out_path}/nextclade_out/~{sample_name}/
-        gustil -m cp ~{na_translation_fasta} ~{out_path}/nextclade_ou/~{sample_name}/
+        gustil -m cp ~{na_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
         gustil -m cp ~{ha_nextclade_json} ~{out_path}/nextclade_out/~{sample_name}/
         gustil -m cp ~{ha_nextclade_tsv} ~{out_path}/nextclade_out/~{sample_name}/
         gustil -m cp ~{ha_HA1_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/

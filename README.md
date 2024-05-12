@@ -3,9 +3,11 @@
 <br/>
 
 ## **Table of Contents**
-1. [In Development](#in-development)
+1. [Overview](#overview)
 
-2. [IRMA Overview](#irma-overview)
+    [1-influenza_assembly.wdl](influenza_assembly-wdl)
+
+    [2-influenza_assembly_summary.wdl](influenza_assembly_summary-wdl)
 
 3. [Running on Terra](#running-on-terra)
 
@@ -25,42 +27,44 @@
     [2-influenza_assembly_summary.wdl](#2-influenza_assembly_summary-wdl)
 
 6. [Example Data](#example-data)
+7. [FAQ](#FAQ)
 
 <br/>
 <br/>
 
-## **In Development** 
-This repository is in active development. This document describes the Colorado Department of Public Health and Environment's workflow for the assembly and anlaysis of whole genome sequenicng data of influenza A and B ulitizing the Terra.bio platform. The pipeline consists of two workflows: influenza_assembly.wdl and influenza_assembly_summary.wdl. The first performs the assembly on each sample (entity = sample). The second generates a summary file that includes assembly summary statistics for all samples (entity = sample_set). Parts of the influenza_assembly.wdl workflow was adapted from and influenced by Thieagen Genomics's wf_theiacov_illumina_pe workflow for influenza. 
+## **Overview** 
+This repository is in active development. This document describes the Colorado Department of Public Health and Environment's workflow for the assembly and anlaysis of whole genome sequenicng data of influenza A and B ulitizing the Terra.bio platform. The pipeline consists of two workflows: influenza_assembly.wdl and influenza_assembly_summary.wdl. The first performs the assembly on each sample (entity = sample). The second generates a summary file that includes assembly summary statistics for all samples (entity = sample_set). Parts of the influenza_assembly.wdl workflow was adapted from and influenced by Thieagen Genomics's wf_theiacov_illumina_pe workflow for influenza. Below provides a brief overview of each worklfow, for greater detail see [influenza_assembly.wdl](#1-influenza_assembly-wdl) and [influenza_assembly_summary.wdl](#2-influenza_assembly_summary-wdl).
+<br/> 
 
-### **Active Development Stages**
+### **influenza_assembly wdl**
+
+This workflow accepts illumina paired end data. The required workflow inputs are paired end fastq files - fastq_R1 and fastq_R2, and a gcp bucket path where result files will be transfered at the completion of the workflow. Additionally, a fasta file with adapters and contaminants sequences as well as 4 custom python scripts are required. These files can be stored in your terra workspace data. 
+
+The worklfow is divided into 5 parts:
+
+In **part 1**, the fastq files are preprocessed. Fastqc is used to determine fastq metrics and seqyclean filters reads based on lenght and removes contaminants and adapater sequences suppled in the adaptaer and contaminants fasta file. 
+
+In **part 2**, the software IRMA (Iterative Refinement Meta-Assembler) is run and summary results from the irma output are produced. IRMA was developed by the CDC. More information about IRMA can be found on the cdc irma webpage: https://wonder.cdc.gov/amd/flu/irma/. IRMA performs genome assembly and variant calling of flu. Illumina paired-end, Illumina single-end, and ONT data can be used with IRMA. Our workflow currently supports illumina paired end (single end has been depecated in v2.0.0). We use the default configuration file for the IRMA FLU module which means we use ALIGN_PROG=SAM and DEL_TYPE=''. It is also worth noting that for IRMA to attempt assembly at least 15 flu reads must map and that bases are called with at least 1 read using majority rule. 
+
+For all samples that pass IRMA, which we define as IRMA calling a flu type (A or B), samples are processed through part 3 and 4. 
+
+In **part 3**, post assembly processing occurs. First, using the bam files produced by IRMA, ivar is used to generate a second consensus sequence allowing for greater flexiblity and control over consensus generation parameters (e.g. min freq, min depth, min qual)). Currently we use a min freq of 0.5, a min depth of 25x and a min quality of 20. Follwoing ivar, we determine the percent coverage of each gene segment using the ivar consesnus assembly. Next, the number of mapped reads and mean read depth is determined using samtools. Finally, all post assemlby metrics (e.g. percent coverage, average depth, etc) are concatenated into a single csv file for each sample. 
+
+In **part 4**, clade and subclade determination for the HA and NA gene segments are performed using Nextclade. This only occurs if the HA and/or NA gene segments were successfully assembled; otherwise no output is produced. 
+
+In **part 5** data and results are transfered to the specified gcp bucket. (Even if IRMA failed, the preprocessing results will be transfered to the bucket). See [Output Directory Stucture](#output-directory-structure) for details about the directory stucture.
+
+<br/>
+
+### **influenza_assembly_summary wdl**
 
 
-- **Stage 1**: Baseline assembly using IRMA (Version 1.0.0 release). This will include a basic assembly pipeline that preprocesses raw fastq data from both SE and PE illumina data, generates assemblies using IRMA, generates conesensus assemblies using iVar, calculates percent coverage and mean depth for each gene segment, and generates a summary output.
-
-    **update versioin 1.1.0 (4/11/2023):**
-    - base calling changed to 25x depth from of 10x depth per CDC guidelines for calling base changes
-    - incorporates sequencing workbook information
-    - add total flu reads raw and total flu reads cleaned (for paired reads this simply mulitples the number of paired reads by 2)
-    - accounts for mixed type calling (i.e. some segments can be A and some can be B) by IRMA for mixed samples
-    - typo fixes
-
-    <br/>
-
-- **Stage 2** (Active deveopment): Building on the baseline assembly pipeline, during this stage we will expand beyond IRMA's subtyping capability, which currently only subtypes influenza A, by incorporating subyting using abricate. This will provide a lineage for influenza B viruses. Then using the subytping information, we will perform variant calling agains the vacciine strain. 
 
 
 <br/>
 <br/>
 
-## **IRMA Overview** 
 
-
-
-Our pipeline currently uses the Iterative Refinement Meta-Assembler (IRMA) for assembly. IRMA was developed by the CDC. More information about IRMA can be found here: https://wonder.cdc.gov/amd/flu/irma/. IRMA performs genome assembly and variant calling of flu. Illumina paired-end, Illumina single-end, and ONT data can be used with IRMA. Our workflow currently supports illumina paired end and illumina single end. We use the default configuration file for the IRMA FLU module which means we use ALIGN_PROG=SAM and DEL_TYPE=''. It is also worth noting that for IRMA to attempt assembly at least 15 flu reads must map and that bases are called with at least 1 read using majority rule. (We take the bam files from IRMA and run them through ivar to generate a consensus sequence which allows for greater flexiblity and control over consensus generation parameters (e.g. min freq, min depth, min qual)).
-
-
-<br/>
-<br/>
 
 ## **Running on Terra**
 In this section we describe how to prepare your terra workspace to run influenza_assembly.wdl followed by influenza_assembly_summary.wdl. All input for influenza_assembly_summary.wdl will be written to the terra data table during the influenza_assembly.wdl.
@@ -74,15 +78,10 @@ The datatable should look like the following and be saved as a tsv or txt file:
 
 For PE illumina data:
 
-| entity:sample_name   | read_type |  fastq_R1   | fastq_R2 | out_dir |
-|-------------------|-----|-------------|-----------|---------------------|
-| sample_name     | paired | gs://path_to_fastq_R1 | gs://path_to_fastq_R2 | gs://path_to_transfer_output
+| entity:sample_name   |  fastq_R1   | fastq_R2 | out_dir |
+|--------------------|-----------|-----------|---------------------|
+| sample_name     | gs://path_to_fastq_R1 | gs://path_to_fastq_R2 | gs://path_to_transfer_output
 
-For SE illumina data:
-
-| entity:sample_name   | read_type |  fastq_R1   | fastq_R2 | out_dir |
-|-------------------|-----|-------------|-----------|---------------------|
-| sample_name     | single | gs://path_to_fastq_R1 |  | gs://path_to_transfer_output
 
 
 <br/>
@@ -105,7 +104,7 @@ We have our workflow setup so that the following data files are stored in our wo
 ### **3-Specifying Workflow Inputs**
 
 
-Use the ``influenza_assembly_inputs_PE.json`` or ``influenza_assembly_inputs_SE.json`` template for the ``influenza_assembly.wdl`` inputs and use the ``influenza_assembly_summary_inputs.json`` for the ``influenza_assembly_summary.wdl`` located in ``./inputs/`` to see correct inputs for each workflow. There are some optional inputs for the ``influenza_assembly.wdl`` which will be in italics in the terra inputs table. Below lists these optional inputs as well as what the default is used if the input is left bank.
+Use the ``influenza_assembly_inputs.json``  template for the ``influenza_assembly.wdl`` inputs and use the ``influenza_assembly_summary_inputs.json`` for the ``influenza_assembly_summary.wdl`` located in ``./inputs/`` to see correct inputs for each workflow. There are some optional inputs for the ``influenza_assembly.wdl`` which will be in italics in the terra inputs table. Below lists these optional inputs as well as what the default is used if the input is left bank.
 
 | task | WDL variable | default| options|
 |----|----|----|---|
@@ -140,28 +139,41 @@ Use the ``influenza_assembly_inputs_PE.json`` or ``influenza_assembly_inputs_SE.
 │   │   ├── {sample_name}_clean_SummaryStatistics.tsv
 |   ├── preprocess_qc_metrics
 │   │   ├── {smaple_id}_preprocess_qc_metrics.csv
-|   ├── irma
-│   │   ├── {sample_name} (repeat for each sample)
-|   |   |   ├── {sample_name}_irma_assembled_gene_segments.csv
-|   |   |   ├── {sample_name}_assembly_qc_metrics.csv
-|   |   |   ├── assemblies
-|   |   |   |   ├── {sample_name}_A_HA_H3.fasta
-|   |   |   |   ├── {sample_name}_A_MP.fasta
-|   |   |   ├── bam files
-|   |   |   |   ├── {sample_name}_A_HA_H3.bam
-|   |   |   |   ├── {sample_name}_A_MP.bam
-|   |   |   ├── vcfs
-|   |   |   |   ├── {sample_name}_A_HA_H3.vcf
-|   |   |   |   ├── {sample_name}_A_MP.vcf
-|   |   |   ├── sorted_bam_files
-|   |   |   |   ├── {sample_name}_A_HA_H3.sorted.bam
-|   |   |   |   ├── {sample_name}_A_MP.sorted.bam
-|   |   |   ├── irma_ivar_consesnsus
-|   |   |   |   ├── {sample_name}_A_HA_H3.fa
-|   |   |   |   ├── {sample_name}_A_MP.fa
-|   |   |   ├── irma_ivar_outputs
-|   |   |   |   ├── {sample_name}_A_HA_H3_ivar_output.txt
-|   |   |   |   ├── {sample_name}_A_MP_ivar_output.txt
+|   ├── irma_assembly_mutlifasta
+|   |   |──{sample_name}_all_assembled_segments.fasta #repeat for each sample
+|   ├── irma_assembly_results
+|   |   |──{sample_name}_irma_assembled_gene_segments.csv #repeat for each sample
+|   |   |──{sample_name}_irma_qc_metrics.csv #repeat for each sample
+|   ├── irma_alignments
+|   |   |──{sample_name} #repeat for each sample
+|   |   |   |──{sample_name}_HA.bam
+|   |   |   |──{sample_name}_PB1.bam
+|   ├── irma_assemblies
+|   |   |──{sample_name} #repeat for each sample
+|   |   |   |──{sample_name}_HA_irma.fasta # header has full type/subtype description (e.g. A_HA_H3)
+|   |   |   |──{sample_name}_PB1_irma.fasta # header has full type/subtype description (e.g. A_PB1)
+|   ├── irma_vcfs 
+|   |   |──{sample_name} #repeat for each sample
+|   |   |   |──{sample_name}_HA.vcf
+|   |   |   |──{sample_name}_PB1.vcf
+|   ├── ivar_assemblies
+|   |   |──{sample_name} #repeat for each sample
+|   |   |   |──{sample_name}_HA.fa # header has full type/subtype description (e.g. A_HA_H3)
+|   |   |   |──{sample_name}_PB1.fa # header has full type/subtype description (e.g. A_PB1)
+|   ├── sorted_bams
+|   |   |──{sample_name} #repeat for each sample
+|   |   |   |──{sample_name}_HA.sorted.bam 
+|   |   |   |──{sample_name}_PB1.sorted.bam 
+|   ├── nextclade_out
+|   |   |──{sample_name} #repeat for each sample
+|   |   |   |──{sample_name}_na_nextclade.json
+|   |   |   |──{sample_name}_na_nextclade.tsv
+|   |   |   |──{sample_name}_na_translation.fasta
+|   |   |   |──{sample_name}_ha_nextclade.json
+|   |   |   |──{sample_name}_ha_nextclade.tsv
+|   |   |   |──{sample_name}_ha_HA1_translation.fasta
+|   |   |   |──{sample_name}_ha_HA2_translation.fasta
+|   |   |   |──{sample_name}_ha_SigPep_translation.fasta
 │   ├── sumamry_files
 |   |   ├── {project_name}_sequencing_results.csv
 
@@ -176,7 +188,7 @@ Use the ``influenza_assembly_inputs_PE.json`` or ``influenza_assembly_inputs_SE.
 
 <br/>
 
-![influenza assembly workflow diagram](./diagrams/influenza_assembly_workflow_diagram_2023-01-15.png "influenza assembly workflow diagram")
+![influenza assembly workflow diagram](diagrams/influenza_assembly_workflow_diagram_2024-05-11.drawio.png "influenza assembly workflow diagram")
 
 <br/>
 
@@ -199,26 +211,33 @@ This workflow is run on the entity sample. The workflow can be broken down into 
 
 |Task Name | Description |
 |----------|-------------|
-| irma | Runs CDC's IRMA to assemble influenza gene segements. Outputs transfered inlcude assembly files (fasta), alignment files (bam), and variant files (vcf). The influenza (A, B, C, D) type and subtype (for influenza A) is also captured from the output. The default parameters for IRMA are used. See above under IRMA overview for a description of these parameters. Output files are stored as an array.|
+| irma | Runs CDC's IRMA to assemble influenza gene segements. Outputs transfered inlcude assembly files (fasta, renamed as {sample_name}_{gene_segment}_irma.fasta (e.g. 45653456_HA_irma.fasta)), alignment files (bam, renamed as {sample_name}_{gene_segment}.bam (e.g. 4568987_HA.bam)), and variant files (vcfrenamed as {sample_name}_{gene_segment}.vcf (e.g. 4568987_HA.vcf)). The influenza type (A, B) and subtype (e.g. H1, H3, N1, N2 for influenza A) is also captured from the output. The default parameters for IRMA are used. See above under [Overview](#overview) for a description of these parameters. |
 |irma_subtying_results| This task uses a python script to format the irma typing and subtyping results in a tabular form.|
 
 <br/>
 
-3. **Consensus sequence generation using iVAR**
+3. **Post Assembly Processing**
+
+These tasks are performed individaully on each successfully assembled gene segment. Concat_post_qc_metrics concatenates the results for each individual gene segment into a single file.
 
 |Task Name | Description |
 |----------|-------------|
-| irma_ivar_consensus  | Generates a consensus sequence for each assembled gene segment using the bam file from IRMA (sorted using samtools sort) and iVar. Base calling is determined using a minimum read depth = 10, a minimum frequency = 0.6, and a minium quality score = 20. Output is the consensus sequence for each assembled gene segment. Runs as a scatter function over the bam files array from IRMA output. The output files are stored as an array.|
+| ivar_consensus  | Generates a consensus sequence for each assembled gene segment using the bam file from IRMA (sorted using samtools sort) and iVar. Base calling is determined using a minimum read depth = 10, a minimum frequency = 0.6, and a minium quality score = 20. Output is the consensus sequence for each assembled gene segment. |
+| samtools_mapped_reads| calculates the mean depth and number of mapped reads using Samtools. The output is a tabular formatted csv file for each gene segment and the sorted bam file for each gene segmet.  |
+| calc_percent_coverage| Using a custom python script, calculates the percent coverage using the length of the refernece seed sequnce used by IRMA.  The output is a tabular formatted csv file for each gene segment. |
+| concat_post_qc_metrics| Using a custom python script, generates a singular tabular formated csv file summarizing the post assembly qc metrics (coverage, depth) for each gene segment. Output is a single csv file. |
 
 <br/>
 
-4. **Calculate Post Assembly QC Metrics**
+4. **Nextclade**
+
+Performed only if the HA and/or NA gene segment was successfully assembled.
 
 |Task Name | Description |
 |----------|-------------|
-| irma_samtools_mapped_reads| Scatters over each bam file produced form IRMA and calculates the mean depth and number of mapped reads using Samtools. The output is a tabular formatted csv file for each gene segment and the sorted bam file for each gene segmet. Outputs files are stored as an array. |
-| irma_percent_coverage| Scatters over each consensus sequence produced from the irma_ivar_consensus task and using a custom python script calculates the percent coverage using the length fo the refernece seed sequnce used by IRMA.  The output is a tabular formatted csv file for each gene segment. Outputs files are stored as an array.|
-| irma_concat_post_qc_metrics| Using a custom python script, generates a singular tabular formated csv file summarizing the post assembly qc metrics (coverage, depth) for each gene segment. Output is a single csv file. |
+| nextclade_ha| Runs nextclade on the ha gene segment. Determine the nextclade dataset to use based on the type and subtype determined by IRMA. All B types are assumed to be B-vic lineage. Outputs json, tsv and translation sequences. |
+| nextclade_na| Runs nextclade on the na gene segment. Determine the nextclade dataset to use based on the type and subtype determined by IRMA. All B types are assumed to be B-vic lineage. Outputs json, tsv and translation sequences. |
+
 
 <br/>
 
@@ -226,7 +245,7 @@ This workflow is run on the entity sample. The workflow can be broken down into 
 
 |Task Name | Description |
 |----------|-------------|
-| transfer_assembly_wdl  | Transfers intermediate and final output files to a specified gcp bucket path. See xx for directory structure. |
+| transfer  | Transfers intermediate and final output files to a specified gcp bucket path. See [Output Directory Stucture](#output-directory-structure) for directory structure. |
 
 <br/>
 
@@ -247,12 +266,12 @@ This workflow is run on the entity sample. The workflow can be broken down into 
 | fastqc_docker | N/A | docker used for fastqc |
 | fastqc1_html_raw | {sample_name}_R1_fastqc.html | |
 | fastqc1_zip_raw | {sample_name}_R1_fastqc.zip| |
-| fastqc2_html_raw | {sample_name}_R2_fastqc.html | empty if read_type == "single"|
-| fastqc2_zip_raw | {sample_name}_R2_fastqc.zip| empty if read_type == "single"|
+| fastqc2_html_raw | {sample_name}_R2_fastqc.html | |
+| fastqc2_zip_raw | {sample_name}_R2_fastqc.zip| |
 | fastqc1_html_cleaned | {sample_name}_R1_fastqc.html|  |
 | fastqc1_zip_cleaned| {sample_name}_R1_fastqc.zip|  |
-| fastqc2_html_cleaned | {sample_name}_R2_fastqc.html| empty if read_type == "single"|
-| fastqc2_zip_cleaned | {sample_name}_R2_fastqc.zip| empty if read_type == "single"|
+| fastqc2_html_cleaned | {sample_name}_R2_fastqc.html| |
+| fastqc2_zip_cleaned | {sample_name}_R2_fastqc.zip| |
 | seqyclean_version | N/A | version of seqyclean |
 | seqyclean_docker | N/A | docker used for seqyclean | 
 | seqyclean_summary | {sample_name}_clean_SummaryStatistics.tsv | |
@@ -269,31 +288,46 @@ This workflow is run on the entity sample. The workflow can be broken down into 
 | irma_type | N/A | influenza type called by IRMA; options A, B, N/A|
 | irma_ha_subtype | N/A | if influenza type == "A" then it is the influenza subtype for the HA gene called by IRMA; commonly "H1" or "H3"|
 | irma_na_subtype | N/A | if influenza type == "A" then it is the influenza subtype for the NA gene called by IRMA; commonly "N1" or "N2" |
-|irma_assmbled_gene_segments | {sample_name}_irma_assembled_gene_segments.csv | csv file with the each assembled gene segment listed along with the type and (if applicable) the subtype of that that gene segment.| 
 |irma_typing| {sample_name}_irma_typing.csv | csv file with the sample id, irma type, irma ha subytpe and irma na subtype listed in a tabluar format|
-|irma_assemblies| {sample_name}_{flu_type}\_{gene_segment}.fasta | array of consensus assembly fasta files. Each assembled gene segment has a fasta file. The fasta header is formatted as : ">{sample_name}_{flu_type}\_{gene_segment}"|
-|irma_bam_files| {sample_name}_{flu_type}\_{gene_semgnet}.bam | Array of bam files. Each assembled gene segment has a bam file. The reference sequence is the final iterative plurality consensus |
-|irma_vcfs | {sample_name}_{flu_type}\_{gene_semgnet}.vcf | Array of vcf files. Each assembled gene segment has a vcf file. The reference sequence is the final iterative plurality consensus. |
+|irma_assmbled_gene_segments_csv | {sample_name}_irma_assembled_gene_segments.csv | csv file with the each assembled gene segment listed along with the type and (if applicable) the subtype of that that gene segment.| 
+|irma_all_assembled_segments_fasta| {sample_name}.fasta| multifasta will all assembled gene segments included|
+|irma_fasta_array_out| {sample_name}_{gene_segment}.fasta | array of consensus assembly fasta files. Each assembled gene segment has a fasta file. The fasta header is formatted as : ">{sample_name}_{flu_type}\_{gene_segment}"|
+|irma_bam_array_out_| {sample_name}_{gene_semgnet}.bam | Array of bam files. Each assembled gene segment has a bam file. The reference sequence is the final iterative plurality consensus |
+|irma_vcf_array_out | {sample_name}_{gene_semgnet}.vcf | Array of vcf files. Each assembled gene segment has a vcf file. The reference sequence is the final iterative plurality consensus. |
 
 
  <br/>
 
-**IRMA consensus outputs**
+**Post Assembly Processing Outputs**
 |WDL Output variable name | File Name | Description |
 |-------|------|------------|
-|irma_sorted_bams| {sample_name}_{flu_type}\_{gene_segment}.sorted.bam| Array of bam files from IRMA run through samtools sort; used for all post assembly qc metrics calucations|
-|irma_ivar_assemblies| {sample_name}_{flu_type}\_{gene_segment}.fa | Array of consensus sequences generated using ``ivar consensus`` (min depth = 10 reads, min freq = 0.6, min qual = 20)|
-|irma_ivar_outputs| {sample_name}_{flu_type}\_{gene_segment}_ivar_output.txt | Array of files. Screen output from ``ivar consensus`` written to file. |
+|sorted_bam_array_out| {sample_name}_{gene_segment}.sorted.bam| Array of bam files from IRMA run through samtools sort; used for all post assembly qc metrics calucations|
+|ivar_fasta_array_out| {sample_name}_{gene_segment}.fa | Array of consensus sequences generated using ``ivar consensus`` (min depth = 10 reads, min freq = 0.6, min qual = 20). The fasta header is formatted as : ">{sample_name}_{flu_type}\_{gene_segment}"|
+|percent_coverage_csv_array_out| percent_coverage_results.csv| Array of percent_coverage_results files. Each assembled gene segment has a per_cov_results.csv file. Contains the segment name, percent of genome covered (percent_coverage), the expected gene segmenet length (based on the seed reference segement size IRMA usees), and the assemblied gene segement length for that segment in a tabular format. Perecent coverage calculations based on the ivar consensus seqeunces generated. Produced only if assembly is successful.|
+|assembly_qc_metrics| {sample_name}_assebmly_qc_metrics.csv | A tablular formatted file that combines the bam_results and the perc_cov_reuslts files. Includes version and docker information for IRMA and iVar. Produced only if assembly is successful.|
 
  <br/>
 
-**IRMA Post Assembly QC Metrics outputs**
+
+**Nextclade Outputs**
 |WDL Output variable name | File Name | Description |
 |-------|------|------------|
-|irma_bam_results| bam_results.csv| Array of bam_results files. Each assembled gene segment has a bam_results.csv file. Contains the segment name, number of reads mapped and the mean depth for that segment in a tabular format. Produced only if assembly is successful. Uses sorted bam files. |
-|irma_per_cov_results| | Array of per_cov_results files. Each assembled gene segment has a per_cov_results.csv file. Contains the segment name, percent of genome covered (percent_coverage), the expected gene segmenet length (based on the seed reference segement size IRMA usees), and the assemblied gene segement length for that segment in a tabular format. Perecent coverage calculations based on the ivar consensus seqeunces generated. Produced only if assembly is successful.|
-|irma_assembly_qc_metrics | {sample_name}_assebmly_qc_metrics.csv | A tablular formatted file that combines the bam_results and the perc_cov_reuslts files. Includes version and docker information for IRMA and iVar. Produced only if assembly is successful.|
+|na_nextclade_json| {sample_name}_na_nextclade.json||
+|na_nextclade_tsv| {sample_name}_na_nextclade.tsv||
+|na_translation_fasta| |{sample_name}_na_translation.fasta||
+|ha_nextclade_json| {sample_name}_ha_nextclade.json||
+|ha_nextclade_tsv| {sample_name}_ha_nextclade.tsv||
+|ha_HA1_translation_fasta| {sample_name}_ha_HA1_translation.fasta||
+|ha_HA2_translation_fasta| {sample_name}_ha_HA2_translation.fasta ||
+|ha_SigPep_nextclade_translation_fasta| {sample_name}_ha_SigPep_translation.fasta||
 
+ <br/>
+
+
+**Transfer Outputs**
+|WDL Output variable name | File Name | Description |
+|-------|------|------------|
+|transfer_date| | date the files were transfered|
 
 
 <br/>

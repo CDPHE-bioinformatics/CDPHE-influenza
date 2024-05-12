@@ -392,7 +392,7 @@ workflow influenza_assembly {
 
         
         # concantenate post assembly qc metrics (coverage, depth) into a single file
-        call post_assembly_qc.concat_post_qc_metrics as irma_concat_post_qc_metrics{
+        call post_assembly_qc.concat_post_qc_metrics as concat_post_qc_metrics{
             input:
                 python_script = concat_post_assembly_qc_metrics_py,
                 sample_name = sample_name,
@@ -437,7 +437,7 @@ workflow influenza_assembly {
             # from samtoosls - sorted bams
             sorted_bam_array = sorted_bam_array,
 
-            irma_qc_metrics = irma_concat_post_qc_metrics.qc_metrics_summary,
+            assembly_qc_metrics = concat_post_qc_metrics.qc_metrics_summary,
 
             # nextclade
             na_nextclade_json = nextclade_na.na_nextclade_json,
