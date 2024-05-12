@@ -41,7 +41,7 @@ def get_fasta_filename(fasta_file_path):
     return filename
 
 def get_fasta_header(fasta_file_path):
-    record = SeqIO.read(fasta_file_path, 'fastas')
+    record = SeqIO.read(fasta_file_path, 'fasta')
     header = record.id # 34456_A_HA_H3, 3454567_B_PB1
     return header
 
