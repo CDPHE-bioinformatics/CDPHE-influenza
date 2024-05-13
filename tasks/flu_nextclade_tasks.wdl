@@ -119,7 +119,7 @@ task nextclade_na {
     nextclade dataset get --name ${dataset} --output-dir "data/flu_na"
 
     #2- run nextclade
-    nextclade run --input-dataset data/flu_ha --output-all=. "~{ivar_seg_na_fasta}"
+    nextclade run --input-dataset data/flu_na --output-all=. "~{ivar_seg_na_fasta}"
 
     # 3- rename files
     mv nextclade.json "~{sample_name}_na_nextclade.json"
