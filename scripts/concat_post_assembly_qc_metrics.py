@@ -33,8 +33,8 @@ col_headers = ['sample_name', 'total_segments','total_flu_mapped_reads', 'averag
 def getOptions(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Parses command.")
     parser.add_argument( "--sample_name")
-    parser.add_argument( "--mapped_reads_csv_array")
-    parser.add_argument( "--percent_coverage_csv_array")
+    parser.add_argument( "--mapped_reads_csv_list")
+    parser.add_argument( "--percent_coverage_csv_list")
     options = parser.parse_args(args)
     return options
 
@@ -59,8 +59,8 @@ if __name__ == '__main__':
 
     options = getOptions()
     sample_name = options.sample_name
-    mapped_reads_csv_file_list = options.mapped_reads_csv_array
-    percent_coverage_csv_file_list= options.percent_coverage_csv_array
+    mapped_reads_csv_file_list = options.mapped_reads_csv_list
+    percent_coverage_csv_file_list= options.percent_coverage_csv_list
     print(mapped_reads_csv_file_list)
     print()
     print(percent_coverage_csv_file_list)

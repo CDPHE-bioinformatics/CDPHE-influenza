@@ -116,7 +116,7 @@ task nextclade_na {
 
     # run nextclade:
     # 1- download the dataset
-    nextclade dataset get --name ${dataset} --output_-dir "data/flu_na"
+    nextclade dataset get --name ${dataset} --output-dir "data/flu_na"
 
     #2- run nextclade
     nextclade run --input-dataset data/flu_ha --output-all=. "~{ivar_seg_na_fasta}"
