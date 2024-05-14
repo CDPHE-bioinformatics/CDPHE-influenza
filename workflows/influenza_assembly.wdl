@@ -399,7 +399,7 @@ workflow influenza_assembly {
     #             percent_coverage_csv_array = percent_coverage_csv_array,
     #             mapped_reads_csv_array = mapped_reads_csv_array
     #     }
-    # }
+    }
     
     
 
