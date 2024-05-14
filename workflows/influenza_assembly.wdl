@@ -392,14 +392,14 @@ workflow influenza_assembly {
 
         
         # concantenate post assembly qc metrics (coverage, depth) into a single file
-        call post_assembly_qc.concat_post_qc_metrics as concat_post_qc_metrics{
-            input:
-                python_script = concat_post_assembly_qc_metrics_py,
-                sample_name = sample_name,
-                percent_coverage_csv_array = percent_coverage_csv_array,
-                mapped_reads_csv_array = mapped_reads_csv_array
-        }
-    }
+    #     call post_assembly_qc.concat_post_qc_metrics as concat_post_qc_metrics{
+    #         input:
+    #             python_script = concat_post_assembly_qc_metrics_py,
+    #             sample_name = sample_name,
+    #             percent_coverage_csv_array = percent_coverage_csv_array,
+    #             mapped_reads_csv_array = mapped_reads_csv_array
+    #     }
+    # }
     
     
 
@@ -437,7 +437,7 @@ workflow influenza_assembly {
             # from samtoosls - sorted bams
             sorted_bam_array = sorted_bam_array,
 
-            assembly_qc_metrics = concat_post_qc_metrics.qc_metrics_summary,
+            # assembly_qc_metrics = concat_post_qc_metrics.qc_metrics_summary,
 
             # nextclade
             na_nextclade_json = nextclade_na.na_nextclade_json,
@@ -493,7 +493,7 @@ workflow influenza_assembly {
         Array[File?]? ivar_fasta_array_out = ivar_fasta_array
         Array[File?]? percent_coverage_csv_array_out = percent_coverage_csv_array
         Array[File?]? sorted_bam_array_out = sorted_bam_array
-        File? assembly_qc_metrics = concat_post_qc_metrics.qc_metrics_summary
+        # File? assembly_qc_metrics = concat_post_qc_metrics.qc_metrics_summary
 
 
         # output from nextclade
