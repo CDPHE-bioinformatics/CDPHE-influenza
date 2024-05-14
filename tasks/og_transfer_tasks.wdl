@@ -36,7 +36,7 @@ task transfer_assembly_wdl{
         Array[File?]? sorted_bam_array
 
         # post assembly qc outputs
- 
+        # File? assembly_qc_metrics
 
         # nextclade
         File? na_nextclade_json
@@ -85,7 +85,7 @@ task transfer_assembly_wdl{
          
 
         # transfer post assembly qc
-
+        # gsutil -m cp ~assembly_qc_metrics ~{out_path}/assembly_qc_metrics/
 
         # transfer nextclade
         gustil -m cp ~{na_nextclade_json} ~{out_path}/nextclade_out/~{sample_name}/
