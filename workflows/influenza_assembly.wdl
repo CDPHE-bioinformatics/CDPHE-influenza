@@ -22,7 +22,7 @@ workflow influenza_assembly {
         File concat_preprocess_qc_metrics_py
         File irma_subtyping_results_py
         File calc_percent_coverage_py
-        File concat_post_assembly_qc_metrics_py
+        # File concat_post_assembly_qc_metrics_py
     }
 
     # 1 - Preprocess QC raw fastq files
