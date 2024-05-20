@@ -22,7 +22,7 @@ workflow influenza_assembly {
         File concat_preprocess_qc_metrics_py
         File irma_subtyping_results_py
         File calc_percent_coverage_py
-        # File concat_post_assembly_qc_metrics_py
+        File concat_post_assembly_qc_metrics_py
     }
 
     # 1 - Preprocess QC raw fastq files
@@ -437,7 +437,7 @@ workflow influenza_assembly {
             # from samtoosls - sorted bams
             sorted_bam_array = sorted_bam_array,
 
-            # assembly_qc_metrics = concat_post_qc_metrics.qc_metrics_summary,
+            assembly_qc_metrics = concat_post_qc_metrics.qc_metrics_summary,
 
             # nextclade
             na_nextclade_json = nextclade_na.na_nextclade_json,
@@ -476,9 +476,9 @@ workflow influenza_assembly {
         # output from irma
         File irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv
         File? irma_all_assembled_segments_fasta = irma.irma_all_assembled_segments_fasta
-        Array[File?]? irma_fasta_array_out = irma_fasta_array
-        Array[File?]? irma_bam_array_out = irma_bam_array
-        Array[File?]? irma_vcf_array_out = irma_vcf_array
+        Array[File]? irma_fasta_array_out = irma_fasta_array
+        Array[File]? irma_bam_array_out = irma_bam_array
+        Array[File]? irma_vcf_array_out = irma_vcf_array
         String irma_version = irma.irma_version
         String irma_docker = irma.irma_docker
         String irma_module = irma.irma_module
@@ -490,10 +490,10 @@ workflow influenza_assembly {
         String irma_na_subtype = irma_subtyping_results.irma_na_subtype
 
         # output from post assembly
-        Array[File?]? ivar_fasta_array_out = ivar_fasta_array
-        Array[File?]? percent_coverage_csv_array_out = percent_coverage_csv_array
-        Array[File?]? sorted_bam_array_out = sorted_bam_array
-        # File? assembly_qc_metrics = concat_post_qc_metrics.qc_metrics_summary
+        Array[File]? ivar_fasta_array_out = ivar_fasta_array
+        Array[File]? percent_coverage_csv_array_out = percent_coverage_csv_array
+        Array[File]? sorted_bam_array_out = sorted_bam_array
+        File? assembly_qc_metrics = concat_post_qc_metrics.qc_metrics_summary
 
 
         # output from nextclade
