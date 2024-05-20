@@ -324,7 +324,7 @@ workflow influenza_assembly {
         } 
         # create arrays to better handle groups of files
         # IRMA - fasta, bam, vcf
-        Array[File?] irma_fasta_array = select_all([ irma.irma_seg_ha_fasta,
+        Array[File] irma_fasta_array = select_all([ irma.irma_seg_ha_fasta,
                                                     irma.irma_seg_na_fasta,
                                                     irma.irma_seg_pb1_fasta,
                                                     irma.irma_seg_pb2_fasta,
@@ -333,7 +333,7 @@ workflow influenza_assembly {
                                                     irma.irma_seg_ns_fasta,
                                                     irma.irma_seg_mp_fasta])
 
-        Array[File?] irma_bam_array = select_all([irma.irma_seg_ha_bam,
+        Array[File] irma_bam_array = select_all([irma.irma_seg_ha_bam,
                                                     irma.irma_seg_na_bam,
                                                     irma.irma_seg_pb1_bam,
                                                     irma.irma_seg_pb2_bam,
@@ -342,7 +342,7 @@ workflow influenza_assembly {
                                                     irma.irma_seg_ns_bam,
                                                     irma.irma_seg_mp_bam])
 
-        Array[File?] irma_vcf_array = select_all([irma.irma_seg_ha_vcf,
+        Array[File] irma_vcf_array = select_all([irma.irma_seg_ha_vcf,
                                                     irma.irma_seg_na_vcf,
                                                     irma.irma_seg_pb1_vcf,
                                                     irma.irma_seg_pb2_vcf,
@@ -352,7 +352,7 @@ workflow influenza_assembly {
                                                     irma.irma_seg_mp_vcf])
 
         # IVAR - fasta
-        Array[File?] ivar_fasta_array = select_all([ha_ivar_consensus.ivar_consensus_fasta,
+        Array[File] ivar_fasta_array = select_all([ha_ivar_consensus.ivar_consensus_fasta,
                                                     na_ivar_consensus.ivar_consensus_fasta,
                                                     pb1_ivar_consensus.ivar_consensus_fasta,
                                                     pb2_ivar_consensus.ivar_consensus_fasta,
@@ -362,7 +362,7 @@ workflow influenza_assembly {
                                                     mp_ivar_consensus.ivar_consensus_fasta])
 
         # Samtools - mapped reads csv, sorted bam
-        Array[File?] mapped_reads_csv_array = select_all([ha_mapped_reads.mapped_reads_csv,
+        Array[File] mapped_reads_csv_array = select_all([ha_mapped_reads.mapped_reads_csv,
                                                             na_mapped_reads.mapped_reads_csv,
                                                             pb1_mapped_reads.mapped_reads_csv,
                                                             pb2_mapped_reads.mapped_reads_csv,
@@ -371,7 +371,7 @@ workflow influenza_assembly {
                                                             ns_mapped_reads.mapped_reads_csv,
                                                             mp_mapped_reads.mapped_reads_csv])
 
-        Array[File?] sorted_bam_array = select_all([ha_mapped_reads.sorted_bam,
+        Array[File] sorted_bam_array = select_all([ha_mapped_reads.sorted_bam,
                                                         na_mapped_reads.sorted_bam,
                                                         pb1_mapped_reads.sorted_bam,
                                                         pb2_mapped_reads.sorted_bam,
@@ -381,7 +381,7 @@ workflow influenza_assembly {
                                                         mp_mapped_reads.sorted_bam])
 
         # percent coverage - percent coverage csv
-        Array[File?] percent_coverage_csv_array = select_all([ha_calc_percent_coverage.percent_coverage_csv,
+        Array[File] percent_coverage_csv_array = select_all([ha_calc_percent_coverage.percent_coverage_csv,
                                                                 na_calc_percent_coverage.percent_coverage_csv,
                                                                 pb1_calc_percent_coverage.percent_coverage_csv,
                                                                 pb2_calc_percent_coverage.percent_coverage_csv,
@@ -392,13 +392,13 @@ workflow influenza_assembly {
 
         
         # concantenate post assembly qc metrics (coverage, depth) into a single file
-    #     call post_assembly_qc.concat_post_qc_metrics as concat_post_qc_metrics{
-    #         input:
-    #             python_script = concat_post_assembly_qc_metrics_py,
-    #             sample_name = sample_name,
-    #             percent_coverage_csv_array = percent_coverage_csv_array,
-    #             mapped_reads_csv_array = mapped_reads_csv_array
-    #     }
+        call post_assembly_qc.concat_post_qc_metrics as concat_post_qc_metrics{
+            input:
+                python_script = concat_post_assembly_qc_metrics_py,
+                sample_name = sample_name,
+                percent_coverage_csv_array = percent_coverage_csv_array,
+                mapped_reads_csv_array = mapped_reads_csv_array
+        }
     }
     
     
