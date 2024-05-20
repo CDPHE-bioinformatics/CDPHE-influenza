@@ -65,11 +65,7 @@ if __name__ == '__main__':
     sample_name = options.sample_name
     mapped_reads_files_string_input = options.mapped_reads_csv_list
     percent_coverage_csv_file_string_input= options.percent_coverage_csv_list
-    print('these are the mapped reads input:')
-    print(mapped_reads_csv_file_list)
-    print('there are teh percent coverage files input:')
-    print(percent_coverage_csv_file_list)
-    print('done')
+
     
 
     # set up the pandas dataframe
