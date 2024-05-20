@@ -100,8 +100,8 @@ task concat_post_qc_metrics{
     input{
         File python_script
         String sample_name
-        Array[File?] mapped_reads_csv_array
-        Array[File?] percent_coverage_csv_array
+        Array[File] mapped_reads_csv_array
+        Array[File] percent_coverage_csv_array
         
     }
     
