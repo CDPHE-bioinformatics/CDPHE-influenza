@@ -52,7 +52,7 @@ task samtools_mapped_reads {
         File sorted_bam = select_first(glob("*.sorted.bam"))
 
         VersionInfo samtools_version_info = object{
-            software: 'samtools',
+            software: "samtools",
             docker: "~{docker}",
             version: read_string("VERSION")
         }

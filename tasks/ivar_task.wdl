@@ -97,13 +97,13 @@ task ivar_consensus {
         File ivar_parameters = "ivar_parameters.csv"
 
         VersionInfo ivar_version_info = object{
-            software: 'ivar',
+            software: "ivar",
             docker: "~{docker}",
             version: read_string("VERSION_ivar")
         }
 
         VersionInfo samtools_version_info = object{
-            software: 'ivar',
+            software: "ivar",
             docker: "~{docker}",
             version: read_string("VERSION_samtools")
         }

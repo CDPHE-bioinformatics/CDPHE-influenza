@@ -121,7 +121,7 @@ task irma {
 
 
         VersionInfo IRMA_version_info = object{
-            software: 'IRMA',
+            software: "IRMA",
             docker: "~{docker}",
             version: read_string("VERSION")
         }

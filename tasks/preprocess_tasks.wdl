@@ -81,7 +81,7 @@ task fastqc {
         String read_pairs = read_string("READ_PAIRS")
 
         VersionInfo fastqc_version_info = object{
-            software: 'fastqc',
+            software: "fastqc",
             docker: "~{docker}",
             version: read_string("VERSION")
         }
@@ -128,7 +128,7 @@ task seqyclean {
         File seqyclean_summary = "${sample_name}_clean_SummaryStatistics.tsv"
 
         VersionInfo seqyclean_version_info = object{
-            software: 'fastqc',
+            software: "fastqc",
             docker: "~{docker}",
             version: read_string("VERSION")
         }
