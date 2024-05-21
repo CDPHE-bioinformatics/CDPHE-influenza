@@ -9,10 +9,11 @@ task irma {
         String sample_name
         File fastq_R1
         File? fastq_R2
-        String module = "FLU"
-        String docker = "staphb/irma:1.0.3"
-
     }
+
+    String module = "FLU"
+    String docker = "staphb/irma:1.0.3"
+
     command <<<
         # grab version
         IRMA | head -n1 | awk -F' ' '{ print "IRMA " $5 }' | tee VERSION
@@ -124,7 +125,7 @@ task irma {
     }
 
     runtime {
-        docker: "staphb/irma:1.0.3"
+        docker: "~{docker}"
         memory: "8 GiB"
         cpu: 2
         disks: "local-disk 50 SSD"

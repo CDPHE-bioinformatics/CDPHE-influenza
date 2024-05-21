@@ -10,8 +10,9 @@ task fastqc {
         String sample_name
         File fastq_R1
         File fastq_R2
-        String docker = 'staphb/fastqc:0.11.9'
+        
     }
+    String docker = 'staphb/fastqc:0.11.9'
 
     command <<<
         # grab version
@@ -77,7 +78,7 @@ task fastqc {
     } 
 
     runtime {
-      docker: "staphb/fastqc:0.11.9"
+      docker: "~{docker}"
       memory: "1 GiB"
       cpu: 2
       disks: "local-disk 100 SSD"
@@ -95,8 +96,10 @@ task seqyclean {
         String sample_name
         File fastq_R1
         File fastq_R2
-        String docker = "staphb/seqyclean:1.10.09"
+        
     }
+
+    String docker = "staphb/seqyclean:1.10.09"
 
     command <<<
 
@@ -115,7 +118,7 @@ task seqyclean {
         File seqyclean_summary = "${sample_name}_clean_SummaryStatistics.tsv"
     }
     runtime {
-        docker: "staphb/seqyclean:1.10.09"
+        docker: "~{docker}"
         memory: "2 GiB"
         cpu: 2
         disks: "local-disk 100 SSD"

@@ -10,6 +10,8 @@ task samtools_mapped_reads {
         String sample_name
     }
 
+    String docker = "staphb/samtools:1.10"
+
     command <<<
 
         # create name for sorted bam file
@@ -52,7 +54,7 @@ task samtools_mapped_reads {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "staphb/samtools:1.10"
+        docker:    "~{docker}"
 
     }
 }

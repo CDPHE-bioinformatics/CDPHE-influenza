@@ -9,10 +9,11 @@ task nextclade_ha {
         File ivar_seg_ha_fasta
         String irma_type
         String irma_ha_subtype
-        String sample_name
-        
+        String sample_name 
 
     }
+    
+    String docker = "nextstrain/nextclade:latest"
 
 
     command <<<
@@ -71,7 +72,7 @@ task nextclade_ha {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "nextstrain/nextclade:latest"
+        docker:    "~{docker}"
 
     }
 }
@@ -86,10 +87,10 @@ task nextclade_na {
         File ivar_seg_na_fasta
         String irma_type
         String irma_na_subtype
-        String sample_name
-        
+        String sample_name  
 
     }
+    String docker = "nextstrain/nextclade:latest"
     
 
     command <<<
@@ -144,7 +145,7 @@ task nextclade_na {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "nextstrain/nextclade:latest"
+        docker:    "~{docker}"
 
     }
 }
