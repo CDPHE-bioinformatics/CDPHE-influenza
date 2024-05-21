@@ -2,6 +2,7 @@ version 1.0
 
 import "../tasks/summary_task.wdl" as summary 
 import "../tasks/transfer_tasks.wdl" as transfer
+import "../tasks/version_capture_task.wdl" as version_capture
 
 workflow influenza_assembly_summary{
     
@@ -46,12 +47,11 @@ workflow influenza_assembly_summary{
     }
 
 
-
     call transfer.transfer_assembly_summary_wdl as summary_transfer {
         input:
             sequencing_results_csv = summary.sequencing_results_csv,
-            version_capture_influenza_assembly_csv = summary.version_capture_influenza_assembly_csv
-            version_capture_influena_assembly_summary_csv = summary.version_capture_influenza_summary_csv
+            version_capture_influenza_assembly_csv = summary.version_capture_influenza_assembly_csv,
+            version_capture_influenza_assembly_summary_csv = summary.version_capture_influenza_assembly_summary_csv,
             bucket_path = out_bucket_path
     }
 
@@ -59,7 +59,7 @@ workflow influenza_assembly_summary{
 
         File sequencing_results_csv = summary.sequencing_results_csv
         File version_capture_influenza_assembly_csv = summary.version_capture_influenza_assembly_csv
-        File version_capture_influena_assembly_summary_csv = summary.version_capture_influena_assembly_summary_csv
+        File version_capture_influenza_assembly_summary_csv = summary.version_capture_influenza_assembly_summary_csv
         String transfer_date = summary_transfer.transfer_date
 
     }

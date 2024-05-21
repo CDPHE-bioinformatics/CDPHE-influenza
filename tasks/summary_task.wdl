@@ -2,7 +2,7 @@ version 1.0
 
 task summary {
     meta{
-        description: "concat all important metrics across samples into a single file"
+        description: "concat all important metrics across samples into a single file; and generate version capture files"
     }
 
     input{
@@ -26,7 +26,7 @@ task summary {
         --sample_name ~{write_lines(sample_name)} \
         --preprocess_qc_metrics ~{write_lines(preprocess_qc_metrics)} \
         --irma_typing ~{write_lines(irma_typing)} \
-        --post_assembly_qc_metrics ~{write_lines(irma_assembly_qc_metrics)} \
+        --post_assembly_qc_metrics ~{write_lines(post_assembly_qc_metrics)} \
         --nextclade_na_tsv ~{write_lines(nextclade_na_tsv)} \
         --nextclade_ha_tsv ~{write_lines(nextclade_ha_tsv)} \
         --version_capture_file ~{write_lines(version_capture_file)} \
@@ -38,8 +38,8 @@ task summary {
 
     output {
         File sequencing_results_csv = "~{project_name}_sequencing_results.csv" 
-        File version_capture_influenza_illumina_pe_assembly = "version_capture_influenza_illumina_pe_assembly_~{project_name}_~{workflow_version}.csv"
-        File version_capture_influenza_assembly_summary = "version_capture_influenza_assembly_summary_~{project_name}_~{workflow_version}.csv"
+        File version_capture_influenza_assembly_csv = "version_capture_influenza_assembly_~{project_name}_~{workflow_version}.csv"
+        File version_capture_influenza_assembly_summary_csv = "version_capture_influenza_assembly_summary_~{project_name}_~{workflow_version}.csv"
     }
 
     runtime {
