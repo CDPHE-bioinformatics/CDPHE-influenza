@@ -50,7 +50,7 @@ task transfer_assembly_wdl{
         File? ha_SigPep_translation_fasta
 
         # version capture
-        File version_catpture_file
+        File version_capture_file
 
     }
     

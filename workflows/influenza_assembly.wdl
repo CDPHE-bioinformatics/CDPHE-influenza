@@ -6,7 +6,7 @@ import "../tasks/irma_task.wdl" as irma_task
 import "../tasks/ivar_task.wdl" as ivar
 import "../tasks/post_assembly_tasks.wdl" as post_assembly_qc
 import "../tasks/transfer_tasks.wdl" as transfer
-import "../tasks/flu_nextclade_tasks.wdl" as nextclade
+import "../tasks/nextclade_tasks.wdl" as nextclade
 import "../tasks/version_capture_task.wdl" as version_capture
 
 # define struct
@@ -32,6 +32,7 @@ workflow influenza_assembly {
         File irma_subtyping_results_py
         File calc_percent_coverage_py
         File concat_post_assembly_qc_metrics_py
+        File version_capture_py
     }
 
     # 1 - Preprocess QC raw fastq files
@@ -88,7 +89,6 @@ workflow influenza_assembly {
         input:
             irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv,
             sample_name = sample_name,
-            irma_runtime_csv = irma.irma_runtime_csv,
             python_script = irma_subtyping_results_py
 
     }
@@ -411,7 +411,7 @@ workflow influenza_assembly {
     
     # create array of structs
     Array[VersionInfo] version_array = select_all([
-        fastqc_raw.fastq_version_info,
+        fastqc_raw.fastqc_version_info,
         seqyclean.seqyclean_version_info,
         irma.IRMA_version_info,
         ha_mapped_reads.samtools_version_info,
@@ -439,7 +439,7 @@ workflow influenza_assembly {
         ns_ivar_consensus.samtools_version_info,
         mp_mapped_reads.samtools_version_info,
         mp_ivar_consensus.ivar_version_info,
-        mp_ivar_consensus.samtools_version_info,
+        mp_ivar_consensus.samtools_version_info
 
     ])
 
@@ -511,16 +511,11 @@ workflow influenza_assembly {
 
     output {
         # output from preprocess
-        String fastqc_version = fastqc_raw.fastqc_version
-        String fastqc_docker = fastqc_raw.fastqc_docker
-
         File fastqc1_html_raw = fastqc_raw.fastqc1_html
         File fastqc1_zip_raw = fastqc_raw.fastqc1_zip
         File fastqc2_html_raw = fastqc_raw.fastqc2_html
         File fastqc2_zip_raw = fastqc_raw.fastqc2_zip
 
-        String seqyclean_version = seqyclean.seqyclean_version
-        String seqyclean_docker = seqyclean.seqyclean_docker
         File seqyclean_summary = seqyclean.seqyclean_summary
 
         File fastqc1_html_cleaned = fastqc_cleaned.fastqc1_html
@@ -536,9 +531,7 @@ workflow influenza_assembly {
         Array[File]? irma_fasta_array_out = irma_fasta_array
         Array[File]? irma_bam_array_out = irma_bam_array
         Array[File]? irma_vcf_array_out = irma_vcf_array
-        String irma_version = irma.irma_version
-        String irma_docker = irma.irma_docker
-        String irma_module = irma.irma_module
+
 
         # output from irma_subtyping_results
         File irma_typing = irma_subtyping_results.irma_typing
@@ -566,6 +559,7 @@ workflow influenza_assembly {
         
         # version capture
         File version_capture_file = task_version_capture.version_capture_file
+        
         # output from transfer
         String transfer_date=transfer_assembly_wdl.transfer_date
     }

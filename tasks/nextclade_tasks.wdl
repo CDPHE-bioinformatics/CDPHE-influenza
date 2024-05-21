@@ -1,5 +1,12 @@
 version 1.0
 
+# define structure
+struct VersionInfo {
+  String software
+  String docker
+  String version
+}
+
 task nextclade_ha {
     meta {
         description: "run nextclade"
@@ -68,7 +75,7 @@ task nextclade_ha {
         File ha_SigPep_translation_fasta = "~{sample_name}_nextclade.cds_translation.SigPep.fasta"
 
         VersionInfo nextclade_ha_version_info = object{
-            sofware: 'nextclade',
+            software: 'nextclade',
             docker: "~{docker}",
             version: read_string("VERSION")
         }
@@ -150,7 +157,7 @@ task nextclade_na {
         File na_translation_fasta = "~{sample_name}_nextclade.cds_translation.NA.fasta"
 
         VersionInfo nextclade_na_version_info = object{
-            sofware: 'nextclade',
+            software: 'nextclade',
             docker: "~{docker}",
             version: read_string("VERSION")
         }

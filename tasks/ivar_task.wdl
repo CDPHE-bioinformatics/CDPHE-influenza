@@ -1,5 +1,12 @@
 version 1.0
 
+# define structure
+struct VersionInfo {
+  String software
+  String docker
+  String version
+}
+
 # begin tasks
 task ivar_consensus {
     meta {
@@ -71,12 +78,13 @@ task ivar_consensus {
 
     cat ${prefix}.fa # for troubleshooting purposes print fasta contents to screen
 
-    # output ivar parameters
-    ivar version | head -n1 | cut -d " " -f 3 | tee VERSION
-    ivar_version=$(cat ivar_version.txt)
+    # output ivar parameters and version
+    ivar version | awk '/version/ {print $3}' | tee VERSION_ivar
     echo "ivar_min_depth,ivar_min_freq,ivar_min_qual" > ivar_parameters.csv
     echo "~{ivar_min_depth},~{ivar_min_freq},~{ivar_min_qual}" >> ivar_parameters.csv
 
+    # samtools version
+    samtools --version | awk '/samtools/ {print $2}' | tee VERSION_samtools
     >>>
 
     output {
@@ -87,9 +95,15 @@ task ivar_consensus {
         File ivar_parameters = "ivar_parameters.csv"
 
         VersionInfo ivar_version_info = object{
-            sofware: 'ivar',
+            software: 'ivar',
             docker: "~{docker}",
-            version: read_string("VERSION")
+            version: read_string("VERSION_ivar")
+        }
+
+        VersionInfo samtools_version_info = object{
+            software: 'ivar',
+            docker: "~{docker}",
+            version: read_string("VERSION_samtools")
         }
 
     }

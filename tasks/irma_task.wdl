@@ -1,5 +1,12 @@
 version 1.0
 
+# define structure
+struct VersionInfo {
+  String software
+  String docker
+  String version
+}
+
 task irma {
     meta {
         description: "runs CDC's IRMA for FLU. For more info on IRMA visit: https://wonder.cdc.gov/amd/flu/irma/configuration.html. Modified from theiagen genomics - public helath viral genomics (theiaCov PE workflow). This task runs the default config of IRMA meaning it uses: \ALIGN_PROG=SAM \DEL_TYPE=''"
@@ -114,7 +121,7 @@ task irma {
 
 
         VersionInfo IRMA_version_info = object{
-            sofware: 'IRMA',
+            software: 'IRMA',
             docker: "~{docker}",
             version: read_string("VERSION")
         }
@@ -132,8 +139,7 @@ task irma {
 
 task irma_subtyping_results {
     meta {
-        description: "taking the assembled gene segments info to pull out the type and subtype; 
-        added this task to account for potentially mixed types"
+        description: "taking the assembled gene segments info to pull out the type and subtype; added this task to account for potentially mixed types"
     }
 
     input {

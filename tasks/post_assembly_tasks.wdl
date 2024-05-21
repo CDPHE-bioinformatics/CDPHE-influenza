@@ -1,5 +1,12 @@
 version 1.0
 
+# define structure
+struct VersionInfo {
+  String software
+  String docker
+  String version
+}
+
 task samtools_mapped_reads {
     meta {
         description: "output sorted bams and use samtools to calc depth metrics"
@@ -45,7 +52,7 @@ task samtools_mapped_reads {
         File sorted_bam = select_first(glob("*.sorted.bam"))
 
         VersionInfo samtools_version_info = object{
-            sofware: 'samtools',
+            software: 'samtools',
             docker: "~{docker}",
             version: read_string("VERSION")
         }
