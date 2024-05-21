@@ -11,7 +11,6 @@ task irma {
         File? fastq_R2
     }
 
-    String module = "FLU"
     String docker = "staphb/irma:1.0.3"
 
     command <<<
@@ -75,9 +74,6 @@ task irma {
 
         fi 
 
-        # create an output file with all the irma info
-        echo "irma_version,irma_module,irma_docker" > 'irma_runtime.csv'
-        echo "${version},~{module},~{docker}" >> 'irma_runtime.csv'
 
     >>>
 
@@ -116,11 +112,12 @@ task irma {
         File? irma_seg_ns_vcf = "~{sample_name}_NS.vcf"
         File? irma_seg_mp_vcf = "~{sample_name}_MP.vcf"
 
-        # runtime
-        File irma_runtime_csv = "irma_runtime.csv"
-        String irma_version = read_string("VERSION")
-        String irma_docker = "~{docker}"
-        String irma_module = "~{module}"
+
+        VersionInfo IRMA_version_info = object{
+            sofware: 'IRMA',
+            docker: "~{docker}",
+            version: read_string("VERSION")
+        }
         
     }
 
@@ -135,13 +132,13 @@ task irma {
 
 task irma_subtyping_results {
     meta {
-        description: "taking the assembled gene segments info to pull out the type and subtype; added this task to account for potentially mixed types"
+        description: "taking the assembled gene segments info to pull out the type and subtype; 
+        added this task to account for potentially mixed types"
     }
 
     input {
         File irma_assembled_gene_segments_csv
         String sample_name
-        File irma_runtime_csv
 
         File python_script
     }
@@ -149,8 +146,7 @@ task irma_subtyping_results {
     command <<<
         python ~{python_script} \
             --irma_assembled_gene_segments_csv "~{irma_assembled_gene_segments_csv}" \
-            --sample_name "~{sample_name}" \
-            --irma_runtime_csv "~{irma_runtime_csv}"
+            --sample_name "~{sample_name}" 
     >>>
 
     output {
@@ -158,6 +154,7 @@ task irma_subtyping_results {
         String irma_type = read_string("TYPE.txt")
         String irma_ha_subtype = read_string("HA_SUBTYPE.txt")
         String irma_na_subtype = read_string("NA_SUBTYPE.txt")
+
     }
         
     runtime {

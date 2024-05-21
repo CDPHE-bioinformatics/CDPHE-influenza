@@ -37,7 +37,7 @@ task ivar_consensus {
     # generate consensus; first sort bam file
     samtools sort ~{bam_file} -o sorted.bam
     samtools mpileup -A --a -B -Q ~{ivar_min_qual} sorted.bam | \
-    ivar consensus -p ${prefix} -q ~{ivar_min_qual} -t ~{ivar_min_freq} -m ~{ivar_min_depth} | tee ${prefix}_ivar_output.txt
+    ivar consensus -p ${prefix} -q ~{ivar_min_qual} -t ~{ivar_min_freq} -m ~{ivar_min_depth} | tee ${prefix}_ivar_screen_capture.txt
     
     # fasta will be named prefix.fa
     cat ${prefix}.fa # for troubleshooting purposes print fasta contents to screen
@@ -72,10 +72,10 @@ task ivar_consensus {
     cat ${prefix}.fa # for troubleshooting purposes print fasta contents to screen
 
     # output ivar parameters
-    ivar version | head -n1 | cut -d " " -f 3 | tee ivar_version.txt
+    ivar version | head -n1 | cut -d " " -f 3 | tee VERSION
     ivar_version=$(cat ivar_version.txt)
-    echo "ivar_version,ivar_docker,ivar_min_depth,ivar_min_freq,ivar_min_qual" > ivar_parameters.csv
-    echo "${ivar_version},~{docker},~{ivar_min_depth},~{ivar_min_freq},~{ivar_min_qual}" >> ivar_parameters.csv
+    echo "ivar_min_depth,ivar_min_freq,ivar_min_qual" > ivar_parameters.csv
+    echo "~{ivar_min_depth},~{ivar_min_freq},~{ivar_min_qual}" >> ivar_parameters.csv
 
     >>>
 
@@ -83,10 +83,14 @@ task ivar_consensus {
         File ivar_consensus_fasta = select_first(glob("*.fa"))
         File? ivar_seg_ha_fasta = "~{sample_name}_HA*fa"
         File? ivar_seg_na_fasta = "~{sample_name}_NA*fa"
-        File ivar_output = select_first(glob("*_ivar_output.txt"))
-        String ivar_docker = "~{docker}"
-        String ivar_version = read_string("ivar_version.txt")
+        File ivar_output = select_first(glob("*_ivar_screen_capture.txt")) # currently not an output or transfered
         File ivar_parameters = "ivar_parameters.csv"
+
+        VersionInfo ivar_version_info = object{
+            sofware: 'ivar',
+            docker: "~{docker}",
+            version: read_string("VERSION")
+        }
 
     }
 

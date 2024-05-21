@@ -1,5 +1,12 @@
 version 1.0
 
+# define structure
+struct VersionInfo {
+  String software
+  String docker
+  String version
+}
+
 # begin tasks
 task fastqc {
     meta {
@@ -72,9 +79,12 @@ task fastqc {
         String read_length_R2 = read_string('READ2_LEN')
         
         String read_pairs = read_string("READ_PAIRS")
-        # String total_reads = read_string("TOTAL_READS")
-        String fastqc_version = read_string("VERSION")
-        String fastqc_docker = "~{docker}"
+
+        VersionInfo fastqc_version_info = object{
+            sofware: 'fastqc',
+            docker: "~{docker}",
+            version: read_string("VERSION")
+        }
     } 
 
     runtime {
@@ -111,11 +121,17 @@ task seqyclean {
     >>>
 
     output {
-        String seqyclean_version = read_string("VERSION")
-        String seqyclean_docker = "~{docker}"
+        # String seqyclean_version = read_string("VERSION")
+        # String seqyclean_docker = "~{docker}"
         File fastq_R1_cleaned = "${sample_name}_clean_PE1.fastq.gz"
         File fastq_R2_cleaned = "${sample_name}_clean_PE2.fastq.gz"
         File seqyclean_summary = "${sample_name}_clean_SummaryStatistics.tsv"
+
+        VersionInfo seqyclean_version_info = object{
+            sofware: 'fastqc',
+            docker: "~{docker}",
+            version: read_string("VERSION")
+        }
     }
     runtime {
         docker: "~{docker}"
@@ -135,9 +151,6 @@ task concat_preprocess_qc_metrics {
     input {
         File python_script
         String sample_name
-        
-        String fastqc_version
-        String fastqc_docker
 
         Int total_reads_R1_raw
         Int total_reads_R2_raw
@@ -152,17 +165,12 @@ task concat_preprocess_qc_metrics {
         String read_length_R2_cleaned
         String read_pairs_cleaned
 
-
-        String seqyclean_version
-        String seqyclean_docker
         
     }
 
     command <<<
 
         python ~{python_script} \
-            --fastqc_version "~{fastqc_version}" \
-            --fastqc_docker "~{fastqc_docker}" \
             --total_reads_R1_raw "~{total_reads_R1_raw}" \
             --total_reads_R2_raw "~{total_reads_R2_raw}" \
             --read_length_R1_raw "~{read_length_R1_raw}" \
@@ -173,8 +181,6 @@ task concat_preprocess_qc_metrics {
             --read_length_R1_cleaned "~{read_length_R1_cleaned}" \
             --read_length_R2_cleaned "~{read_length_R2_cleaned}" \
             --read_pairs_cleaned "~{read_pairs_cleaned}" \
-            --seqyclean_version "~{seqyclean_version}" \
-            --seqyclean_docker "~{seqyclean_docker}" \
             --sample_name "~{sample_name}"
         
 

@@ -32,19 +32,23 @@ task samtools_mapped_reads {
         samtools coverage ${sorted_bam} | tail -1 | cut -f 7 > mean_depth.txt
 
         # create output file
-        # echo "sample_name,file_name,segment_name,gene_name,description,value" > mapped_reads.csv
-        # echo "~{sample_name},${sorted_bam},${segment_name},${gene_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> mapped_reads.csv
-        # echo "~{sample_name},${sorted_bam},${segment_name},${gene_name},mean_depth,$(cat mean_depth.txt)" >> mapped_reads.csv
-
         echo "sample_name,file_name,segment_name,gene_name,description,value" > mapped_reads.csv
         echo "~{sample_name},${sorted_bam},${segment_name},${gene_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> mapped_reads.csv
         echo "~{sample_name},${sorted_bam},${segment_name},${gene_name},mean_depth,$(cat mean_depth.txt)" >> mapped_reads.csv
+
+        samtools --version | awk '/samtools/ {print $2}' | tee VERSION
 
     >>>
 
     output {
         File mapped_reads_csv = "mapped_reads.csv"
         File sorted_bam = select_first(glob("*.sorted.bam"))
+
+        VersionInfo samtools_version_info = object{
+            sofware: 'samtools',
+            docker: "~{docker}",
+            version: read_string("VERSION")
+        }
     }
 
     runtime {

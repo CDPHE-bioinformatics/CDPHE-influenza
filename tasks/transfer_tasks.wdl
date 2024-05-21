@@ -49,6 +49,9 @@ task transfer_assembly_wdl{
         File? ha_HA2_translation_fasta
         File? ha_SigPep_translation_fasta
 
+        # version capture
+        File version_catpture_file
+
     }
     
     String out_path = sub(bucket_path, "/$", "") # fix if have a / at end
@@ -97,6 +100,9 @@ task transfer_assembly_wdl{
         gustil -m cp ~{ha_HA2_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
         gustil -m cp ~{ha_SigPep_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
         
+        # version capture 
+        gsutil -m cp ~{version_capture_file} ~{out_path}/version_capture/
+
         # transfer date
         transferdate=`date`
         echo $transferdate | tee TRANSFERDATE

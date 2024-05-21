@@ -7,16 +7,25 @@ import "../tasks/ivar_task.wdl" as ivar
 import "../tasks/post_assembly_tasks.wdl" as post_assembly_qc
 import "../tasks/transfer_tasks.wdl" as transfer
 import "../tasks/flu_nextclade_tasks.wdl" as nextclade
+import "../tasks/version_capture_task.wdl" as version_capture
+
+# define struct
+struct VersionInfo {
+  String software
+  String docker
+  String version
+}
 
 # begin workflow
 workflow influenza_assembly {
 
     input {
         String sample_name
+        String project_name
         File fastq_R1
         File fastq_R2
         File adapters_and_contaminants
-        String bucket_path
+        String out_bucket_path
 
         # python scripts
         File concat_preprocess_qc_metrics_py
@@ -51,15 +60,11 @@ workflow influenza_assembly {
             python_script = concat_preprocess_qc_metrics_py,
             sample_name = sample_name,
 
-            fastqc_version = fastqc_raw.fastqc_version,
-            fastqc_docker = fastqc_raw.fastqc_docker,
-
             total_reads_R1_raw = fastqc_raw.total_reads_R1,
             total_reads_R2_raw = fastqc_raw.total_reads_R2,
             read_length_R1_raw = fastqc_raw.read_length_R1,
             read_length_R2_raw = fastqc_raw.read_length_R2,
             read_pairs_raw = fastqc_raw.read_pairs,
-
 
             total_reads_R1_cleaned = fastqc_cleaned.total_reads_R1,
             total_reads_R2_cleaned = fastqc_cleaned.total_reads_R2,
@@ -67,8 +72,6 @@ workflow influenza_assembly {
             read_length_R2_cleaned = fastqc_cleaned.read_length_R2,
             read_pairs_cleaned = fastqc_cleaned.read_pairs,
 
-            seqyclean_version = seqyclean.seqyclean_version,
-            seqyclean_docker = seqyclean.seqyclean_docker
 
 
     }
@@ -400,14 +403,63 @@ workflow influenza_assembly {
                 mapped_reads_csv_array = mapped_reads_csv_array
         }
     }
+
+    # 5 - Version capture
+    call version_capture.workflow_version_capture  as workflow_version_capture{
+        input:
+    }
     
+    # create array of structs
+    Array[VersionInfo] version_array = select_all([
+        fastqc_raw.fastq_version_info,
+        seqyclean.seqyclean_version_info,
+        irma.IRMA_version_info,
+        ha_mapped_reads.samtools_version_info,
+        ha_ivar_consensus.ivar_version_info,
+        ha_ivar_consensus.samtools_version_info,
+        nextclade_ha.nextclade_ha_version_info,
+        na_mapped_reads.samtools_version_info,
+        na_ivar_consensus.ivar_version_info,
+        na_ivar_consensus.samtools_version_info,
+        nextclade_na.nextclade_na_version_info,
+        pb1_mapped_reads.samtools_version_info,
+        pb1_ivar_consensus.ivar_version_info,
+        pb1_ivar_consensus.samtools_version_info,
+        pb2_mapped_reads.samtools_version_info,
+        pb2_ivar_consensus.ivar_version_info,
+        pb2_ivar_consensus.samtools_version_info,
+        np_mapped_reads.samtools_version_info,
+        np_ivar_consensus.ivar_version_info,
+        np_ivar_consensus.samtools_version_info,
+        pa_mapped_reads.samtools_version_info,
+        pa_ivar_consensus.ivar_version_info,
+        pa_ivar_consensus.samtools_version_info,
+        ns_mapped_reads.samtools_version_info,
+        ns_ivar_consensus.ivar_version_info,
+        ns_ivar_consensus.samtools_version_info,
+        mp_mapped_reads.samtools_version_info,
+        mp_ivar_consensus.ivar_version_info,
+        mp_ivar_consensus.samtools_version_info,
+
+    ])
+
+    call version_capture.task_version_capture as task_version_capture {
+        input:
+            version_array = version_array,
+            workflow_name = "influenza_illumina_pe_assembly",
+            workflow_version = workflow_version_capture.workflow_version,
+            project_name = project_name,
+            sample_name = sample_name,
+            analysis_date = workflow_version_capture.analysis_date,
+            version_capture_py = version_capture_py
+    }
     
 
-    # 5 - Transfer some intermediate files and all final files to gcp bucket
+    # 6 - Transfer some intermediate files and all final files to gcp bucket
     call transfer.transfer_assembly_wdl as transfer_assembly_wdl {
         input:
             sample_name = sample_name, 
-            bucket_path = bucket_path,
+            bucket_path = out_bucket_path,
 
             # preprocess and preprocesss qc metrics files
             fastqc1_html_raw = fastqc_raw.fastqc1_html,
@@ -448,7 +500,12 @@ workflow influenza_assembly {
             ha_nextclade_tsv = nextclade_ha.ha_nextclade_tsv,
             ha_HA1_translation_fasta = nextclade_ha.ha_HA1_translation_fasta,
             ha_HA2_translation_fasta = nextclade_ha.ha_HA2_translation_fasta,
-            ha_SigPep_translation_fasta = nextclade_ha.ha_SigPep_translation_fasta
+            ha_SigPep_translation_fasta = nextclade_ha.ha_SigPep_translation_fasta,
+
+            # version capture
+            version_capture_file = task_version_capture.version_capture_file
+
+    
     }
 
 
@@ -507,6 +564,8 @@ workflow influenza_assembly {
         File? ha_HA2_translation_fasta = nextclade_ha.ha_HA2_translation_fasta
         File? ha_SigPep_translation_fasta = nextclade_ha.ha_SigPep_translation_fasta
         
+        # version capture
+        File version_capture_file = task_version_capture.version_capture_file
         # output from transfer
         String transfer_date=transfer_assembly_wdl.transfer_date
     }

@@ -38,6 +38,9 @@ task nextclade_ha {
         
 
     # run nextclade:
+    # 0- caputre nextclade version
+    nextclade --version | tee VERSION
+
     # 1- download the dataset
     nextclade dataset get --name ${dataset} --output-dir "data/flu_ha"
 
@@ -63,6 +66,12 @@ task nextclade_ha {
         File ha_HA1_translation_fasta = "~{sample_name}_nextclade.cds_translation.HA1.fasta"
         File ha_HA2_translation_fasta = "~{sample_name}_nextclade.cds_translation.HA2.fasta"
         File ha_SigPep_translation_fasta = "~{sample_name}_nextclade.cds_translation.SigPep.fasta"
+
+        VersionInfo nextclade_ha_version_info = object{
+            sofware: 'nextclade',
+            docker: "~{docker}",
+            version: read_string("VERSION")
+        }
     }
 
     runtime {
@@ -116,6 +125,9 @@ task nextclade_na {
         
 
     # run nextclade:
+    # 0- caputre nextclade version
+    nextclade --version | tee VERSION
+
     # 1- download the dataset
     nextclade dataset get --name ${dataset} --output-dir "data/flu_na"
 
@@ -136,6 +148,12 @@ task nextclade_na {
         File na_nextclade_json = "~{sample_name}_na_nextclade.json"
         File na_nextclade_tsv = "~{sample_name}_na_nextclade.tsv"
         File na_translation_fasta = "~{sample_name}_nextclade.cds_translation.NA.fasta"
+
+        VersionInfo nextclade_na_version_info = object{
+            sofware: 'nextclade',
+            docker: "~{docker}",
+            version: read_string("VERSION")
+        }
     }
 
     runtime {

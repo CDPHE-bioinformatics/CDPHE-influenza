@@ -13,7 +13,6 @@ workflow influenza_assembly_summary{
         Array[File] irma_assembly_qc_metrics
         Array[File] nextclade_na_tsv
         Array[File] nextclade_ha_tsv
-        # Array[String] bucket_path_array
         String out_bucket_path
         Array[String] analysis_date_array
 
@@ -39,6 +38,33 @@ workflow influenza_assembly_summary{
             project_name = project_name,
             analysis_date = analysis_date
         
+    }
+
+
+     call version_capture.workflow_version_capture  as workflow_version_capture{
+        input:
+    }
+
+    Array[VersionInfo] version_array = [
+        seqyclean.seqyclean_version_info,
+        fastqc_cleaned.fastqc_version_info,
+        align_reads.bwa_version_info,
+        align_reads.samtools_version_info,
+        ivar_consensus.ivar_version_info,
+        ivar_consensus.samtools_version_info,
+        bam_stats.samtools_version_info
+    ]
+    if (scrub_reads) {
+        Array[VersionInfo] version_array_with_hostile = flatten([version_array, select_all([hostile.hostile_version_info])])
+    }
+    call version_capture.task_version_capture as task_version_capture {
+        input:
+            version_array = select_first([version_array_with_hostile, version_array]),
+            workflow_name = "SC2_illumina_pe_assembly",
+            workflow_version = workflow_version_capture.workflow_version,
+            project_name = project_name,
+            analysis_date = workflow_version_capture.analysis_date,
+            version_capture_py = version_capture_py
     }
 
     call transfer.transfer_assembly_summary_wdl as summary_transfer {
