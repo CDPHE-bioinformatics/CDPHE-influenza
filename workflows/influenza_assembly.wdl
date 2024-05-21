@@ -446,7 +446,7 @@ workflow influenza_assembly {
     call version_capture.task_version_capture as task_version_capture {
         input:
             version_array = version_array,
-            workflow_name = "influenza_illumina_pe_assembly",
+            workflow_name = "influenza_assembly",
             workflow_version = workflow_version_capture.workflow_version,
             project_name = project_name,
             sample_name = sample_name,
@@ -502,8 +502,6 @@ workflow influenza_assembly {
             ha_HA2_translation_fasta = nextclade_ha.ha_HA2_translation_fasta,
             ha_SigPep_translation_fasta = nextclade_ha.ha_SigPep_translation_fasta,
 
-            # version capture
-            version_capture_file = task_version_capture.version_capture_file
 
     
     }
@@ -559,7 +557,7 @@ workflow influenza_assembly {
         
         # version capture
         File version_capture_file = task_version_capture.version_capture_file
-        
+
         # output from transfer
         String transfer_date=transfer_assembly_wdl.transfer_date
     }

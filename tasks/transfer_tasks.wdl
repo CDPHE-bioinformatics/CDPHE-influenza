@@ -49,8 +49,6 @@ task transfer_assembly_wdl{
         File? ha_HA2_translation_fasta
         File? ha_SigPep_translation_fasta
 
-        # version capture
-        File version_capture_file
 
     }
     
@@ -100,8 +98,7 @@ task transfer_assembly_wdl{
         gustil -m cp ~{ha_HA2_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
         gustil -m cp ~{ha_SigPep_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
         
-        # version capture 
-        gsutil -m cp ~{version_capture_file} ~{out_path}/version_capture/
+
 
         # transfer date
         transferdate=`date`
@@ -131,15 +128,19 @@ task transfer_assembly_summary_wdl {
 
         String bucket_path
         File sequencing_results_csv
+        File version_capture_influenza_assembly_csv
+        File version_capture_influenza_assembly_summary_csv
     }
 
     String out_path = sub(bucket_path, "/$", "") # fix if have a / at end
 
 
     command <<< 
-         gsutil -m cp ~{sequencing_results_csv} ~{out_path}/summary_files/
-
-         # transfer date
+        gsutil -m cp ~{sequencing_results_csv} ~{out_path}/summary_files/
+        gsutil -m cp ~{version_capture_influenza_assembl_csv} ~{out_path}/summary_files/
+        gsutil -m cp ~{version_capture_influenza_assembly_summary_csv} ~{out_path}/summary_files/
+        
+        # transfer date
         transferdate=`date`
         echo $transferdate | tee TRANSFERDATE
     >>>
