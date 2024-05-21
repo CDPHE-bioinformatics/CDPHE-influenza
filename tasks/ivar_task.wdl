@@ -58,7 +58,7 @@ task ivar_consensus {
     fi
     
     if [${subtype} == ""]; then
-        header_name=$(echo ~{sample_name}_~{irma_type}_~${segment_name})
+        header_name=$(echo ~{sample_name}_~{irma_type}_${segment_name})
     else
         header_name=$(echo ~{sample_name}_~{irma_type}_${segment_name}_${subtype})
     fi
