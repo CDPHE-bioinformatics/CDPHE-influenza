@@ -25,9 +25,14 @@ task ivar_consensus {
 
     # create name for sorted bam file (34345_HA.bam)
     prefix=$(basename ~{bam_file} | cut -d "." -f 1)
+    # bam_file = some_directory/2400000_HA.bam
+    # this line of code returns 240000_HA (so strips the upper directories and the file suffix)
+    # some_directory/2400000_HA.bam ---> 24000000_HA.bam ---> 2400000_HA
     
     # pull sample id, segment name from original ba file
-    segment_name=$(echo "${prefix/${sample_name}/*}" | cut -d "_" -f 2-)
+    segment_name=$(echo "${prefix/~{sample_name}/}" | cut -d "_" -f 2-) 
+    # shell replacement syntax: varname/pattern/replacement - to replace teh first occurance of teh pattern
+    # 2400000_HA --> _HA ---> HA
     
     # generate consensus; first sort bam file
     samtools sort ~{bam_file} -o sorted.bam
@@ -37,8 +42,8 @@ task ivar_consensus {
     # fasta will be named prefix.fa
     cat ${prefix}.fa # for troubleshooting purposes print fasta contents to screen
 
-    # rename consesnus header
-    # header name should ideally be the same as prefix but whatever...
+    # rename consensus header
+    # header name = 24000000_A_HA_H1, 24000000_A_NP, etc.
     if [ "~{irma_type}" == "A" ]; then
         if [ "$segment_name" == "HA" ]; then
             subtype="~{irma_ha_subtype}"
@@ -52,13 +57,19 @@ task ivar_consensus {
 
     fi
     
-    if [${subptype} == ""]; then
-        header_name=$(echo ${sample_name}_~{irma_type}_${segment_name})
+    if [${subtype} == ""]; then
+        header_name=$(echo ~{sample_name}_~{irma_type}_~${segment_name})
     else
-        header_name=$(echo ${sample_name}_~{irma_type}_${segment_name}_${subtype})
+        header_name=$(echo ~{sample_name}_~{irma_type}_${segment_name}_${subtype})
     fi
+
+    echo ${header_name} # print for troubleshooting purposes
     
     sed -i "s/>.*/>${header_name}/" ${prefix}.fa
+    # for sed, -i means edit file in place, s means substitution
+    # s/regular expression/replacement/
+
+    cat ${prefix}.fa # for troubleshooting purposes print fasta contents to screen
 
     # output ivar parameters
     ivar version | head -n1 | cut -d " " -f 3 | tee ivar_version.txt
