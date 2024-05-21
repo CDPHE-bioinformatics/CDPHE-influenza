@@ -292,9 +292,9 @@ Performed only if the HA and/or NA gene segment was successfully assembled.
 |irma_typing| {sample_name}_irma_typing.csv | csv file with the sample id, irma type, irma ha subytpe and irma na subtype listed in a tabluar format|
 |irma_assmbled_gene_segments_csv | {sample_name}_irma_assembled_gene_segments.csv | csv file with the each assembled gene segment listed along with the type and (if applicable) the subtype of that that gene segment.| 
 |irma_all_assembled_segments_fasta| {sample_name}.fasta| multifasta will all assembled gene segments included|
-|irma_fasta_array_out| {sample_name}_{gene_segment}.fasta | array of consensus assembly fasta files. Each assembled gene segment has a fasta file. The fasta header is formatted as : ">{sample_name}_{flu_type}\_{gene_segment}"|
-|irma_bam_array_out_| {sample_name}_{gene_semgnet}.bam | Array of bam files. Each assembled gene segment has a bam file. The reference sequence is the final iterative plurality consensus |
-|irma_vcf_array_out | {sample_name}_{gene_semgnet}.vcf | Array of vcf files. Each assembled gene segment has a vcf file. The reference sequence is the final iterative plurality consensus. |
+|irma_fasta_array_out| {sample_name}_{gene_segment}_irma.fasta (e.g. 24000000_HA_irma.fasta) | array of consensus assembly fasta files. Each assembled gene segment has a fasta file. The fasta header is formatted as : ">{sample_name}_{flu_type}\_{gene_segment}"|
+|irma_bam_array_out_| {sample_name}_{gene_semgnet}.bam (e.g. 24000000_HA.bam) | Array of bam files. Each assembled gene segment has a bam file. The reference sequence is the final iterative plurality consensus |
+|irma_vcf_array_out | {sample_name}_{gene_semgnet}.vcf (e.g 24000000_HA.vcf) | Array of vcf files. Each assembled gene segment has a vcf file. The reference sequence is the final iterative plurality consensus. |
 
 
  <br/>
@@ -303,7 +303,7 @@ Performed only if the HA and/or NA gene segment was successfully assembled.
 |WDL Output variable name | File Name | Description |
 |-------|------|------------|
 |sorted_bam_array_out| {sample_name}_{gene_segment}.sorted.bam| Array of bam files from IRMA run through samtools sort; used for all post assembly qc metrics calucations|
-|ivar_fasta_array_out| {sample_name}_{gene_segment}.fa | Array of consensus sequences generated using ``ivar consensus`` (min depth = 10 reads, min freq = 0.6, min qual = 20). The fasta header is formatted as : ">{sample_name}_{flu_type}\_{gene_segment}"|
+|ivar_fasta_array_out| {sample_name}_{gene_segment}.fa (e.g. 24000000_HA.fa) | Array of consensus sequences generated using ``ivar consensus`` (min depth = 10 reads, min freq = 0.6, min qual = 20). The fasta header is formatted as : ">{sample_name}_{flu_type}_{gene_segment}" (e.g. 24000000_A_HA_H3)|
 |percent_coverage_csv_array_out| percent_coverage_results.csv| Array of percent_coverage_results files. Each assembled gene segment has a per_cov_results.csv file. Contains the segment name, percent of genome covered (percent_coverage), the expected gene segmenet length (based on the seed reference segement size IRMA usees), and the assemblied gene segement length for that segment in a tabular format. Perecent coverage calculations based on the ivar consensus seqeunces generated. Produced only if assembly is successful.|
 |assembly_qc_metrics| {sample_name}_assebmly_qc_metrics.csv | A tablular formatted file that combines the bam_results and the perc_cov_reuslts files. Includes version and docker information for IRMA and iVar. Produced only if assembly is successful.|
 
