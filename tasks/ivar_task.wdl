@@ -19,8 +19,10 @@ task ivar_consensus {
         String irma_type
         String irma_na_subtype
         String irma_ha_subtype
-        String docker = "andersenlabapps/ivar:1.3.1"
+        
     }
+
+    String docker = "andersenlabapps/ivar:1.3.1"
 
     #record parameters
     Int ivar_min_depth = 25
