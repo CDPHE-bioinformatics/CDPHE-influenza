@@ -103,7 +103,7 @@ task ivar_consensus {
         }
 
         VersionInfo samtools_version_info = object{
-            software: "ivar",
+            software: "samtools",
             docker: "~{docker}",
             version: read_string("VERSION_samtools")
         }
