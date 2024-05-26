@@ -76,7 +76,7 @@ task nextclade_ha {
 
         VersionInfo nextclade_ha_version_info = object{
             software: "nextclade",
-            docker: "~{docker}",
+            docker: docker,
             version: read_string("VERSION")
         }
     }
@@ -88,7 +88,7 @@ task nextclade_ha {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "~{docker}"
+        docker:    docker
 
     }
 }
@@ -158,7 +158,7 @@ task nextclade_na {
 
         VersionInfo nextclade_na_version_info = object{
             software: "nextclade",
-            docker: "~{docker}",
+            docker: docker,
             version: read_string("VERSION")
         }
     }
@@ -170,7 +170,7 @@ task nextclade_na {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "~{docker}"
+        docker:    docker
 
     }
 }

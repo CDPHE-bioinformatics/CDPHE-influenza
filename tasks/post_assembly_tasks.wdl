@@ -53,7 +53,7 @@ task samtools_mapped_reads {
 
         VersionInfo samtools_version_info = object{
             software: "samtools",
-            docker: "~{docker}",
+            docker: docker,
             version: read_string("VERSION")
         }
     }
@@ -65,7 +65,7 @@ task samtools_mapped_reads {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker:    "~{docker}"
+        docker:    docker
 
     }
 }

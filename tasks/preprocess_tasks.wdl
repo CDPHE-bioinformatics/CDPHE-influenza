@@ -82,13 +82,13 @@ task fastqc {
 
         VersionInfo fastqc_version_info = object{
             software: "fastqc",
-            docker: "~{docker}",
+            docker: docker,
             version: read_string("VERSION")
         }
     } 
 
     runtime {
-      docker: "~{docker}"
+      docker: docker
       memory: "1 GiB"
       cpu: 2
       disks: "local-disk 100 SSD"
@@ -122,19 +122,19 @@ task seqyclean {
 
     output {
         # String seqyclean_version = read_string("VERSION")
-        # String seqyclean_docker = "~{docker}"
+        # String seqyclean_docker = docker
         File fastq_R1_cleaned = "${sample_name}_clean_PE1.fastq.gz"
         File fastq_R2_cleaned = "${sample_name}_clean_PE2.fastq.gz"
         File seqyclean_summary = "${sample_name}_clean_SummaryStatistics.tsv"
 
         VersionInfo seqyclean_version_info = object{
             software: "fastqc",
-            docker: "~{docker}",
+            docker: docker,
             version: read_string("VERSION")
         }
     }
     runtime {
-        docker: "~{docker}"
+        docker: docker
         memory: "2 GiB"
         cpu: 2
         disks: "local-disk 100 SSD"

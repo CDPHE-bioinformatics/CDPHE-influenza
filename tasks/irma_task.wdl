@@ -122,14 +122,14 @@ task irma {
 
         VersionInfo IRMA_version_info = object{
             software: "IRMA",
-            docker: "~{docker}",
+            docker: docker,
             version: read_string("VERSION")
         }
         
     }
 
     runtime {
-        docker: "~{docker}"
+        docker: docker
         memory: "8 GiB"
         cpu: 2
         disks: "local-disk 50 SSD"
