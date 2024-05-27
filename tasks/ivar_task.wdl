@@ -117,7 +117,7 @@ task ivar_consensus {
         bootDiskSizeGb:    10
         preemptible:    0
         maxRetries:    0
-        docker: "andersenlabapps/ivar:1.3.1"
+        docker: docker
     }
 
 }

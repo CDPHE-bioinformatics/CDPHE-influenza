@@ -66,7 +66,7 @@ task irma {
             done
 
             # rename bam and vcf files
-            for file in ~{sample_name}/*{.vcf,.bam,.bai}; do
+            for file in ~{sample_name}/*{.vcf,.bam}; do
                 base_name=$(basename ${file%.*})
                 gene=$(echo $base_name | cut -d "_" -f 2)
                 extension="${file##*.}"
