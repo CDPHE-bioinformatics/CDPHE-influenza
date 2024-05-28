@@ -12,7 +12,7 @@ import subprocess
 
 #### FUNCTIONS #####
 def getOptions(args=sys.argv[1:]):
-    parser = argparse.ArgumentParser(description="Parses command."))
+    parser = argparse.ArgumentParser(description="Parses command.")
     parser.add_argument( "--total_reads_R1_raw")
     parser.add_argument( "--total_reads_R2_raw")
     parser.add_argument( "--read_length_R1_raw")
