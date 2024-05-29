@@ -402,6 +402,12 @@ workflow influenza_assembly {
                 percent_coverage_csv_array = percent_coverage_csv_array,
                 mapped_reads_csv_array = mapped_reads_csv_array
         }
+
+        call post_assembly_qc.make_multifasta as make_ivar_multifasta{
+            input:
+                fasta_array = ivar_fasta_array,
+                sample_name = sample_name
+        }
     }
 
     # 5 - Version capture
@@ -478,13 +484,14 @@ workflow influenza_assembly {
 
             # irma
             irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv,
-            irma_all_assembled_segments_fasta = irma.irma_all_assembled_segments_fasta,
+            irma_multifasta = irma.irma_multifasta,
             irma_fasta_array = irma_fasta_array,
             irma_bam_array = irma_bam_array,
             irma_vcf_array = irma_vcf_array,
 
             # ivar
             ivar_fasta_array = ivar_fasta_array,
+            ivar_multifasta = make_ivar_multifasta.multifasta,
 
             # from samtoosls - sorted bams
             sorted_bam_array = sorted_bam_array,
@@ -525,7 +532,7 @@ workflow influenza_assembly {
 
         # output from irma
         File irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv
-        File? irma_all_assembled_segments_fasta = irma.irma_all_assembled_segments_fasta
+        File? irma_multifasta = irma.irma_multifasta
         Array[File]? irma_fasta_array_out = irma_fasta_array
         Array[File]? irma_bam_array_out = irma_bam_array
         Array[File]? irma_vcf_array_out = irma_vcf_array

@@ -142,3 +142,35 @@ task concat_post_qc_metrics{
     }
 
 }
+
+
+task make_multifasta {
+    meta {
+        description: "create a mulitfasta of the consensus assemblies"
+    }
+
+    input {
+        Array[File] fasta_array
+        String sample_name
+    }
+
+    command <<<
+        
+        # Concatenate all the FASTA files into a single file
+        cat ~{sep=' ' fasta_array} > ~{sample_name}_ivar.fasta
+
+
+    >>>
+
+    output {
+        File multifasta = "~{sample_name}_ivar.fasta"
+
+    }
+        runtime {
+        docker: "theiagen/utility:1.0"
+        memory: "16 GiB"
+        cpu: 4
+        disks: "local-disk 50 SSD"
+        preemptible: 0
+    }
+}

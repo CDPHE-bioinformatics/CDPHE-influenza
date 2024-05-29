@@ -56,7 +56,7 @@ task irma {
                 sed -i "s/>.*/>${header_name}/" ${file}
 
                 # add file contents to concatenated fasta file
-                cat ${fiile} >> ~{sample_name}_all_assembled_segments.fasta
+                cat ${fiile} >> ~{sample_name}_irma.fasta
 
                 # rename file
                 new_name=$(echo ~{sample_name}_${gene}_irma.fasta)
@@ -87,7 +87,7 @@ task irma {
     output {
 
         File irma_assembled_gene_segments_csv = "~{sample_name}_irma_assembled_gene_segments.csv"
-        File? irma_all_assembled_segments_fasta = "~{sample_name}_all_assembled_segments.fasta"
+        File? irma_multifasta = "~{sample_name}_irma.fasta"
         
         # assemblies
         File? irma_seg_ha_fasta = "~{sample_name}_HA_irma.fasta"
