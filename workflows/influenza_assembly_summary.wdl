@@ -2,7 +2,7 @@ version 1.0
 
 import "../tasks/summary_task.wdl" as summary 
 import "../tasks/transfer_tasks.wdl" as transfer
-import "../tasks/version_capture_task.wdl" as version_capture
+import "../tasks/capture_version_tasks.wdl" as capture_version
 
 workflow influenza_assembly_summary{
     
@@ -25,7 +25,7 @@ workflow influenza_assembly_summary{
 
 
 
-    call version_capture.workflow_version_capture  as workflow_version_capture{
+    call capture_version.capture_workflow_version  as capture_workflow_version{
         input:
     }
 
@@ -36,11 +36,11 @@ workflow influenza_assembly_summary{
             preprocess_qc_metrics = preprocess_qc_metrics,
             irma_typing = irma_typing,
             assembly_qc_metrics = assembly_qc_metrics,
-            nextclade_na_tsv = nextclade_na_tsv,
-            nextclade_ha_tsv = nextclade_ha_tsv,
+            na_nextclade_tsv = na_nextclade_tsv,
+            ha_nextclade_tsv = ha_nextclade_tsv,
             version_capture_file = version_capture_file,
-            workflow_version = workflow_version_capture.workflow_version,
-            analysis_date = workflow_version_capture.analysis_date,
+            workflow_version = capture_workflow_version.workflow_version,
+            analysis_date = capture_workflow_version.analysis_date,
             python_script = summary_py,
             project_name = project_name
         

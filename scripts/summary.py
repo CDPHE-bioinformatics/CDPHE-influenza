@@ -17,8 +17,8 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--preprocess_qc_metrics")
     parser.add_argument( "--irma_typing")
     parser.add_argument( "--assembly_qc_metrics")
-    parser.add_argument( "--nextclade_na_tsv")
-    parser.add_argument( "--nextclade_ha_tsv")
+    parser.add_argument( "--na_nextclade_tsv")
+    parser.add_argument( "--ha_nextclade_tsv")
     parser.add_argument( "--version_catpure_file")
     parser.add_argument( "--workflow_version")
     parser.add_argument( "--analysis_date")
@@ -123,8 +123,8 @@ if __name__ == '__main__':
     preprocess_qc_metrics_txt = options.preprocess_qc_metrics
     irma_typing_txt = options.irma_typing
     post_qc_metrics_txt = options.assembly_qc_metrics
-    nextclade_na_tsv_txt = options.nextclade_na_tsv
-    nextclade_ha_tsv_txt = options.nextclade_ha_tsv
+    na_nextclade_tsv_txt = options.na_nextclade_tsv
+    ha_nextclade_tsv_txt = options.ha_nextclade_tsv
     project_name = options.project_name
     version_capture_file = options.version_capture_file
     workflow_version = options.workflow_version
@@ -134,8 +134,8 @@ if __name__ == '__main__':
     preprocess_qc_metrics_list = create_list_from_write_lines_input(write_lines_input = preprocess_qc_metrics_txt)
     irma_typing_list = create_list_from_write_lines_input(write_lines_input = irma_typing_txt)
     post_qc_metrics_list= create_list_from_write_lines_input(write_lines_input = post_qc_metrics_txt)
-    nextclade_na_tsv_list = create_list_from_write_lines_input(write_lines_input = nextclade_na_tsv_txt)
-    nextclade_ha_tsv_list = create_list_from_write_lines_input(write_lines_input = nextclade_ha_tsv_txt)
+    na_nextclade_tsv_list = create_list_from_write_lines_input(write_lines_input = na_nextclade_tsv_txt)
+    ha_nextclade_tsv_list = create_list_from_write_lines_input(write_lines_input = ha_nextclade_tsv_txt)
     version_capture_file_list = create_list_from_write_lines_input(write_lines_input = version_capture_file)
 
     # create version capture file for assembly workflow
@@ -202,9 +202,9 @@ if __name__ == '__main__':
     to_merge_dfs.append(irma_typing_df)
 
     # na nextclade
-    nextclade_na_df_list = []
-    if len(nextclade_na_df_list) >= 1:
-        for nextclade_tsv in nextclade_na_tsv_list:
+    na_nextclade_df_list = []
+    if len(na_nextclade_df_list) >= 1:
+        for nextclade_tsv in na_nextclade_tsv_list:
             sample_name = nextclade_tsv.split('_na')[0]
             df = pd.read_csv(nextclade_tsv, sep ='\t')
             df['sample_name'] = sample_name
@@ -234,14 +234,14 @@ if __name__ == '__main__':
 
             df = df[col_keep]
             df = df.rename(columns = rename_cols)
-            nextclade_na_df_list.append(df)
-        nextclade_na_df = pd.concat(nextclade_na_df_list).rest_index(drop = True)
-        to_merge_dfs.append(nextclade_na_df)
+            na_nextclade_df_list.append(df)
+        na_nextclade_df = pd.concat(na_nextclade_df_list).rest_index(drop = True)
+        to_merge_dfs.append(na_nextclade_df)
 
     # ha nextclade
-    nextclade_ha_df_list = []
-    if len(nextclade_ha_df_list) >= 1:
-        for nextclade_tsv in nextclade_ha_tsv_list:
+    ha_nextclade_df_list = []
+    if len(ha_nextclade_df_list) >= 1:
+        for nextclade_tsv in ha_nextclade_tsv_list:
             sample_name = nextclade_tsv.split('_ha')[0]
             df = pd.read_csv(nextclade_tsv, sep ='\t')
             df['sample_name'] = sample_name
@@ -271,9 +271,9 @@ if __name__ == '__main__':
 
             df = df[col_keep]
             df = df.rename(columns = rename_cols)
-            nextclade_ha_df_list.append(df)
-        nextclade_ha_df = pd.concat(nextclade_ha_df_list).rest_index(drop = True)
-        to_merge_dfs.append(nextclade_ha_df)
+            ha_nextclade_df_list.append(df)
+        ha_nextclade_df = pd.concat(ha_nextclade_df_list).rest_index(drop = True)
+        to_merge_dfs.append(ha_nextclade_df)
 
     # post assembly qc metrics
     post_qc_metrics_df_list = []

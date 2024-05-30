@@ -10,8 +10,8 @@ task summary {
         Array[File] preprocess_qc_metrics
         Array[File] irma_typing
         Array[File] assembly_qc_metrics
-        Array[File] nextclade_na_tsv
-        Array[File] nextclade_ha_tsv
+        Array[File] na_nextclade_tsv
+        Array[File] ha_nextclade_tsv
         Array[File] version_capture_file
         String workflow_version
         String analysis_date
@@ -27,8 +27,8 @@ task summary {
         --preprocess_qc_metrics ~{write_lines(preprocess_qc_metrics)} \
         --irma_typing ~{write_lines(irma_typing)} \
         --assembly_qc_metrics ~{write_lines(assembly_qc_metrics)} \
-        --nextclade_na_tsv ~{write_lines(nextclade_na_tsv)} \
-        --nextclade_ha_tsv ~{write_lines(nextclade_ha_tsv)} \
+        --na_nextclade_tsv ~{write_lines(na_nextclade_tsv)} \
+        --ha_nextclade_tsv ~{write_lines(ha_nextclade_tsv)} \
         --version_capture_file ~{write_lines(version_capture_file)} \
         --workflow_verion "~{workflow_version}" \
         --project_name "~{project_name}" \
