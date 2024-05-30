@@ -546,6 +546,7 @@ workflow influenza_assembly {
 
         # output from post assembly
         Array[File]? ivar_fasta_array_out = ivar_fasta_array
+        File? ivar_multifasta = ivar_multifasta = make_ivar_multifasta.multifasta
         Array[File]? percent_coverage_csv_array_out = percent_coverage_csv_array
         Array[File]? sorted_bam_array_out = sorted_bam_array
         File? assembly_qc_metrics = concat_post_qc_metrics.qc_metrics_summary
