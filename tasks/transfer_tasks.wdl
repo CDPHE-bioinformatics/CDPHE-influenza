@@ -42,13 +42,13 @@ task transfer_assembly_wdl{
         # nextclade
         File? na_nextclade_json
         File? na_nextclade_tsv
-        File? na_translation_fasta
+        File? na_nextclade_translation_fasta
 
         File? ha_nextclade_json
         File? ha_nextclade_tsv
-        File? ha_HA1_translation_fasta
-        File? ha_HA2_translation_fasta
-        File? ha_SigPep_translation_fasta
+        File? ha_nextclade_HA1_translation_fasta
+        File? ha_nextclade_HA2_translation_fasta
+        File? ha_nextclade_SigPep_translation_fasta
 
 
     }
@@ -93,12 +93,12 @@ task transfer_assembly_wdl{
         # transfer nextclade
         gustil -m cp ~{na_nextclade_json} ~{out_path}/nextclade_out/~{sample_name}/
         gustil -m cp ~{na_nextclade_tsv} ~{out_path}/nextclade_out/~{sample_name}/
-        gustil -m cp ~{na_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gustil -m cp ~{na_nextclade_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
         gustil -m cp ~{ha_nextclade_json} ~{out_path}/nextclade_out/~{sample_name}/
         gustil -m cp ~{ha_nextclade_tsv} ~{out_path}/nextclade_out/~{sample_name}/
-        gustil -m cp ~{ha_HA1_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
-        gustil -m cp ~{ha_HA2_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
-        gustil -m cp ~{ha_SigPep_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gustil -m cp ~{ha_nextclade_HA1_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gustil -m cp ~{ha_nextclade_HA2_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gustil -m cp ~{ha_nextclade_SigPep_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
         
 
 

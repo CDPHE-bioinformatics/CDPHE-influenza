@@ -11,9 +11,9 @@ workflow influenza_assembly_summary{
         Array[String] project_name_array
         Array[File] preprocess_qc_metrics
         Array[File] irma_typing
-        Array[File] post_assembly_qc_metrics
-        Array[File] nextclade_na_tsv
-        Array[File] nextclade_ha_tsv
+        Array[File] assembly_qc_metrics
+        Array[File] na_nextclade_tsv
+        Array[File] ha_nextclade_tsv
         String out_bucket_path
         Array[File] version_capture_file
 

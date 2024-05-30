@@ -8,7 +8,7 @@ struct VersionInfo {
 }
 
 # begin tasks
-task ivar_consensus {
+task call_consensus_ivar {
     meta {
         description : "generate consesnus sequnce from sorted bam files input"
     }

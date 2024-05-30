@@ -12,7 +12,8 @@ struct VersionInfoArray {
   Array[VersionInfo] versions
 }
 
-task workflow_version_capture {
+
+task capture_workflow_version {
   input {
     String? timezone
   }
@@ -38,7 +39,9 @@ task workflow_version_capture {
   }
 }
 
-task task_version_capture {
+
+
+task capture_task_version {
   input {
     Array[VersionInfo] version_array
     String workflow_name
@@ -46,13 +49,13 @@ task task_version_capture {
     String project_name
     String sample_name
     String analysis_date
-    File version_capture_py
+    File capture_version_py
   }
 
   VersionInfoArray versions = { "versions": version_array }
 
   command <<<
-    python ~{version_capture_py} \
+    python ~{capture_version_py} \
       --versions_json ~{write_json(versions)} \
       --workflow_name ~{workflow_name} \
       --workflow_version ~{workflow_version} \

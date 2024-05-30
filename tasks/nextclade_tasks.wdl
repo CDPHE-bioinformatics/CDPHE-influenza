@@ -7,7 +7,7 @@ struct VersionInfo {
   String version
 }
 
-task nextclade_ha {
+task ha_nextclade {
     meta {
         description: "run nextclade"
     }
@@ -56,25 +56,25 @@ task nextclade_ha {
         --input-dataset data/flu_ha --output-all=. "~{ivar_seg_ha_fasta}"
 
     # 3- rename files
-    mv nextclade.json "~{sample_name}_ha_nextclade.json"
-    mv nextclade.csv "~{sample_name}_ha_nextclade.csv"
-    mv nextclade.tsv "~{sample_name}_ha_nextclade.tsv"
-    mv nextclade.cds_translation.HA1.fasta "~{sample_name}_nextclade.cds_translation.HA1.fasta"
-    mv nextclade.cds_translation.HA2.fasta "~{sample_name}_nextclade.cds_translation.HA2.fasta"
-    mv nextclade.cds_translation.SigPep.fasta "~{sample_name}_nextclade.cds_translation.SigPep.fasta"
+    mv nextclade.json "~{sample_name}_nextclade_HA.json"
+    mv nextclade.csv "~{sample_name}_nextclade_HA.csv"
+    mv nextclade.tsv "~{sample_name}_nextclade_HA.tsv"
+    mv nextclade.cds_translation.HA1.fasta "~{sample_name}_nextclade_HA.cds_translation.HA1.fasta"
+    mv nextclade.cds_translation.HA2.fasta "~{sample_name}_nextclade_HA.cds_translation.HA2.fasta"
+    mv nextclade.cds_translation.SigPep.fasta "~{sample_name}_nextclade_HA.cds_translation.SigPep.fasta"
 
 
 
     >>>
 
     output {
-        File ha_nextclade_json = "~{sample_name}_ha_nextclade.json"
-        File ha_nextclade_tsv = "~{sample_name}_ha_nextclade.tsv"
-        File ha_HA1_translation_fasta = "~{sample_name}_nextclade.cds_translation.HA1.fasta"
-        File ha_HA2_translation_fasta = "~{sample_name}_nextclade.cds_translation.HA2.fasta"
-        File ha_SigPep_translation_fasta = "~{sample_name}_nextclade.cds_translation.SigPep.fasta"
+        File ha_nextclade_json = "~{sample_name}_nextclade_HA.json"
+        File ha_nextclade_tsv = "~{sample_name}_nextclade_HA.tsv"
+        File ha_nextclade_HA1_translation_fasta = "~{sample_name}_nextclade_HA.cds_translation.HA1.fasta"
+        File ha_nextclade_HA2_translation_fasta = "~{sample_name}_nextclade_HA.cds_translation.HA2.fasta"
+        File ha_nextclade_SigPep_translation_fasta = "~{sample_name}_nextclade_HA.cds_translation.SigPep.fasta"
 
-        VersionInfo nextclade_ha_version_info = object{
+        VersionInfo ha_nextclade_version_info = object{
             software: "nextclade",
             docker: docker,
             version: read_string("VERSION")
@@ -94,7 +94,7 @@ task nextclade_ha {
 }
 
 
-task nextclade_na {
+task na_nextclade {
     meta {
         description: "run nextclade"
     }
@@ -142,21 +142,21 @@ task nextclade_na {
     nextclade run --input-dataset data/flu_na --output-all=. "~{ivar_seg_na_fasta}"
 
     # 3- rename files
-    mv nextclade.json "~{sample_name}_na_nextclade.json"
-    mv nextclade.csv "~{sample_name}_na_nextclade.csv"
-    mv nextclade.tsv "~{sample_name}_na_nextclade.tsv"
-    mv nextclade.cds_translation.NA.fasta "~{sample_name}_nextclade.cds_translation.NA.fasta"
+    mv nextclade.json "~{sample_name}_nextclade_NA.json"
+    mv nextclade.csv "~{sample_name}_nextclade_NA.csv"
+    mv nextclade.tsv "~{sample_name}_nextclade_NA.tsv"
+    mv nextclade.cds_translation.NA.fasta "~{sample_name}_nextclade_NA.cds_translation.NA.fasta"
     
 
 
     >>>
 
     output {
-        File na_nextclade_json = "~{sample_name}_na_nextclade.json"
-        File na_nextclade_tsv = "~{sample_name}_na_nextclade.tsv"
-        File na_translation_fasta = "~{sample_name}_nextclade.cds_translation.NA.fasta"
+        File na_nextclade_json = "~{sample_name}_nextclade_NA.json"
+        File na_nextclade_tsv = "~{sample_name}_nextclade_NA.tsv"
+        File na_nextclade_translation_fasta = "~{sample_name}_nextclade_NA.cds_translation.NA.fasta"
 
-        VersionInfo nextclade_na_version_info = object{
+        VersionInfo na_nextclade_version_info = object{
             software: "nextclade",
             docker: docker,
             version: read_string("VERSION")

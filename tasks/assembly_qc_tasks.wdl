@@ -7,7 +7,7 @@ struct VersionInfo {
   String version
 }
 
-task samtools_mapped_reads {
+task calc_bam_stats_samtools {
     meta {
         description: "output sorted bams and use samtools to calc depth metrics"
     }
@@ -39,16 +39,16 @@ task samtools_mapped_reads {
         samtools coverage ${sorted_bam} | tail -1 | cut -f 7 > mean_depth.txt
 
         # create output file
-        echo "sample_name,file_name,segment_name,gene_name,description,value" > mapped_reads.csv
-        echo "~{sample_name},${sorted_bam},${segment_name},${gene_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> mapped_reads.csv
-        echo "~{sample_name},${sorted_bam},${segment_name},${gene_name},mean_depth,$(cat mean_depth.txt)" >> mapped_reads.csv
+        echo "sample_name,file_name,segment_name,gene_name,description,value" > bam_stats.csv
+        echo "~{sample_name},${sorted_bam},${segment_name},${gene_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> bam_stats.csv
+        echo "~{sample_name},${sorted_bam},${segment_name},${gene_name},mean_depth,$(cat mean_depth.txt)" >> bam_stats.csv
 
         samtools --version | awk '/samtools/ {print $2}' | tee VERSION
 
     >>>
 
     output {
-        File mapped_reads_csv = "mapped_reads.csv"
+        File bam_stats_csv = "bam_stats.csv"
         File sorted_bam = select_first(glob("*.sorted.bam"))
 
         VersionInfo samtools_version_info = object{
@@ -105,7 +105,7 @@ task calc_percent_coverage{
 
 }
 
-task concat_post_qc_metrics{
+task concat_assembly_qc_metrics{
     meta{
         description: "concatenate all post assembly qc metrics (depth and coverage) into a single file"
     }
@@ -113,7 +113,7 @@ task concat_post_qc_metrics{
     input{
         File python_script
         String sample_name
-        Array[File] mapped_reads_csv_array
+        Array[File] bam_stats_csv_array
         Array[File] percent_coverage_csv_array
         
     }
@@ -124,13 +124,13 @@ task concat_post_qc_metrics{
 
     python ~{python_script} \
         --sample_name "~{sample_name}" \
-        --mapped_reads_csv_list "~{sep= " " mapped_reads_csv_array}" \
+        --bam_stats_csv_list "~{sep= " " bam_stats_csv_array}" \
         --percent_coverage_csv_list "~{sep = " " percent_coverage_csv_array}"
 
     >>>
 
     output{
-        File? qc_metrics_summary = "~{sample_name}_assembly_qc_metrics.csv"
+        File? assembly_qc_metrics_summary = "~{sample_name}_assembly_qc_metrics.csv"
     }
 
     runtime {

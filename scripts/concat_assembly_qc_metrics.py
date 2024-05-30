@@ -16,7 +16,7 @@ import subprocess
 # reads in an array of bam results and percent coverage resutls
 # outputs a csv
 
-# what the inputs (mapped_reads_csv, percent_coverage_csv) looks like:
+# what the inputs (bam_stats_csv, percent_coverage_csv) looks like:
 # headers: sample_name, basename, segment name, gene_name, description, value
 # rows: 21000000, HA, mean_depth, 25.6
 # rows: 21000000, HA, num_reads_mapped, 198
@@ -33,7 +33,7 @@ col_headers = ['sample_name', 'total_segments','total_flu_mapped_reads', 'averag
 def getOptions(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Parses command.")
     parser.add_argument( "--sample_name")
-    parser.add_argument( "--mapped_reads_csv_list")
+    parser.add_argument( "--bam_stats_csv_list")
     parser.add_argument( "--percent_coverage_csv_list")
     options = parser.parse_args(args)
     return options
@@ -63,7 +63,7 @@ if __name__ == '__main__':
 
     options = getOptions()
     sample_name = options.sample_name
-    mapped_reads_files_string_input = options.mapped_reads_csv_list
+    bam_stats_files_string_input = options.bam_stats_csv_list
     percent_coverage_csv_file_string_input= options.percent_coverage_csv_list
 
     
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     df.at[0, 'sample_name'] = sample_name
 
     # get a list of file paths
-    mapped_reads_csv_file_list = create_list_from_string_input(string_input = mapped_reads_files_string_input)
+    bam_stats_csv_file_list = create_list_from_string_input(string_input = bam_stats_files_string_input)
     percent_coverage_csv_file_list = create_list_from_string_input(string_input = percent_coverage_csv_file_string_input)
 
     
@@ -85,16 +85,16 @@ if __name__ == '__main__':
     total_mapped_reads = 0
 
     print('/n/n')
-    for mapped_reads_csv_file in mapped_reads_csv_file_list:
+    for bam_stats_csv_file in bam_stats_csv_file_list:
         num_segs = num_segs + 1
-        mapped_reads_df = pd.read_csv(mapped_reads_csv_file)
+        bam_stats_df = pd.read_csv(bam_stats_csv_file)
         # fill in "NAs" the NA gene is being read as NA
-        mapped_reads_df = mapped_reads_df.fillna('NA')
-        gene_name = mapped_reads_df.gene_name[0]
-        for row in range(mapped_reads_df.shape[0]):
+        bam_stats_df = bam_stats_df.fillna('NA')
+        gene_name = bam_stats_df.gene_name[0]
+        for row in range(bam_stats_df.shape[0]):
             
-            description = mapped_reads_df.description[row]
-            value = mapped_reads_df.value[row]
+            description = bam_stats_df.description[row]
+            value = bam_stats_df.value[row]
 
             if description == 'num_mapped_reads':
                 total_mapped_reads = total_mapped_reads + value

@@ -8,7 +8,7 @@ struct VersionInfo {
 }
 
 # begin tasks
-task fastqc {
+task assess_quality_fastqc {
     meta {
       description: "this task uses fastqc to evaluate the quality of reads in the fastq files. The output is an html file with various quality statistics, from which the task pulls the number of reads. Modified from Theiagen Genomics- public helath viral genomics."
     }
@@ -97,12 +97,12 @@ task fastqc {
     }
 }
 
-task seqyclean {
+task filter_reads_seqyclean {
     meta{
         description : "This task uses seqyclean to remove containments and adapaters and then filters on min len and quality."
     }
     input {
-        File adapters_and_contaminants
+        File contam_fasta
         String sample_name
         File fastq_R1
         File fastq_R2
@@ -114,7 +114,7 @@ task seqyclean {
     command <<<
 
         # run seqyclean
-        seqyclean -minlen 70 -qual 30 30 -gz -1 ~{fastq_R1} -2 ~{fastq_R2} -c ~{adapters_and_contaminants} -o ~{sample_name}_clean
+        seqyclean -minlen 70 -qual 30 30 -gz -1 ~{fastq_R1} -2 ~{fastq_R2} -c ~{contam_fasta} -o ~{sample_name}_clean
        
         # pull version out of the summary file
         awk 'NR==2 {print $1}' ~{sample_name}_clean_SummaryStatistics.tsv | tee VERSION
