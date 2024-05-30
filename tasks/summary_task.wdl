@@ -30,7 +30,7 @@ task summary {
         --na_nextclade_tsv ~{write_lines(na_nextclade_tsv)} \
         --ha_nextclade_tsv ~{write_lines(ha_nextclade_tsv)} \
         --version_capture_file ~{write_lines(version_capture_file)} \
-        --workflow_verion "~{workflow_version}" \
+        --workflow_version "~{workflow_version}" \
         --project_name "~{project_name}" \
         --analysis_date "~{analysis_date}" 
 

@@ -19,7 +19,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--assembly_qc_metrics")
     parser.add_argument( "--na_nextclade_tsv")
     parser.add_argument( "--ha_nextclade_tsv")
-    parser.add_argument( "--version_catpure_file")
+    parser.add_argument( "--version_capture_file")
     parser.add_argument( "--workflow_version")
     parser.add_argument( "--analysis_date")
     parser.add_argument( "--project_name")

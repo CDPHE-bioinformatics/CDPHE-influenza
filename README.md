@@ -159,6 +159,8 @@ Use the ``influenza_assembly_inputs.json``  template for the ``influenza_assembl
 |   |   |──{sample_name} #repeat for each sample
 |   |   |   |──{sample_name}_HA.fa # header has full type/subtype description (e.g. A_HA_H3)
 |   |   |   |──{sample_name}_PB1.fa # header has full type/subtype description (e.g. A_PB1)
+|   ├── ivar_assembly_mutlifasta
+|   |   |──{sample_name}_ivar.fasta #repeat for each sample
 |   ├── assembly_qc_metrics
 |   |   |──{sample_name}_qc_metrics.csv #repeat for each sample
 |   ├── sorted_bams
@@ -315,12 +317,12 @@ Performed only if the HA and/or NA gene segment was successfully assembled.
 |-------|------|------------|
 |na_nextclade_json| {sample_name}_na_nextclade.json||
 |na_nextclade_tsv| {sample_name}_na_nextclade.tsv||
-|na_translation_fasta| |{sample_name}_na_translation.fasta||
+|na_translation_fasta| |{sample_name}_nextclade_na_translation.fasta||
 |ha_nextclade_json| {sample_name}_ha_nextclade.json||
 |ha_nextclade_tsv| {sample_name}_ha_nextclade.tsv||
-|ha_HA1_translation_fasta| {sample_name}_ha_HA1_translation.fasta||
-|ha_HA2_translation_fasta| {sample_name}_ha_HA2_translation.fasta ||
-|ha_SigPep_nextclade_translation_fasta| {sample_name}_ha_SigPep_translation.fasta||
+|ha_HA1_translation_fasta| {sample_name}_nextclade_ha_HA1_translation.fasta||
+|ha_HA2_translation_fasta| {sample_name}_nextclade_ha_HA2_translation.fasta ||
+|ha_SigPep_nextclade_translation_fasta| {sample_name}_nextclade_ha_SigPep_translation.fasta||
 
  <br/>
 
