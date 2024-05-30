@@ -191,7 +191,7 @@ Use the ``influenza_assembly_inputs.json``  template for the ``influenza_assembl
 
 <br/>
 
-![influenza assembly workflow diagram](diagrams/influenza_assembly_workflow_diagram_2024-05-11.drawio.png "influenza assembly workflow diagram")
+![influenza assembly workflow diagram](diagrams/inifluenza_assembly_workflow_diagram_2024-05-30.drawio.png "influenza assembly workflow diagram")
 
 <br/>
 
@@ -338,7 +338,7 @@ Performed only if the HA and/or NA gene segment was successfully assembled.
 ### **2-influenza_assembly_summary-wdl**
 <br/> 
 
-![influenza assembly workflow diagram](./diagrams/influenza_assembly_summary_workflow_diagram_2023-01-15.png "influenza assembly workflow diagram")
+![influenza assembly workflow diagram](./diagrams/influenza_assembly_summary_workflow_diagram_2024-05-30.drawio.png "influenza assembly workflow diagram")
 
 <br/>
 
