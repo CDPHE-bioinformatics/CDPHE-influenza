@@ -16,7 +16,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--sample_name")
     parser.add_argument( "--preprocess_qc_metrics")
     parser.add_argument( "--irma_typing")
-    parser.add_argument( "--post_assembly_qc_metrics")
+    parser.add_argument( "--assembly_qc_metrics")
     parser.add_argument( "--nextclade_na_tsv")
     parser.add_argument( "--nextclade_ha_tsv")
     parser.add_argument( "--version_catpure_file")
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     sample_name_txt = options.sample_name
     preprocess_qc_metrics_txt = options.preprocess_qc_metrics
     irma_typing_txt = options.irma_typing
-    post_qc_metrics_txt = options.post_assembly_qc_metrics
+    post_qc_metrics_txt = options.assembly_qc_metrics
     nextclade_na_tsv_txt = options.nextclade_na_tsv
     nextclade_ha_tsv_txt = options.nextclade_ha_tsv
     project_name = options.project_name

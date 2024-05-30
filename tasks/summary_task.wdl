@@ -9,7 +9,7 @@ task summary {
         Array[String] sample_name
         Array[File] preprocess_qc_metrics
         Array[File] irma_typing
-        Array[File] post_assembly_qc_metrics
+        Array[File] assembly_qc_metrics
         Array[File] nextclade_na_tsv
         Array[File] nextclade_ha_tsv
         Array[File] version_capture_file
@@ -26,7 +26,7 @@ task summary {
         --sample_name ~{write_lines(sample_name)} \
         --preprocess_qc_metrics ~{write_lines(preprocess_qc_metrics)} \
         --irma_typing ~{write_lines(irma_typing)} \
-        --post_assembly_qc_metrics ~{write_lines(post_assembly_qc_metrics)} \
+        --assembly_qc_metrics ~{write_lines(assembly_qc_metrics)} \
         --nextclade_na_tsv ~{write_lines(nextclade_na_tsv)} \
         --nextclade_ha_tsv ~{write_lines(nextclade_ha_tsv)} \
         --version_capture_file ~{write_lines(version_capture_file)} \

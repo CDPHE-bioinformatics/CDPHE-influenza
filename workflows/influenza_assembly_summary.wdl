@@ -35,7 +35,7 @@ workflow influenza_assembly_summary{
             sample_name = sample_name,
             preprocess_qc_metrics = preprocess_qc_metrics,
             irma_typing = irma_typing,
-            post_assembly_qc_metrics = post_assembly_qc_metrics,
+            assembly_qc_metrics = assembly_qc_metrics,
             nextclade_na_tsv = nextclade_na_tsv,
             nextclade_ha_tsv = nextclade_ha_tsv,
             version_capture_file = version_capture_file,
