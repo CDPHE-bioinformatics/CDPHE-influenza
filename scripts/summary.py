@@ -54,10 +54,12 @@ def create_version_capture_file_for_assembly_workflow(
     '''
     
     version_capture_df_list = []
+    print(f"version capture file list len: {len(version_capture_file_list)}")
     for version_capture_file in version_capture_file_list:
         df = pd.read_csv(version_capture_file, dtype = {'sample_name' : object})
         version_capture_df_list.append(df)
-    version_capture_df = pd.concat(version_capture_df).reset_index(drop = True)
+    print(f"version capture df list len: {len(version_capture_df_list)}")
+    version_capture_df = pd.concat(version_capture_df_list).reset_index(drop = True)
     version_capture_df = version_capture_df.drop(columns = ['sample_name'])
     version_capture_df = version_capture_df.drop_duplicates(keep = 'first')
     version_capture_df = version_capture_df.sort(by = 'software')
@@ -308,7 +310,7 @@ if __name__ == '__main__':
     result = result[columns]
     
     #outfile
-    outfile = f'{project_name}_sequencing_results.csv' 
+    outfile = f'{project_name}_sequencing_results_{workflow_version}.csv' 
     result.to_csv(outfile, index = False)
 
 

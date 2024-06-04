@@ -91,14 +91,14 @@ task transfer_assembly_wdl{
         gsutil -m cp ~assembly_qc_metrics ~{out_path}/assembly_qc_metrics/
 
         # transfer nextclade
-        gustil -m cp ~{na_nextclade_json} ~{out_path}/nextclade_out/~{sample_name}/
-        gustil -m cp ~{na_nextclade_tsv} ~{out_path}/nextclade_out/~{sample_name}/
-        gustil -m cp ~{na_nextclade_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
-        gustil -m cp ~{ha_nextclade_json} ~{out_path}/nextclade_out/~{sample_name}/
-        gustil -m cp ~{ha_nextclade_tsv} ~{out_path}/nextclade_out/~{sample_name}/
-        gustil -m cp ~{ha_nextclade_HA1_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
-        gustil -m cp ~{ha_nextclade_HA2_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
-        gustil -m cp ~{ha_nextclade_SigPep_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{na_nextclade_json} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{na_nextclade_tsv} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{na_nextclade_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{ha_nextclade_json} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{ha_nextclade_tsv} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{ha_nextclade_HA1_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{ha_nextclade_HA2_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{ha_nextclade_SigPep_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
         
 
 
@@ -138,9 +138,9 @@ task transfer_assembly_summary_wdl {
 
 
     command <<< 
-        gsutil -m cp ~{sequencing_results_csv} ~{out_path}/summary_files/
-        gsutil -m cp ~{version_capture_influenza_assembly_csv} ~{out_path}/summary_files/
-        gsutil -m cp ~{version_capture_influenza_assembly_summary_csv} ~{out_path}/summary_files/
+        gsutil -m cp ~{sequencing_results_csv} ~{out_path}/summary_results/
+        gsutil -m cp ~{version_capture_influenza_assembly_csv} ~{out_path}/summary_results/
+        gsutil -m cp ~{version_capture_influenza_assembly_summary_csv} ~{out_path}/summary_results/
         
         # transfer date
         transferdate=`date`

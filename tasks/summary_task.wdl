@@ -37,7 +37,7 @@ task summary {
     >>>
 
     output {
-        File sequencing_results_csv = "~{project_name}_sequencing_results.csv" 
+        File sequencing_results_csv = "~{project_name}_sequencing_results_~{workflow_version}.csv" 
         File version_capture_influenza_assembly_csv = "version_capture_influenza_assembly_~{project_name}_~{workflow_version}.csv"
         File version_capture_influenza_assembly_summary_csv = "version_capture_influenza_assembly_summary_~{project_name}_~{workflow_version}.csv"
     }
