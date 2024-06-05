@@ -128,7 +128,7 @@ task filter_reads_seqyclean {
         File seqyclean_summary = "${sample_name}_clean_SummaryStatistics.tsv"
 
         VersionInfo seqyclean_version_info = object{
-            software: "fastqc",
+            software: "seqyclean",
             docker: docker,
             version: read_string("VERSION")
         }
