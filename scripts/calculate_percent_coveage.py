@@ -76,7 +76,7 @@ def calc_percent_cov(seq_len, ref_len_dict, segment_name):
 def create_output(sample_name, filename, segment_name, gene_name, seq_len, per_cov, expected_len):
 
     df = pd.DataFrame()
-    description_list = ['expected_len', 'seq_len', 'per_cov']
+    description_list = ['expected_len', 'seq_len', 'percent_coverage']
     value_list = [expected_len, seq_len, per_cov]
     df['description'] = description_list
     df['value'] = value_list
