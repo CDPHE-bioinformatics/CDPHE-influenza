@@ -1,10 +1,7 @@
 #! /usr/bin/env python
 
-#version = '1.0.0'
-
 # import python modules
 import pandas as pd
-
 import sys
 import argparse
 import subprocess
@@ -54,15 +51,13 @@ def create_version_capture_file_for_assembly_workflow(
     '''
     
     version_capture_df_list = []
-    print(f"version capture file list len: {len(version_capture_file_list)}")
     for version_capture_file in version_capture_file_list:
         df = pd.read_csv(version_capture_file, dtype = {'sample_name' : object})
         version_capture_df_list.append(df)
-    print(f"version capture df list len: {len(version_capture_df_list)}")
     version_capture_df = pd.concat(version_capture_df_list).reset_index(drop = True)
     version_capture_df = version_capture_df.drop(columns = ['sample_name'])
     version_capture_df = version_capture_df.drop_duplicates(keep = 'first')
-    version_capture_df = version_capture_df.sort(by = 'software')
+    version_capture_df = version_capture_df.sort_values(by = 'software')
 
     outfile = f'version_capture_influenza_illumina_pe_assembly_{project_name}_{workflow_version}.csv'
     version_capture_df.to_csv(outfile, index = False)
@@ -92,30 +87,6 @@ def create_version_capture_file_for_summary_workflow(
 
     return None
 
-def rename_and_drop_columns(df):
-    '''
-    becasue not all dfs may be produced, we have to do 
-    a clever (and hacky) method to join the dataframes
-    together. To do this we loop and use the merge function.
-    with the merge function, column conflicts (present in both
-    dfs being merged) create _x and _y columns. Since the
-    first df will be the empty df, _x columns will always be 
-    associated with the column conflict of the empty df and 
-    we can drop taht column because it will be empty. So this 
-    functions will drop all _x columsn and rename all _y columsn 
-    to the original name
-    '''
-    renamed_cols = {}
-    for col in df.columns:
-        if col.endswith('_y'):
-            renamed_cols[col] = col[:-2]
-        elif col.endswith('_x'):
-            # because the first left df is the empty df
-            # any column conflicts will be _x associated
-            # with teh empty df
-            del df[col]
-    df.rename(columns=renamed_cols, inplace=True)
-    return df
 
 #### MAIN ####
 if __name__ == '__main__':
@@ -148,7 +119,7 @@ if __name__ == '__main__':
     
     # crete version capture file for summary workflow
     create_version_capture_file_for_summary_workflow(
-        workflow_versioin = workflow_version,
+        workflow_version = workflow_version,
         project_name = project_name,
         analysis_date = analysis_date)
 
@@ -156,72 +127,75 @@ if __name__ == '__main__':
     # create summary metrics file:
     # the issue I have is that if assemlby fails then the the post assembly
     # metrics won't be generated. Plus if the HA or NA segment fail then
-    # we won't ahve the nextclade output. So I need to create an empty dataframe
-    # that has all the columns so that all the columns will always be output
-    # when I'm joining together the dataframes
+    # we won't ahve the nextclade output. 
+
+    # join dfs like normal and then go back and add non-existent
+    # columns if needed using list of columns and checking for the presence of 
+    # of each column
+
+    # issue with this join method though is that if df doesn't exist, so need to add
+    # if statements to check that the df exists before joining!
+
+    # dropped seq_len and expected length from columns
+    # nextclade columns to drop - totalMissing, totalNonACGTNs, totalUnknownAa,
+    # aaSubstituttions, aaDeletions, aaInsertions, warning, errors
+    # keep others for QC purposes.
 
     # set columns
     col_order = [
         'hsn', 'sample_name', 'project_name', 'analysis_date', 'flu_type', 
         'HA_subtype', 'NA_subtype',
         'HA_clade', 'HA_short-clade', 'HA_subclade',
-        'NA_clade', 'NA_short-clade', 'NA_subclade',
+        'NA_clade', 
         'total_segments', 'total_flu_mapped_reads', 'percent_flu_mapped_reads','total_reads_cleaned',
-        'HA_per_cov','HA_mean_depth', 'HA_num_mapped_reads', 'HA_seq_len', 'HA_expected_len',
-        'NA_per_cov', 'NA_mean_depth', 'NA_num_mapped_reads', 'NA_seq_len','NA_expected_len', 
-        'MP_per_cov', 'MP_mean_depth', 'MP_num_mapped_reads','MP_seq_len', 'MP_expected_len', 
-        'NP_per_cov', 'NP_mean_depth','NP_num_mapped_reads', 'NP_seq_len', 'NP_expected_len', 
-        'NS_per_cov','NS_mean_depth', 'NS_num_mapped_reads', 'NS_seq_len', 'NS_expected_len',
-        'PA_per_cov', 'PA_mean_depth', 'PA_num_mapped_reads', 'PA_seq_len','PA_expected_len', 
-        'PB1_per_cov', 'PB1_mean_depth','PB1_num_mapped_reads', 'PB1_seq_len', 'PB1_expected_len',
-        'PB2_per_cov', 'PB2_mean_depth', 'PB2_num_mapped_reads', 'PB2_seq_len','PB2_expected_len',
+        'HA_percent_coverage','HA_mean_depth', 'HA_num_mapped_reads', 
+        'NA_percent_coverage', 'NA_mean_depth', 'NA_num_mapped_reads', 
+        'MP_percent_coverage', 'MP_mean_depth', 'MP_num_mapped_reads',
+        'NP_percent_coverage', 'NP_mean_depth','NP_num_mapped_reads',  
+        'NS_percent_coverage','NS_mean_depth', 'NS_num_mapped_reads', 
+        'PA_percent_coverage', 'PA_mean_depth', 'PA_num_mapped_reads', 
+        'PB1_percent_coverage', 'PB1_mean_depth','PB1_num_mapped_reads', 
+        'PB2_percent_coverage', 'PB2_mean_depth', 'PB2_num_mapped_reads', 
         'total_read_diff',  'total_reads_R1_raw', 'total_reads_R2_raw', 'read_pairs_raw', 'total_reads_raw', 
         'read_length_R1_raw', 'read_length_R2_raw',
         'total_reads_R1_cleaned', 'total_reads_R2_cleaned', 'read_pairs_cleaned', 
         'read_length_R1_cleaned', 'read_length_R2_cleaned',
-        'HA_totalSubstitutions', 'HA_totalDeletions', 'HA_totalInsertions', 'HA_totalFrameShifts', 'HA_totalMissing', 'HA_totalNonACGTNs', 'HA_totalAminoacidSubstitutions', 'HA_totalAminoacidDeletions', 'HA_totalAminoacidInsertions', 'HA_totalUnknownAa', 'HA_nextclade_coverage', 'HA_aaSubstitutions', 'HA_aaDeletions', 'HA_aaInsertions', 'HA_warnings', 'HA_errors',
-        'NA_totalSubstitutions', 'NA_totalDeletions', 'NA_totalInsertions', 'NA_totalFrameShifts', 'NA_totalMissing', 'NA_totalNonACGTNs', 'NA_totalAminoacidSubstitutions', 'NA_totalAminoacidDeletions', 'NA_totalAminoacidInsertions', 'NA_totalUnknownAa', 'NA_nextclade_coverage', 'NA_aaSubstitutions', 'NA_aaDeletions', 'NA_aaInsertions', 'NA_warnings', 'NA_errors'
+        'HA_totalSubstitutions', 'HA_totalDeletions', 'HA_totalInsertions', 'HA_totalFrameShifts',  
+        'HA_totalAminoacidSubstitutions', 'HA_totalAminoacidDeletions', 'HA_totalAminoacidInsertions', 
+        'NA_totalSubstitutions', 'NA_totalDeletions', 'NA_totalInsertions', 'NA_totalFrameShifts', 
+        'NA_totalAminoacidSubstitutions', 'NA_totalAminoacidDeletions', 'NA_totalAminoacidInsertions'
         ]
-
-    empty_df = pd.DataFrame(columns = col_order)
-    
-    to_merge_dfs = [empty_df]
 
     # preprocess
     preprocess_qc_metrics_df_list = []
     for preprocess_qc_metrics in preprocess_qc_metrics_list:
         df = pd.read_csv(preprocess_qc_metrics, dtype = {'sample_name' : object})
+        # print()
+        # print(df.columns)
+        # print()
         preprocess_qc_metrics_df_list.append(df)
-    preprocess_qc_metrics_df = pd.concat(preprocess_qc_metrics_df_list).reset_index(drop = True)
-    to_merge_dfs.append(preprocess_qc_metrics_df)
+    preprocess_qc_metrics_df = pd.concat(preprocess_qc_metrics_df_list).set_index('sample_name')
 
     # irma subtyping
     irma_typing_df_list = []
     for irma_typing in irma_typing_list:
         df = pd.read_csv(irma_typing, dtype = {'sample_name' : object})
         irma_typing_df_list.append(df)
-    irma_typing_df = pd.concat(irma_typing_df_list).reset_index(drop=True)
-    to_merge_dfs.append(irma_typing_df)
+    irma_typing_df = pd.concat(irma_typing_df_list).set_index('sample_name')
+
 
     # na nextclade
     na_nextclade_df_list = []
-    if len(na_nextclade_df_list) >= 1:
+    # check that files exist
+    if len(na_nextclade_tsv_list) >= 1:
         for nextclade_tsv in na_nextclade_tsv_list:
-            sample_name = nextclade_tsv.split('_na')[0]
+            sample_name = nextclade_tsv.split('/')[-1].split('_nextclade')[0]
             df = pd.read_csv(nextclade_tsv, sep ='\t')
             df['sample_name'] = sample_name
             df['nextclade_coverage'] = df['coverage']
-            # add missing columns
-            # NA: add subclade, short-clade (for Bvic, H1N1, and H3N2)
-            # HA: add short-clade (For bvic only)
-            if "subclade" not in df.columns:
-                print('DNE')
-                df['subclade'] = ""
-            if "short-clade" not in df.columns:
-                print('DNE')
-                df['short-clade'] = ""
+
             # reorder columns
-            col_keep = ['sample_name', 'clade', 'short-clade', 'subclade', 
+            col_keep = ['sample_name', 'clade', 
                         'totalSubstitutions','totalDeletions', 'totalInsertions', 
                         'totalFrameShifts', 'totalMissing','totalNonACGTNs', 'totalAminoacidSubstitutions',
                         'totalAminoacidDeletions', 'totalAminoacidInsertions', 'totalUnknownAa', 
@@ -237,25 +211,26 @@ if __name__ == '__main__':
             df = df[col_keep]
             df = df.rename(columns = rename_cols)
             na_nextclade_df_list.append(df)
-        na_nextclade_df = pd.concat(na_nextclade_df_list).rest_index(drop = True)
-        to_merge_dfs.append(na_nextclade_df)
+        na_nextclade_df = pd.concat(na_nextclade_df_list).set_index('sample_name')
+    else:
+        # create empty df for joining downstream
+        na_nextclade_df = pd.DataFrame()
+
 
     # ha nextclade
     ha_nextclade_df_list = []
-    if len(ha_nextclade_df_list) >= 1:
+    # check that columns exist
+    if len(ha_nextclade_tsv_list) >= 1:
         for nextclade_tsv in ha_nextclade_tsv_list:
-            sample_name = nextclade_tsv.split('_ha')[0]
+            sample_name = nextclade_tsv.split('/')[-1].split('_nextclade')[0]
             df = pd.read_csv(nextclade_tsv, sep ='\t')
             df['sample_name'] = sample_name
             df['nextclade_coverage'] = df['coverage']
             # add missing columns
-            # NA: add subclade, short-clade (for Bvic, H1N1, and H3N2)
             # HA: add short-clade (For bvic only)
             if "subclade" not in df.columns:
-                print('DNE')
                 df['subclade'] = ""
             if "short-clade" not in df.columns:
-                print('DNE')
                 df['short-clade'] = ""
             # reorder columns
             col_keep = ['sample_name', 'clade', 'short-clade', 'subclade', 
@@ -264,7 +239,7 @@ if __name__ == '__main__':
                         'totalAminoacidDeletions', 'totalAminoacidInsertions', 'totalUnknownAa', 
                         'nextclade_coverage','aaSubstitutions', 'aaDeletions', 'aaInsertions',
                         'warnings', 'errors']
-            # add "nha" prefix to all column headers
+            # add "ha" prefix to all column headers
             rename_cols = {}
             for col in col_keep:
                 if col != 'sample_name':
@@ -274,44 +249,54 @@ if __name__ == '__main__':
             df = df[col_keep]
             df = df.rename(columns = rename_cols)
             ha_nextclade_df_list.append(df)
-        ha_nextclade_df = pd.concat(ha_nextclade_df_list).rest_index(drop = True)
-        to_merge_dfs.append(ha_nextclade_df)
+        ha_nextclade_df = pd.concat(ha_nextclade_df_list).set_index('sample_name')
+    else:
+        #create empty df for joining downstream
+        ha_nextclade_df = pd.DataFrame()
+
 
     # post assembly qc metrics
     post_qc_metrics_df_list = []
-    if len(post_qc_metrics_df_list) >= 1:
+    if len(post_qc_metrics_list) >= 1:
         for post_qc_metrics in post_qc_metrics_list:
             df = pd.read_csv(post_qc_metrics, dtype = {'sample_name' : object})
+            # print()
+            # print(df.columns)
+            # print()
             post_qc_metrics_df_list.append(df)
-        post_qc_metrics_df = pd.concat(post_qc_metrics_df_list).reset_index(drop = True)
-        to_merge_dfs.append(post_qc_metrics_df)
-    
-    # combinig everything together
-    # merge by looping through all existing dfs
-    result = to_merge_dfs[0] # this is the empty df
-    for df in to_merge_dfs[1:]:
-        result = pd.merge(result, df, on = 'col2', how = 'outer')
-    result = rename_and_drop_columns(df = result)
-    result = result.reset_index()
-    result["analysis_date"] = analysis_date
-    result['percent_flu_mapped_reads'] = round((df.total_flu_mapped_reads / df.total_reads_cleaned) * 100 , 2)
-    result['project_name'] = project_name
-    
-    # ordering colums while making sure I didn't forget any
-    # all columns in not in col_order will be sorted alphabetically at the end of the df
-    columns = result.columns.tolist()
-    columns.sort() # sort alphabetically
+        post_qc_metrics_df = pd.concat(post_qc_metrics_df_list).set_index('sample_name')
+    else:
+        # create empty df for joining downstream
+        post_qc_metrics_df = pd.DataFrame()
 
-    for n, column in enumerate(col_order):
-        print(column)
-        columns.remove(column)
-        columns.insert(n, column)
-
-    result = result[columns]
     
-    #outfile
+    # join all the dfs together
+    df = pd.DataFrame(sample_name_list, columns = ['sample_name']).set_index('sample_name')
+    df = df.join(preprocess_qc_metrics_df, how = 'left')
+    df = df.join(irma_typing_df, how = 'left')
+    df = df.join(na_nextclade_df, how = 'left')
+    df = df.join(ha_nextclade_df, how = 'left')
+    df = df.join(post_qc_metrics_df, how = 'left')
+    df = df.reset_index(drop = False)
+
+    # add some columns and do a calcuation
+    df["analysis_date"] = analysis_date
+    df['percent_flu_mapped_reads'] = round((df.total_flu_mapped_reads / df.total_reads_cleaned) * 100 , 2)
+    # TODO the percent flu mapped reads we are seeing is much lower than CDC's. I'm not sure how they are doing the calcuation
+    df['project_name'] = project_name
+    df = df[col_order] 
+
+    # check columns - if column doesn't exist then add column
+    # for if assembly failed for all samples assemlby qc metrics or nextclade
+    # df weren't every made; then this keeps the columns consisent regardless
+    for column in col_order:
+        if column not in df.columns:
+            df[column] = pd.NA
+   
+    
+    # outfile
     outfile = f'{project_name}_sequencing_results_{workflow_version}.csv' 
-    result.to_csv(outfile, index = False)
+    df.to_csv(outfile, index = False)
 
 
     
