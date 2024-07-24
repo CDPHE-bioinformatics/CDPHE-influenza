@@ -143,7 +143,7 @@ if __name__ == '__main__':
 
     # set columns
     col_order = [
-        'hsn', 'sample_name', 'project_name', 'analysis_date', 'flu_type', 
+        'sample_name', 'project_name', 'analysis_date', 'flu_type', 
         'HA_subtype', 'NA_subtype',
         'HA_clade', 'HA_short-clade', 'HA_subclade',
         'NA_clade', 
