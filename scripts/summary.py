@@ -82,7 +82,7 @@ def create_version_capture_file_for_summary_workflow(
     df['associated_docker_container'] = ['']
     df['version'] = [workflow_version]
 
-    outfile = f'version_capture_influenza_assembly_summary_{project_name}_{workflow_version}.csv'
+    outfile = f'version_capture_influenza_illumina_pe_assembly_summary_{project_name}_{workflow_version}.csv'
     df.to_csv(outfile, index = False)
 
     return None
