@@ -104,6 +104,7 @@ if __name__ == '__main__':
             df.at[0, col_name] = value
 
     # insert per cov results into data frame
+    complete_segments = 0
     for percent_coverage_csv_file in percent_coverage_csv_file_list:
         percent_coverage_df = pd.read_csv(percent_coverage_csv_file)
         percent_coverage_df = percent_coverage_df.fillna("NA")
@@ -116,11 +117,16 @@ if __name__ == '__main__':
             col_name = "%s_%s" % (gene_name, description)
             df.at[0, col_name] = value
 
+            # iterate up if percent coverage = description
+            # and percent coverage > 90%
+            if description == 'percent_coverage' and value >=90:
+                complete_segments +=1
+
 
     # add in final columns
-    df.at[0, 'total_segments'] = num_segs
+    df.at[0, 'assembled_segments'] = num_segs
     df.at[0, 'total_flu_mapped_reads'] = total_mapped_reads
-    
+    df.at[0, 'complete_segments'] = complete_segments
 
     # save df
     outfile = f"{sample_name}_assembly_qc_metrics.csv"
