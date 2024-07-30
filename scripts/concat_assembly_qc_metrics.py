@@ -50,7 +50,7 @@ def create_list_from_string_input(string_input):
     return list
 
 def create_col_headers(segment_list, metric_variables):
-    header_list = ['sample_name', 'total_segments', 'total_flu_mapped_reads']
+    header_list = ['sample_name', 'complete_segments','assembled_segments', 'total_flu_mapped_reads']
     for segment in segment_list:
         for metric in metric_variables:
             header_name = "%s_%s" % (segment, metric)
