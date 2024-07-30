@@ -2,18 +2,22 @@ version 1.0
 
 task summary {
     meta{
-        description: "concat all important metrics across samples into a single file"
+        description: "concat all important metrics across samples into a single file; and generate version capture files"
     }
 
     input{
         Array[String] sample_name
         Array[File] preprocess_qc_metrics
         Array[File] irma_typing
-        Array[File] irma_assembly_qc_metrics
+        Array[File] assembly_qc_metrics
+        Array[File] na_nextclade_tsv
+        Array[File] ha_nextclade_tsv
+        Array[File] version_capture_file
+        String workflow_version
+        String analysis_date
         File python_script
         String project_name
-        String analysis_date
-        File workbook_path
+
     }
 
     command <<<
@@ -22,15 +26,20 @@ task summary {
         --sample_name ~{write_lines(sample_name)} \
         --preprocess_qc_metrics ~{write_lines(preprocess_qc_metrics)} \
         --irma_typing ~{write_lines(irma_typing)} \
-        --irma_assembly_qc_metrics ~{write_lines(irma_assembly_qc_metrics)} \
+        --assembly_qc_metrics ~{write_lines(assembly_qc_metrics)} \
+        --na_nextclade_tsv ~{write_lines(na_nextclade_tsv)} \
+        --ha_nextclade_tsv ~{write_lines(ha_nextclade_tsv)} \
+        --version_capture_file ~{write_lines(version_capture_file)} \
+        --workflow_version "~{workflow_version}" \
         --project_name "~{project_name}" \
-        --analysis_date "~{analysis_date}" \
-        --workbook_path "~{workbook_path}"
+        --analysis_date "~{analysis_date}" 
 
     >>>
 
     output {
-        File sequencing_results_csv = "~{project_name}_sequencing_results.csv" 
+        File sequencing_results_csv = "~{project_name}_sequencing_results_~{workflow_version}.csv" 
+        File version_capture_influenza_assembly_csv = "version_capture_influenza_illumina_pe_assembly_~{project_name}_~{workflow_version}.csv"
+        File version_capture_influenza_assembly_summary_csv = "version_capture_influenza_illumina_pe_assembly_summary_~{project_name}_~{workflow_version}.csv"
     }
 
     runtime {

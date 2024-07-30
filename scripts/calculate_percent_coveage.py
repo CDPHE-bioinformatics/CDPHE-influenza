@@ -36,29 +36,25 @@ def getOptions(args=sys.argv[1:]):
     options = parser.parse_args(args)
     return options
 
+def get_fasta_filename(fasta_file_path):
+    filename = fasta_file_path.split('/')[-1] # strip directories
+    return filename
 
-def get_fasta_file_basename(fasta_file_path):
-    basename = fasta_file_path.split('/')[-1] # strip directories
-    return basename
+def get_fasta_header(fasta_file_path):
+    record = SeqIO.read(fasta_file_path, 'fasta')
+    header = record.id # 34456_A_HA_H3, 3454567_B_PB1
+    return header
 
-def get_segment_name(fasta_file_path, sample_name):
-    basename = fasta_file_path.split('/')[-1] # strip directories
-    segment_name = '_'.join(basename.split(sample_name)[1].split('_')[1:]).split('.')[0] # A_HA_H3, A_MP etc.
 
+def get_segment_name(header, sample_name):
+    segment_name = header.split(sample_name)[-1].lstrip("_") 
+    # header = 49487387_B_NS, split gets us _B_NS, so need to strip the leading "_" to get B_NS
     return segment_name
 
-def get_gene_name(fasta_file_path, sample_name):
-    basename = fasta_file_path.split('/')[-1] # strip directories
-    segment_name = '_'.join(basename.split(sample_name)[1].split('_')[1:]).split('.')[0]
+def get_gene_name(segment_name):
     gene_name = segment_name.split('_')[1] #HA, MP etc
-    
     return gene_name
 
-# def get_sample_name(fasta_file_path):
-#     basename = fasta_file_path.split('/')[-1] # strip directories
-#     sample_name = basename.split('_')[0] # pull out sample id
-
-#     return sample_name
 
 def get_seq_len(fasta_file_path):
     # read in fasta file
@@ -77,22 +73,22 @@ def calc_percent_cov(seq_len, ref_len_dict, segment_name):
 
     return per_cov
 
-def create_output(sample_name, basename, segment_name, gene_name, seq_len, per_cov, expected_len):
+def create_output(sample_name, filename, segment_name, gene_name, seq_len, per_cov, expected_len):
 
     df = pd.DataFrame()
-    description_list = ['expected_len', 'seq_len', 'per_cov']
+    description_list = ['expected_len', 'seq_len', 'percent_coverage']
     value_list = [expected_len, seq_len, per_cov]
     df['description'] = description_list
     df['value'] = value_list
     df['sample_name'] = sample_name
-    df['base_name'] = basename
+    df['file_name'] = filename
     df['segment_name'] = segment_name
     df['gene_name'] = gene_name
     
-    col_order = ['sample_name', 'base_name', 'segment_name', 'gene_name', 'description', 'value']
+    col_order = ['sample_name', 'file_name', 'segment_name', 'gene_name', 'description', 'value']
     df = df[col_order]
 
-    outfile='perc_cov_results.csv' 
+    outfile=f'percent_coverage_results.csv' 
     df.to_csv(outfile, index = False)
 
 
@@ -103,10 +99,11 @@ if __name__ == '__main__':
     fasta_file_path = options.fasta_file
     sample_name = options.sample_name
 
-    basename = get_fasta_file_basename(fasta_file_path = fasta_file_path)
+    filename = get_fasta_filename(fasta_file_path=fasta_file_path)
+    header = get_fasta_header(fasta_file_path=fasta_file_path)
 
-    segment_name = get_segment_name(fasta_file_path=fasta_file_path, sample_name = sample_name)
-    gene_name = get_gene_name(fasta_file_path=fasta_file_path, sample_name = sample_name)
+    segment_name = get_segment_name(header=header, sample_name = sample_name)
+    gene_name = get_gene_name(segment_name=segment_name)
 
     seq_len = get_seq_len(fasta_file_path=fasta_file_path)
     per_cov = calc_percent_cov(seq_len=seq_len, 
@@ -116,7 +113,7 @@ if __name__ == '__main__':
     expected_len = ref_len_dict[segment_name]
 
     create_output(sample_name = sample_name, 
-                    basename = basename, 
+                    filename = filename, 
                     segment_name=segment_name, 
                     gene_name=gene_name,
                     seq_len=seq_len, 

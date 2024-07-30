@@ -17,7 +17,6 @@ def getOptions(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Parses command.")
     parser.add_argument( "--irma_assembled_gene_segments_csv")
     parser.add_argument( "--sample_name")
-    parser.add_argument( "--irma_runtime_csv")
     options = parser.parse_args(args)
     return options
 
@@ -27,12 +26,7 @@ if __name__ == '__main__':
     options = getOptions()
     irma_assembled_gene_segments_csv = options.irma_assembled_gene_segments_csv
     sample_name = options.sample_name
-    irma_runtime_csv = options.irma_runtime_csv
 
-    irma_runtime_df = pd.read_csv(irma_runtime_csv)
-    irma_version = irma_runtime_df.irma_version[0]
-    irma_module = irma_runtime_df.irma_module[0]
-    irma_docker = irma_runtime_df.irma_docker[0]
 
     df = pd.read_csv(irma_assembled_gene_segments_csv, dtype = {'sample_name' : object})
     df = df.dropna(how = 'all')
@@ -64,9 +58,6 @@ if __name__ == '__main__':
     summary_df['flu_type'] = [TYPE]
     summary_df['HA_subtype'] = [HA_subtype]
     summary_df['NA_subtype'] = [NA_subtype]
-    summary_df['irma_module'] = [irma_module]
-    summary_df['irma_docker'] = [irma_docker]
-    summary_df['irma_version'] = [irma_version]
 
     outfile = f'{sample_name}_irma_typing.csv'
     summary_df.to_csv(outfile, index = False)
