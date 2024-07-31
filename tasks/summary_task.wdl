@@ -28,7 +28,7 @@ task results_summary {
         --assembly_qc_metrics ~{write_lines(assembly_qc_metrics)} \
         --na_nextclade_tsv ~{write_lines(na_nextclade_tsv)} \
         --ha_nextclade_tsv ~{write_lines(ha_nextclade_tsv)} \
-        --workflow_version ~{workflow_version}
+        --workflow_version ~{workflow_version}\
         --project_name "~{project_name}" \
         --analysis_date "~{analysis_date}" 
 
