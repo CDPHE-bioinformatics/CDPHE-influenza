@@ -74,7 +74,7 @@ task version_capture_summary {
 
     output {
         
-        File version_capture_influenza_assembly_summary_csv = "version_capture_~{workflow_name}_~{project_name}_~{workflow_version}.csv"
+        File version_capture_influenza_assembly_summary_csv = "version_capture_~{workflow_name}_~{project_name}.csv"
     }
 
     runtime {
