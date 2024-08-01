@@ -145,7 +145,7 @@ task transfer_assembly_summary_wdl {
 
 
     command <<< 
-        gsutil -m cp ~{sequencing_results_csv} ~{out_path}/version_capture/
+        gsutil -m cp ~{sequencing_results_csv} ~{out_path}/summary_results/
         gsutil -m cp ~{version_capture_influenza_assembly_summary_csv} ~{out_path}/version_capture/
         
         # transfer date

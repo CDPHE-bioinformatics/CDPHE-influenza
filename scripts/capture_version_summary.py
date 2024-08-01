@@ -56,25 +56,6 @@ if __name__ == '__main__':
     # crete version capture file for summary workflow
     create_version_capture_file_for_summary_workflow(
         workflow_version = workflow_version,
-        workflow_name = workflow_name
+        workflow_name = workflow_name,
         project_name = project_name,
         analysis_date = analysis_date)
-
-
-    
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
