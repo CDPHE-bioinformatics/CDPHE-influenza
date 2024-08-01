@@ -134,6 +134,7 @@ task transfer_assembly_summary_wdl {
 
     input {
 
+        String workflow_version
         String bucket_path
         File sequencing_results_csv
         File version_capture_influenza_assembly_summary_csv

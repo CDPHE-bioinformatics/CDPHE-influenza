@@ -57,6 +57,7 @@ workflow influenza_assembly_summary{
 
     call transfer.transfer_assembly_summary_wdl as summary_transfer {
         input:
+            workflow_version = capture_workflow_version.workflow_version,
             sequencing_results_csv = results_summary.sequencing_results_csv,
             version_capture_influenza_assembly_summary_csv = version_capture_summary.version_capture_influenza_assembly_summary_csv,
             bucket_path = out_bucket_path
@@ -65,7 +66,6 @@ workflow influenza_assembly_summary{
     output {
 
         File sequencing_results_csv = results_summary.sequencing_results_csv
-        File version_capture_influenza_assembly_csv = version_capture_summary.version_capture_influenza_assembly_csv
         File version_capture_influenza_assembly_summary_csv = version_capture_summary.version_capture_influenza_assembly_summary_csv
         String transfer_date = summary_transfer.transfer_date
 
