@@ -54,7 +54,6 @@ task version_capture_summary {
     }
 
     input{
-        Array[File] version_capture_file
         String workflow_name
         String workflow_version
         String analysis_date
@@ -66,7 +65,6 @@ task version_capture_summary {
     command <<<
 
     python ~{python_script} \
-        --version_capture_file ~{write_lines(version_capture_file)} \
         --workflow_version "~{workflow_version}" \
         --workflow_name "~{workflow_name}" \
         --project_name "~{project_name}" \

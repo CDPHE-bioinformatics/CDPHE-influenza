@@ -18,18 +18,6 @@ def getOptions(args=sys.argv[1:]):
     options = parser.parse_args(args)
     return options
 
-def create_list_from_write_lines_input(write_lines_input):
-
-    list = []
-    with open(write_lines_input, 'r') as f:
-        for line in f:
-            line = line.strip()
-            if line: 
-                # ensure that only lines with values are added to the list
-                list.append(line.strip())
-    return list
-
-
 # create versioin capture file for summary workflow
 def create_version_capture_file_for_summary_workflow(
         workflow_version,
@@ -60,12 +48,9 @@ if __name__ == '__main__':
 
     options = getOptions()
     project_name = options.project_name
-    version_capture_file = options.version_capture_file
     workflow_name = options.workflow_name
     workflow_version = options.workflow_version
     analysis_date = options.analysis_date
-
-    version_capture_file_list = create_list_from_write_lines_input(write_lines_input = version_capture_file)
 
     
     # crete version capture file for summary workflow
