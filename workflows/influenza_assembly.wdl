@@ -464,6 +464,7 @@ workflow influenza_assembly {
     # 6 - Transfer some intermediate files and all final files to gcp bucket
     call transfer.transfer_assembly_wdl as transfer_assembly_wdl {
         input:
+            version_capture_file = capture_task_version.version_capture_file
             sample_name = sample_name, 
             bucket_path = out_bucket_path,
 

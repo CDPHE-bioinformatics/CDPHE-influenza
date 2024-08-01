@@ -55,6 +55,7 @@ task version_capture_summary {
 
     input{
         Array[File] version_capture_file
+        String workflow_name
         String workflow_version
         String analysis_date
         File python_script
@@ -67,14 +68,15 @@ task version_capture_summary {
     python ~{python_script} \
         --version_capture_file ~{write_lines(version_capture_file)} \
         --workflow_version "~{workflow_version}" \
+        --workflow_name "~{workflow_name}" \
         --project_name "~{project_name}" \
         --analysis_date "~{analysis_date}" 
 
     >>>
 
     output {
-        File version_capture_influenza_assembly_csv = "version_capture_influenza_illumina_pe_assembly_~{project_name}_~{workflow_version}.csv"
-        File version_capture_influenza_assembly_summary_csv = "version_capture_influenza_illumina_pe_assembly_summary_~{project_name}_~{workflow_version}.csv"
+        
+        File version_capture_influenza_assembly_summary_csv = "version_capture_~{workflow_name}_~{project_name}_~{workflow_version}.csv"
     }
 
     runtime {

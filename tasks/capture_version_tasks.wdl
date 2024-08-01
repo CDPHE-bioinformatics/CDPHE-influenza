@@ -65,7 +65,7 @@ task capture_task_version {
   >>>
 
   output {
-    File version_capture_file = "version_capture_~{sample_name}_~{workflow_name}_~{project_name}_~{workflow_version}.csv"
+    File version_capture_file = "version_capture_~{sample_name}_~{workflow_name}_~{project_name}.csv"
   }
   runtime {
     memory: "1 GB"

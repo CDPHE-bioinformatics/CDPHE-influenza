@@ -15,7 +15,6 @@ workflow influenza_assembly_summary{
         Array[File] na_nextclade_tsv
         Array[File] ha_nextclade_tsv
         String out_bucket_path
-        Array[File] version_capture_file
 
         # python scripts
         File results_summary_py
@@ -48,8 +47,8 @@ workflow influenza_assembly_summary{
 
         call summary.version_capture_summary as version_capture_summary {
         input:
-            version_capture_file = version_capture_file,
             workflow_version = capture_workflow_version.workflow_version,
+            workflow_name = "influenza_assembly_summary",
             analysis_date = capture_workflow_version.analysis_date,
             python_script = capture_version_summary_py,
             project_name = project_name
@@ -59,7 +58,6 @@ workflow influenza_assembly_summary{
     call transfer.transfer_assembly_summary_wdl as summary_transfer {
         input:
             sequencing_results_csv = results_summary.sequencing_results_csv,
-            version_capture_influenza_assembly_csv = version_capture_summary.version_capture_influenza_assembly_csv,
             version_capture_influenza_assembly_summary_csv = version_capture_summary.version_capture_influenza_assembly_summary_csv,
             bucket_path = out_bucket_path
     }
