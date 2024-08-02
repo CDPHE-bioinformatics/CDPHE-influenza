@@ -1,5 +1,8 @@
 # CDPHE-influenza
 
+## Disclaimer
+*Next generation sequencing and bioinformatic and genomic analysis at CDPHE is not CLIA validated at this time. These workflows and their outputs are not to be used for diagnostic purposes and should only be used for public health action and surveillance purposes. CDPHE is not responsible for the incorrect or inappropriate use of these workflows or their results.
+
 <br/>
 
 ## **Table of Contents**
@@ -97,7 +100,8 @@ We have our workflow setup so that the following data files are stored in our wo
 | influenza_calc_percent_cov_py | calc_percent_cov_py | calculate_percnet_cov.py
 | influenza_concat_post_assemby_qc_metrics_py | concat_post_assembly_qc_py | concat_post_assembly_qc.py| 
 | influenza_irma_subtyping_results_py | irma_subtyping_results_py| irma_subtyping_results.py|
-| influenza_summary_py | summary_py | summary.py|
+| influenza_results_summary_py | results_summary_py | results_summary.py|
+| influenza_capture_version_summary_py | capture_version_summary_py | capture_version_summary.py|
 
 <br/>
 
@@ -110,7 +114,7 @@ Use the ``influenza_assembly_inputs.json``  template for the ``influenza_assembl
 |----|----|----|---|
 |fastqc_cleaned | docker| "staphb/fastqc:0.11.9" | |
 |fastqc_raw |docker| "staphb/fastqc:0.11.9" | |
-|irma | docker| "staphb/irma:1.0.3" | |
+|irma | docker| "cdcgov/irma:v1.1.5" | |
 |irma | irma_module | "FLU" | "FLU"   |
 |irma_ivar_consensus| docker | "andersenlabapps/ivar:1.3.1" | |
 |seqyclean| docker | "staphb/seqyclean:1.10.09" | |
@@ -179,6 +183,9 @@ Use the ``influenza_assembly_inputs.json``  template for the ``influenza_assembl
 |   |   |   |──{sample_name}_ha_SigPep_translation.fasta
 │   ├── sumamry_files
 |   |   ├── {project_name}_sequencing_results.csv
+│   ├── version_capture
+|   |   ├── sample level version capture files (file for each sample)
+|   |   |── set level version capture files
 
 ```
 
@@ -191,7 +198,7 @@ Use the ``influenza_assembly_inputs.json``  template for the ``influenza_assembl
 
 <br/>
 
-![influenza assembly workflow diagram](diagrams/inifluenza_assembly_workflow_diagram_2024-05-30.drawio.png "influenza assembly workflow diagram")
+![influenza assembly workflow diagram](diagrams/influenza_assembly_workflow_diagram_2024-08-02.drawio.png "influenza assembly workflow diagram")
 
 <br/>
 
@@ -326,6 +333,11 @@ Performed only if the HA and/or NA gene segment was successfully assembled.
 
  <br/>
 
+ **Capture Version Outputs**
+ |WDL Output variable name | File Name | Description |
+|-------|------|------------|
+|version_capture_file|version_capture_{sample_name}_influenza_assembly_{project_name}.csv | version capture file; includes docker container version and software versions used in the analysis|
+
 
 **Transfer Outputs**
 |WDL Output variable name | File Name | Description |
@@ -338,7 +350,7 @@ Performed only if the HA and/or NA gene segment was successfully assembled.
 ### **2-influenza_assembly_summary-wdl**
 <br/> 
 
-![influenza assembly workflow diagram](./diagrams/influenza_assembly_summary_workflow_diagram_2024-05-30.drawio.png "influenza assembly workflow diagram")
+![influenza assembly workflow diagram](./diagrams/influenza_assembly_summary_workflow_diagram_2024-08-02.drawio.png "influenza assembly workflow diagram")
 
 <br/>
 
@@ -368,10 +380,12 @@ This workflow is run on the entity sample_set. The workflow can be broken down i
 |WDL Output variable name | File Name | Description |
 |-------|------|------------|
 | sequencing_results_csv| {project_name}_sequencing_results.csv| |
+|version_capture_inlfuenza_assembly_summary_csv| {version_capture}_influenca_assembly_summary_{project_name}.csv|
 
 <br/>
 
 ## **Example Data**
 In development
 
+## Disclaimer
 *Next generation sequencing and bioinformatic and genomic analysis at CDPHE is not CLIA validated at this time. These workflows and their outputs are not to be used for diagnostic purposes and should only be used for public health action and surveillance purposes. CDPHE is not responsible for the incorrect or inappropriate use of these workflows or their results.
