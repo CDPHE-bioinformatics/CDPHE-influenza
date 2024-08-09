@@ -122,13 +122,16 @@ workflow influenza_assembly {
                     sample_name = sample_name
 
             }
-
-            call nextclade.ha_nextclade as ha_nextclade{
-                input:
-                    ivar_seg_ha_fasta = ha_ivar_consensus.ivar_consensus_fasta,
-                    irma_type = irma_subtyping_results.irma_type,
-                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype,
-                    sample_name = sample_name
+            if (irma_subtyping_results.irma_ha_subtype == "H1" || 
+                irma_subtyping_results.irma_ha_subtype == "H3" ||
+                irma_subtyping_results.irma_ha_subtype == "H5") {
+                call nextclade.ha_nextclade as ha_nextclade{
+                    input:
+                        ivar_seg_ha_fasta = ha_ivar_consensus.ivar_consensus_fasta,
+                        irma_type = irma_subtyping_results.irma_type,
+                        irma_ha_subtype = irma_subtyping_results.irma_ha_subtype,
+                        sample_name = sample_name
+                }
             }
         }
 
@@ -156,13 +159,15 @@ workflow influenza_assembly {
                     sample_name = sample_name
 
             }
-
-            call nextclade.na_nextclade as na_nextclade{
-                input:
-                    ivar_seg_na_fasta = na_ivar_consensus.ivar_consensus_fasta,
-                    irma_type = irma_subtyping_results.irma_type,
-                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
-                    sample_name = sample_name
+            if (irma_subtyping_results.irma_na_subtype == "N1" || 
+                irma_subtyping_results.irma_na_subtype == "N2" ) {
+                call nextclade.na_nextclade as na_nextclade{
+                    input:
+                        ivar_seg_na_fasta = na_ivar_consensus.ivar_consensus_fasta,
+                        irma_type = irma_subtyping_results.irma_type,
+                        irma_na_subtype = irma_subtyping_results.irma_na_subtype,
+                        sample_name = sample_name
+                }
             }
         }    
 
