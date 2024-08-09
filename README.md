@@ -53,7 +53,7 @@ For all samples that pass IRMA, which we define as IRMA calling a flu type (A or
 
 In **part 3**, post assembly processing occurs. First, using the bam files produced by IRMA, ivar is used to generate a second consensus sequence allowing for greater flexiblity and control over consensus generation parameters (e.g. min freq, min depth, min qual)). Currently we use a min freq of 0.5, a min depth of 25x and a min quality of 20. Follwoing ivar, we determine the percent coverage of each gene segment using the ivar consesnus assembly. Next, the number of mapped reads and mean read depth is determined using samtools. Finally, all post assemlby metrics (e.g. percent coverage, average depth, etc) are concatenated into a single csv file for each sample. 
 
-In **part 4**, clade and subclade determination for the HA and NA gene segments are performed using Nextclade. This only occurs if the HA and/or NA gene segments were successfully assembled; otherwise no output is produced. 
+In **part 4**, clade and subclade determination for the HA (H1, H3, H5 and Bvic HA) and NA (N1, N2, Bvic NA) gene segments are performed using Nextclade. This only occurs if the HA and/or NA gene segments were successfully assembled; otherwise no output is produced. Output is also not produced if the HA or NA gene segments is not one of the subyptes listed above. 
 
 In **part 5** data and results are transfered to the specified gcp bucket. (Even if IRMA failed, the preprocessing results will be transfered to the bucket). See [Output Directory Stucture](#output-directory-structure) for details about the directory stucture.
 
