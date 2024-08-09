@@ -124,7 +124,8 @@ workflow influenza_assembly {
             }
             if (irma_subtyping_results.irma_ha_subtype == "H1" || 
                 irma_subtyping_results.irma_ha_subtype == "H3" ||
-                irma_subtyping_results.irma_ha_subtype == "H5") {
+                irma_subtyping_results.irma_ha_subtype == "H5" ||
+                irma_subtyping_results.irma_type == "B") {
                 call nextclade.ha_nextclade as ha_nextclade{
                     input:
                         ivar_seg_ha_fasta = ha_ivar_consensus.ivar_consensus_fasta,
@@ -160,7 +161,8 @@ workflow influenza_assembly {
 
             }
             if (irma_subtyping_results.irma_na_subtype == "N1" || 
-                irma_subtyping_results.irma_na_subtype == "N2" ) {
+                irma_subtyping_results.irma_na_subtype == "N2"  ||
+                irma_subtyping_results.irma_type == "B") {
                 call nextclade.na_nextclade as na_nextclade{
                     input:
                         ivar_seg_na_fasta = na_ivar_consensus.ivar_consensus_fasta,
