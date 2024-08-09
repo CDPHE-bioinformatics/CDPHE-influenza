@@ -6,6 +6,7 @@ task transfer_assembly_wdl{
     }
 
     input{
+        String workflow_version
         String sample_name
         String bucket_path
 
@@ -50,12 +51,17 @@ task transfer_assembly_wdl{
         File? ha_nextclade_HA2_translation_fasta
         File? ha_nextclade_SigPep_translation_fasta
 
+        File version_capture_file
+
 
     }
     
-    String out_path = sub(bucket_path, "/$", "") # fix if have a / at end
+    String out_path1 = sub(bucket_path, "/$", "") # fix if have a / at end
+    String out_path = "~{out_path1}/~{workflow_version}"
 
     command <<<
+        # transfer version capture file
+        gsutil -m cp ~{version_capture_file} ~{out_path}/version_capture/
         # transfer fastqc raw
         gsutil -m cp ~{fastqc1_html_raw} ~{out_path}/fastqc_raw/
         gsutil -m cp ~{fastqc1_zip_raw} ~{out_path}/fastqc_raw/
@@ -128,19 +134,19 @@ task transfer_assembly_summary_wdl {
 
     input {
 
+        String workflow_version
         String bucket_path
         File sequencing_results_csv
-        File version_capture_influenza_assembly_csv
         File version_capture_influenza_assembly_summary_csv
     }
 
-    String out_path = sub(bucket_path, "/$", "") # fix if have a / at end
+    String out_path1 = sub(bucket_path, "/$", "") # fix if have a / at end
+    String out_path = "~{out_path1}/~{workflow_version}"
 
 
     command <<< 
         gsutil -m cp ~{sequencing_results_csv} ~{out_path}/summary_results/
-        gsutil -m cp ~{version_capture_influenza_assembly_csv} ~{out_path}/summary_results/
-        gsutil -m cp ~{version_capture_influenza_assembly_summary_csv} ~{out_path}/summary_results/
+        gsutil -m cp ~{version_capture_influenza_assembly_summary_csv} ~{out_path}/version_capture/
         
         # transfer date
         transferdate=`date`

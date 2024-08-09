@@ -38,5 +38,5 @@ def create_version_df(options):
 if __name__ == '__main__':
     options = get_options()
     df = create_version_df(options)
-    outfile = f"version_capture_{options.sample_name}_{options.workflow_name}_{options.project_name}_{options.workflow_version}.csv"
+    outfile = f"version_capture_{options.sample_name}_{options.workflow_name}_{options.project_name}.csv"
     df.to_csv(outfile, index=False)
