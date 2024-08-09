@@ -48,7 +48,7 @@ task results_summary {
     }
 }
 
-task version_capture_summary {
+task capture_version_summary {
     meta{
         description: "generate version capture files"
     }
