@@ -20,7 +20,7 @@ task ha_nextclade {
 
     }
     
-    String docker = "nextstrain/nextclade:latest"
+    String docker = "nextstrain/nextclade:3.8.2"
 
 
     command <<<
@@ -106,7 +106,7 @@ task na_nextclade {
         String sample_name  
 
     }
-    String docker = "nextstrain/nextclade:latest"
+    String docker = "nextstrain/nextclade:3.8.2"
     
 
     command <<<
