@@ -32,7 +32,7 @@ task ha_nextclade {
             dataset="flu_h1n1pdm_ha"
         elif [ "~{irma_ha_subtype}" = "H3" ]; then
             dataset="flu_h3n2_ha"
-        elif ["~{irma_ha_subtype}" = "H5"]; then
+        elif [ "~{irma_ha_subtype}" = "H5" ]; then
             dataset="community/moncla-lab/iav-h5/ha/all-clades"
         else
             echo 'Invalid irma_ha_subtype: "~{irma_ha_subtype}"'
