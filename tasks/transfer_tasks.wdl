@@ -50,6 +50,7 @@ task transfer_assembly_wdl{
         File? ha_nextclade_HA1_translation_fasta
         File? ha_nextclade_HA2_translation_fasta
         File? ha_nextclade_SigPep_translation_fasta
+        File? ha_nextclade_translation_fasta
 
         File version_capture_file
 
@@ -105,6 +106,8 @@ task transfer_assembly_wdl{
         gsutil -m cp ~{ha_nextclade_HA1_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
         gsutil -m cp ~{ha_nextclade_HA2_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
         gsutil -m cp ~{ha_nextclade_SigPep_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{ha_nextclade_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+
         
 
 
