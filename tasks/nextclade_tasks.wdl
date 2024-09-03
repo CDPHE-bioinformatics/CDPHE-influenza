@@ -81,7 +81,7 @@ task ha_nextclade {
         File? ha_nextclade_HA1_translation_fasta = "~{sample_name}_nextclade_HA.cds_translation.HA1.fasta"
         File? ha_nextclade_HA2_translation_fasta = "~{sample_name}_nextclade_HA.cds_translation.HA2.fasta"
         File? ha_nextclade_SigPep_translation_fasta = "~{sample_name}_nextclade_HA.cds_translation.SigPep.fasta"
-        File? ha_nextclade_translation_fasta "~{sample_name}_nextcalde.cds_translation.HA.fasta"
+        File? ha_nextclade_translation_fasta = "~{sample_name}_nextcalde.cds_translation.HA.fasta"
 
         VersionInfo ha_nextclade_version_info = object{
             software: "nextclade",

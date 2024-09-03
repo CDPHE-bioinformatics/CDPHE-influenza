@@ -517,6 +517,7 @@ workflow influenza_assembly {
             ha_nextclade_HA1_translation_fasta = ha_nextclade.ha_nextclade_HA1_translation_fasta,
             ha_nextclade_HA2_translation_fasta = ha_nextclade.ha_nextclade_HA2_translation_fasta,
             ha_nextclade_SigPep_translation_fasta = ha_nextclade.ha_nextclade_SigPep_translation_fasta,
+            ha_nextclade_translation_fasta = ha_nextclade.ha_nextclade_translation_fasta
 
 
     
@@ -571,7 +572,7 @@ workflow influenza_assembly {
         File? ha_nextclade_HA1_translation_fasta = ha_nextclade.ha_nextclade_HA1_translation_fasta
         File? ha_nextclade_HA2_translation_fasta = ha_nextclade.ha_nextclade_HA2_translation_fasta
         File? ha_nextclade_SigPep_translation_fasta = ha_nextclade.ha_nextclade_SigPep_translation_fasta
-        
+        File? ha_nextclade_translation_fasta = ha_nextclade.ha_nextclade_translation_fasta
         # version capture
         File version_capture_file = capture_task_version.version_capture_file
 
