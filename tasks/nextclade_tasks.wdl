@@ -58,18 +58,19 @@ task ha_nextclade {
         --input-dataset data/flu_ha --output-all=. "~{ivar_seg_ha_fasta}"
 
     # 3- rename files
-    if [ "~{irma_ha_subtype}" != "H5" ]; then
+    if [ "~{irma_ha_subtype}" = "H5" ]; then
+        mv nextclade.json "~{sample_name}_nextclade_HA.json"
+        mv nextclade.csv "~{sample_name}_nextclade_HA.csv"
+        mv nextclade.tsv "~{sample_name}_nextclade_HA.tsv"
+        mv nextclade.cds_translation.HA.fasta "~{sample_name}_nextcalde.cds_translation.HA.fasta"
+        
+    else
         mv nextclade.json "~{sample_name}_nextclade_HA.json"
         mv nextclade.csv "~{sample_name}_nextclade_HA.csv"
         mv nextclade.tsv "~{sample_name}_nextclade_HA.tsv"
         mv nextclade.cds_translation.HA1.fasta "~{sample_name}_nextclade_HA.cds_translation.HA1.fasta"
         mv nextclade.cds_translation.HA2.fasta "~{sample_name}_nextclade_HA.cds_translation.HA2.fasta"
         mv nextclade.cds_translation.SigPep.fasta "~{sample_name}_nextclade_HA.cds_translation.SigPep.fasta"
-    else
-        mv nextclade.json "~{sample_name}_nextclade_HA.json"
-        mv nextclade.csv "~{sample_name}_nextclade_HA.csv"
-        mv nextclade.tsv "~{sample_name}_nextclade_HA.tsv"
-        mv nextclade.cds_translation.HA.fasta "~{sample_name}_nextcalde.cds_translation.HA.fasta"
 
 
 
