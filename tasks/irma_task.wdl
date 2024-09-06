@@ -104,34 +104,34 @@ task perform_assembly_irma {
         File? irma_multifasta = "~{sample_name}_irma.fasta"
         
         # assemblies
-        File? irma_seg_ha_fasta = "~{sample_name}_HA_irma.fasta"
-        File? irma_seg_na_fasta = "~{sample_name}_NA_irma.fasta"
-        File? irma_seg_pb1_fasta = "~{sample_name}_PB1_irma.fasta"
-        File? irma_seg_pb2_fasta = "~{sample_name}_PB2_irma.fasta"
-        File? irma_seg_np_fasta = "~{sample_name}_NP_irma.fasta"
-        File? irma_seg_pa_fasta = "~{sample_name}_PA_irma.fasta"
-        File? irma_seg_ns_fasta = "~{sample_name}_NS_irma.fasta"
-        File? irma_seg_mp_fasta = "~{sample_name}_MP_irma.fasta"
+        File? irma_seg_ha_fasta = glob("~{sample_name}_*HA*_irma.fasta")[0]
+        File? irma_seg_na_fasta = glob("~{sample_name}_*NA*_irma.fasta")[0]
+        File? irma_seg_pb1_fasta = glob("~{sample_name}_*PB1_irma.fasta")[0]
+        File? irma_seg_pb2_fasta = glob("~{sample_name}_*PB2_irma.fasta")[0]
+        File? irma_seg_np_fasta = glob("~{sample_name}_*NP_irma.fasta")[0]
+        File? irma_seg_pa_fasta = glob("~{sample_name}_*PA_irma.fasta")[0]
+        File? irma_seg_ns_fasta = glob("~{sample_name}_*NS_irma.fasta")[0]
+        File? irma_seg_mp_fasta = glob("~{sample_name}_*MP_irma.fasta")[0]
 
         # alignments
-        File? irma_seg_ha_bam = "~{sample_name}_HA.bam"
-        File? irma_seg_na_bam = "~{sample_name}_NA.bam"
-        File? irma_seg_pb1_bam = "~{sample_name}_PB1.bam"
-        File? irma_seg_pb2_bam = "~{sample_name}_PB2.bam"
-        File? irma_seg_np_bam = "~{sample_name}_NP.bam"
-        File? irma_seg_pa_bam = "~{sample_name}_PA.bam"
-        File? irma_seg_ns_bam = "~{sample_name}_NS.bam"
-        File? irma_seg_mp_bam = "~{sample_name}_MP.bam"
+        File? irma_seg_ha_bam = glob("~{sample_name}_*HA*.bam")[0]
+        File? irma_seg_na_bam = glob("~{sample_name}_*NA*.bam")[0]
+        File? irma_seg_pb1_bam = glob("~{sample_name}_*PB1.bam")[0]
+        File? irma_seg_pb2_bam = glob("~{sample_name}_*PB2.bam")[0]
+        File? irma_seg_np_bam = glob("~{sample_name}_*NP.bam")[0]
+        File? irma_seg_pa_bam = glob("~{sample_name}_*PA.bam")[0]
+        File? irma_seg_ns_bam = glob("~{sample_name}_*NS.bam")[0]
+        File? irma_seg_mp_bam = glob("~{sample_name}_*MP.bam")[0]
 
         # vcfs
-        File? irma_seg_ha_vcf = "~{sample_name}_HA.vcf"
-        File? irma_seg_na_vcf = "~{sample_name}_NA.vcf"
-        File? irma_seg_pb1_vcf = "~{sample_name}_PB1.vcf"
-        File? irma_seg_pb2_vcf = "~{sample_name}_PB2.vcf"
-        File? irma_seg_np_vcf = "~{sample_name}_NP.vcf"
-        File? irma_seg_pa_vcf = "~{sample_name}_PA.vcf"
-        File? irma_seg_ns_vcf = "~{sample_name}_NS.vcf"
-        File? irma_seg_mp_vcf = "~{sample_name}_MP.vcf"
+        File? irma_seg_ha_vcf = glob("~{sample_name}_*HA*.vcf")[0]
+        File? irma_seg_na_vcf = glob("~{sample_name}_*NA*.vcf")[0]
+        File? irma_seg_pb1_vcf = glob("~{sample_name}_*PB1.vcf")[0]
+        File? irma_seg_pb2_vcf = glob("~{sample_name}_*PB2.vcf")[0]
+        File? irma_seg_np_vcf = glob("~{sample_name}_*NP.vcf")[0]
+        File? irma_seg_pa_vcf = glob("~{sample_name}_*PA.vcf")[0]
+        File? irma_seg_ns_vcf = glob("~{sample_name}_*NS.vcf")[0]
+        File? irma_seg_mp_vcf = glob("~{sample_name}_*MP.vcf")[0]
 
 
         VersionInfo IRMA_version_info = object{
