@@ -37,10 +37,10 @@ task perform_assembly_irma {
                 # read in header of fasta file and grab type (e.g. A,B), 
                 # gene_segment (e.g. HA, NA, PB1) and subtype (e.g. N2, H1) (ok if subtype doesn't exist)
 
-                segment=$(basename ${file%.*} | cut -d "." -f 1)
-                TYPE=$(echo ${segment} | cut -d "_" -f 1)
-                gene_segment=$(echo ${segment} | cut -d "_" -f 2)
-                subtype=$(echo ${segment} | cut -d "_" -f 3)
+                full=$(basename ${file%.*} | cut -d "." -f 1) # A_HA_H1 or A_NP
+                TYPE=$(echo ${full} | cut -d "_" -f 1) # A
+                segment=$(echo ${full} | cut -d "_" -f 2) # HA or NP
+                subtype=$(echo ${full} | cut -d "_" -f 3) # H1 or none
                    
                 echo "~{sample_name},${TYPE},${gene_segment},${subtype}" >> ~{sample_name}_irma_assembled_gene_segments.csv
             done
@@ -49,17 +49,19 @@ task perform_assembly_irma {
             ## also create an array of the segment names
             for file in ~{sample_name}/*.fasta; do
                 # grab base name and drop .fasta
-                segment=$(basename ${file} | cut -d "." -f 1)
-                gene=$(echo ${segment} | cut -d "_" -f 2)
+                full=$(basename ${file} | cut -d "." -f 1) # A_HA_H1 or A_NP
+                TYPE=$(echo ${full} | cut -d "_" -f 1) # A
+                segment_subtype=$(echo ${full} | cut -d "_" -f 2-) # HA_H1 or NP
+                segment_subtype=${segment_subtype//_/-} # HA-H1 or NP
                 # echo $segement >> segment_list.txt
-                header_name=$(echo ~{sample_name}_${segment})
+                header_name=$(echo ~{sample_name}_${TYPE}_${segment_subtype})
                 sed -i "s/>.*/>${header_name}/" ${file}
 
                 # add file contents to concatenated fasta file
                 cat ${fiile} >> ~{sample_name}_irma.fasta
 
                 # rename file
-                new_name=$(echo ~{sample_name}_${gene}_irma.fasta)
+                new_name=$(echo ~{sample_name}_${TYPE}_${segment_subtype}_irma.fasta)
                 mv "${file}" "${new_name}"
 
             
@@ -67,10 +69,16 @@ task perform_assembly_irma {
 
             # rename bam and vcf files
             for file in ~{sample_name}/*{.vcf,.bam}; do
-                base_name=$(basename ${file%.*})
-                gene=$(echo $base_name | cut -d "_" -f 2)
+                base_name=$(basename ${file%.*}) # to grab the extenstion
+                
+                full=$(basename ${file} | cut -d "." -f 1) # A_HA_H1 or A_NP
+                TYPE=$(echo ${full} | cut -d "_" -f 1) # A
+                segment_subtype=$(echo ${full} | cut -d "_" -f 2-) # HA_H1 or NP
+                segment_subtype=${segment_subtype//_/-} # HA-H1 or NP
+                
                 extension="${file##*.}"
-                new_name=$(echo ~{sample_name}_${gene}.${extension})
+                
+                new_name=$(echo ~{sample_name}_${TYPE}_${segment_subtype}.${extension})
                 mv "${file}" "${new_name}"
             done
 

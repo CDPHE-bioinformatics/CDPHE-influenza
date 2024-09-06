@@ -37,22 +37,23 @@ def getOptions(args=sys.argv[1:]):
     return options
 
 def get_fasta_filename(fasta_file_path):
-    filename = fasta_file_path.split('/')[-1] # strip directories
+    filename = fasta_file_path.split('/')[-1] # strip directories # {sample}_A_HA-H1 or {sample}_A_NP
     return filename
 
 def get_fasta_header(fasta_file_path):
     record = SeqIO.read(fasta_file_path, 'fasta')
-    header = record.id # 34456_A_HA_H3, 3454567_B_PB1
+    header = record.id # 34456_A_HA-H3, 3454567_B_PB1
     return header
 
 
 def get_segment_name(header, sample_name):
     segment_name = header.split(sample_name)[-1].lstrip("_") 
     # header = 49487387_B_NS, split gets us _B_NS, so need to strip the leading "_" to get B_NS
+    # or A_HA-H1
     return segment_name
 
 def get_gene_name(segment_name):
-    gene_name = segment_name.split('_')[1] #HA, MP etc
+    gene_name = segment_name.split('_')[1].split('-')[0] #B_NS --> NS or A_HA-H1 --> HA 
     return gene_name
 
 
@@ -67,6 +68,8 @@ def get_seq_len(fasta_file_path):
     return seq_len
 
 def calc_percent_cov(seq_len, ref_len_dict, segment_name):
+    #substitute - for _ to get correct segment name for dict
+    segment_name = segment_name.replace('-', '_')
     # calcuat per cov based on expected ref length
     expected_length = ref_len_dict[segment_name]
     per_cov = round(((seq_len/expected_length)*100), 2)

@@ -32,14 +32,14 @@ task call_consensus_ivar {
 
     command <<<
 
-    # create name for sorted bam file (34345_HA.bam)
+    # create name for sorted bam file (34345_A_HA-H1.bam or 3455_A_NP.bam)
     prefix=$(basename ~{bam_file} | cut -d "." -f 1)
-    # bam_file = some_directory/2400000_HA.bam
-    # this line of code returns 240000_HA (so strips the upper directories and the file suffix)
-    # some_directory/2400000_HA.bam ---> 24000000_HA.bam ---> 2400000_HA
+    # bam_file = some_directory/2400000_A_HA-H1.bam
+    # this line of code returns 240000_A_HA-H1 (so strips the upper directories and the file suffix)
+    # some_directory/2400000_A_HA-H1.bam ---> 24000000_A_HA-H1.bam ---> 2400000_A_HA-H1
     
-    # pull sample id, segment name from original ba file
-    segment_name=$(echo "${prefix/~{sample_name}/}" | cut -d "_" -f 2-) 
+    # pull sample id, segment name from original bam file
+    # segment_name=$(echo "${prefix/~{sample_name}/}" | cut -d "_" -f 2-) 
     # shell replacement syntax: varname/pattern/replacement - to replace teh first occurance of teh pattern
     # 2400000_HA --> _HA ---> HA
     
@@ -52,29 +52,32 @@ task call_consensus_ivar {
     cat ${prefix}.fa # for troubleshooting purposes print fasta contents to screen
 
     # rename consensus header
-    # header name = 24000000_A_HA_H1, 24000000_A_NP, etc.
-    if [ "~{irma_type}" == "A" ]; then
-        if [ "$segment_name" == "HA" ]; then
-            subtype="~{irma_ha_subtype}"
-        elif [ "$segment_name" == "NA" ]; then
-            subtype="~{irma_na_subtype}"
-        else
-            subtype=""  # Default if segment is neither "HA" nor "NA"
-        fi
-    elif [ "$irma_type" == "B" ]; then
-        subtype=""  # Set subtype to empty string if irma_type is "B"
+    # header_name = $(echo ${prefix})
 
-    fi
-    
-    if [${subtype} == ""]; then
-        header_name=$(echo ~{sample_name}_~{irma_type}_${segment_name})
-    else
-        header_name=$(echo ~{sample_name}_~{irma_type}_${segment_name}_${subtype})
-    fi
+    # rename consensus header
+    # header name = 24000000_A_HA-H1, 24000000_A_NP, etc.
+    # if [ "~{irma_type}" == "A" ]; then
+    #     if [ "$segment_name" == "HA" ]; then
+    #         subtype="~{irma_ha_subtype}"
+    #     elif [ "$segment_name" == "NA" ]; then
+    #         subtype="~{irma_na_subtype}"
+    #     else
+    #         subtype=""  # Default if segment is neither "HA" nor "NA"
+    #     fi
+    # elif [ "$irma_type" == "B" ]; then
+    #     subtype=""  # Set subtype to empty string if irma_type is "B"
 
-    echo ${header_name} # print for troubleshooting purposes
+    # fi
     
-    sed -i "s/>.*/>${header_name}/" ${prefix}.fa
+    # if [${subtype} == ""]; then
+    #     header_name=$(echo ~{sample_name}_~{irma_type}_${segment_name})
+    # else
+    #     header_name=$(echo ~{sample_name}_~{irma_type}_${segment_name}_${subtype})
+    # fi
+
+    # echo ${header_name} # print for troubleshooting purposes
+    
+    sed -i "s/>.*/>${prefix}/" ${prefix}.fa
     # for sed, -i means edit file in place, s means substitution
     # s/regular expression/replacement/
 
