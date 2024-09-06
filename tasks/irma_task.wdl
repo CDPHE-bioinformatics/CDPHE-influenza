@@ -41,8 +41,10 @@ task perform_assembly_irma {
                 TYPE=$(echo ${full} | cut -d "_" -f 1) # A
                 segment=$(echo ${full} | cut -d "_" -f 2) # HA or NP
                 subtype=$(echo ${full} | cut -d "_" -f 3) # H1 or none
+                echo "assembled_gene_segments.csv"
+                echo $full $TYPE $segment $subtype 
                    
-                echo "~{sample_name},${TYPE},${gene_segment},${subtype}" >> ~{sample_name}_irma_assembled_gene_segments.csv
+                echo "~{sample_name},${TYPE},${segment},${subtype}" >> ~{sample_name}_irma_assembled_gene_segments.csv
             done
 
             # rename header and file name for fasta
@@ -55,10 +57,14 @@ task perform_assembly_irma {
                 segment_subtype=${segment_subtype//_/-} # HA-H1 or NP
                 # echo $segement >> segment_list.txt
                 header_name=$(echo ~{sample_name}_${TYPE}_${segment_subtype})
-                sed -i "s/>.*/>${header_name}/" ${file}
 
+                echo "fasta file variables"
+                echo $full $TYPE $segment_subtype 
+                echo $header_name
+
+                sed -i "s/>.*/>${header_name}/" ${file}
                 # add file contents to concatenated fasta file
-                cat ${fiile} >> ~{sample_name}_irma.fasta
+                cat ${file} >> ~{sample_name}_irma.fasta
 
                 # rename file
                 new_name=$(echo ~{sample_name}_${TYPE}_${segment_subtype}_irma.fasta)
@@ -70,7 +76,7 @@ task perform_assembly_irma {
             # rename bam and vcf files
             for file in ~{sample_name}/*{.vcf,.bam}; do
                 base_name=$(basename ${file%.*}) # to grab the extenstion
-                
+
                 full=$(basename ${file} | cut -d "." -f 1) # A_HA_H1 or A_NP
                 TYPE=$(echo ${full} | cut -d "_" -f 1) # A
                 segment_subtype=$(echo ${full} | cut -d "_" -f 2-) # HA_H1 or NP
