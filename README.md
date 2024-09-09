@@ -149,28 +149,33 @@ Use the ``influenza_assembly_inputs.json``  template for the ``influenza_assembl
 |   |   |──{sample_name}_irma_assembled_gene_segments.csv #repeat for each sample
 |   ├── irma_alignments
 |   |   |──{sample_name} #repeat for each sample
-|   |   |   |──{sample_name}_HA.bam
-|   |   |   |──{sample_name}_PB1.bam
+|   |   |   |──{sample_name}_{flu_type}_{segment-subtype}.bam
+|   |   |   |──{sample_name}_A_HA-H1.bam
+|   |   |   |──{sample_name}_A_PB1.bam
 |   ├── irma_assemblies
 |   |   |──{sample_name} #repeat for each sample
-|   |   |   |──{sample_name}_HA_irma.fasta # header has full type/subtype description (e.g. A_HA_H3)
-|   |   |   |──{sample_name}_PB1_irma.fasta # header has full type/subtype description (e.g. A_PB1)
+|   |   |   |──{sample_name}_{flu_type}_{segment-subtype}_irma.fasta
+|   |   |   |──{sample_name}_A_HA-H1_irma.fasta # header has full type/subtype description (e.g. >{sample_name}_A_HA-H3)
+|   |   |   |──{sample_name}_A_PB1_irma.fasta # header has full type/subtype description (e.g. >{sample_name}_A_PB1)
 |   ├── irma_vcfs 
 |   |   |──{sample_name} #repeat for each sample
-|   |   |   |──{sample_name}_HA.vcf
-|   |   |   |──{sample_name}_PB1.vcf
+|   |   |   |──{sample_name}_{flu_type}_{segment-subtype}.vcf
+|   |   |   |──{sample_name}_A_HA-H1.vcf
+|   |   |   |──{sample_name}_A_PB1.vcf
 |   ├── ivar_assemblies
 |   |   |──{sample_name} #repeat for each sample
-|   |   |   |──{sample_name}_HA.fa # header has full type/subtype description (e.g. A_HA_H3)
-|   |   |   |──{sample_name}_PB1.fa # header has full type/subtype description (e.g. A_PB1)
+|   |   |   |──{sample_name}_{flu_type}_{segment-subtype}.bam
+|   |   |   |──{sample_name}_A_HA-H1.fa # header has full type/subtype description (e.g. >{sample_name}_A_HA-H3)
+|   |   |   |──{sample_name}_PB1.fa # header has full type/subtype description (e.g. >{smaple_name}_A_PB1)
 |   ├── ivar_assembly_mutlifasta
 |   |   |──{sample_name}_ivar.fasta #repeat for each sample
 |   ├── assembly_qc_metrics
 |   |   |──{sample_name}_qc_metrics.csv #repeat for each sample
 |   ├── sorted_bams
 |   |   |──{sample_name} #repeat for each sample
-|   |   |   |──{sample_name}_HA.sorted.bam 
-|   |   |   |──{sample_name}_PB1.sorted.bam 
+|   |   |   |──{sample_name}_{flu_type}_{segment-subtype}.sorted.bam
+|   |   |   |──{sample_name}_A_HA-H1.sorted.bam 
+|   |   |   |──{sample_name}_A_PB1.sorted.bam 
 |   ├── nextclade_out
 |   |   |──{sample_name} #repeat for each sample
 |   |   |   |──{sample_name}_na_nextclade.json
@@ -178,7 +183,7 @@ Use the ``influenza_assembly_inputs.json``  template for the ``influenza_assembl
 |   |   |   |──{sample_name}_na_translation.fasta
 |   |   |   |──{sample_name}_ha_nextclade.json
 |   |   |   |──{sample_name}_ha_nextclade.tsv
-|   |   |   |──{sample_name}_ha_HA1_translation.fasta
+|   |   |   |──{sample_name}_ha_HA1_translation.fasta # note for H5 only a single {sample_name}_ha_translation.fasta is generated.
 |   |   |   |──{sample_name}_ha_HA2_translation.fasta
 |   |   |   |──{sample_name}_ha_SigPep_translation.fasta
 │   ├── sumamry_files
@@ -221,7 +226,7 @@ This workflow is run on the entity sample. The workflow can be broken down into 
 
 |Task Name | Description |
 |----------|-------------|
-| irma | Runs CDC's IRMA to assemble influenza gene segements. Outputs transfered inlcude assembly files (fasta, renamed as {sample_name}_{gene_segment}_irma.fasta (e.g. 45653456_HA_irma.fasta)), alignment files (bam, renamed as {sample_name}_{gene_segment}.bam (e.g. 4568987_HA.bam)), and variant files (vcfrenamed as {sample_name}_{gene_segment}.vcf (e.g. 4568987_HA.vcf)). The influenza type (A, B) and subtype (e.g. H1, H3, N1, N2 for influenza A) is also captured from the output. The default parameters for IRMA are used. See above under [Overview](#overview) for a description of these parameters. |
+| irma | Runs CDC's IRMA to assemble influenza gene segements. Outputs transfered inlcude assembly files (fasta, renamed as {sample_name}_{flu_type A/B}_{gene_segment-subypte}_irma.fasta (e.g. 45653456_A_HA-H1_irma.fasta)), alignment files (bam, renamed as {sample_name}_{flu type A/B}_{gene_segment-subypte}.bam (e.g. 4568987_A_HA-H1.bam)), and variant files (vcf renamed as {sample_name}_{flu type A/B}_{gene_segment-subytpe}.vcf (e.g. 4568987_A_HA-H1.vcf)). The influenza type (A, B) and subtype (e.g. H1, H3, H5, N1, N2 for influenza A) is also captured from the output. The default parameters for IRMA are used. See above under [Overview](#overview) for a description of these parameters. |
 |irma_subtying_results| This task uses a python script to format the irma typing and subtyping results in a tabular form.|
 
 <br/>
@@ -301,9 +306,9 @@ Performed only if the HA and/or NA gene segment was successfully assembled.
 |irma_typing| {sample_name}_irma_typing.csv | csv file with the sample id, irma type, irma ha subytpe and irma na subtype listed in a tabluar format|
 |irma_assmbled_gene_segments_csv | {sample_name}_irma_assembled_gene_segments.csv | csv file with the each assembled gene segment listed along with the type and (if applicable) the subtype of that that gene segment.| 
 |irma_all_assembled_segments_fasta| {sample_name}.fasta| multifasta will all assembled gene segments included|
-|irma_fasta_array_out| {sample_name}_{gene_segment}_irma.fasta (e.g. 24000000_HA_irma.fasta) | array of consensus assembly fasta files. Each assembled gene segment has a fasta file. The fasta header is formatted as : ">{sample_name}_{flu_type}\_{gene_segment}"|
-|irma_bam_array_out_| {sample_name}_{gene_semgnet}.bam (e.g. 24000000_HA.bam) | Array of bam files. Each assembled gene segment has a bam file. The reference sequence is the final iterative plurality consensus |
-|irma_vcf_array_out | {sample_name}_{gene_semgnet}.vcf (e.g 24000000_HA.vcf) | Array of vcf files. Each assembled gene segment has a vcf file. The reference sequence is the final iterative plurality consensus. |
+|irma_seg_ha_fasta (var for each segment)  | {sample_name}_{flu_type A/B}\_{gene_segment-subypte}_irma.fasta (e.g. 24000000_A_HA-H1_irma.fasta) | Each assembled gene segment has a fasta file; just change the segment in the variable. The fasta header is formatted as : ">{sample_name}_{flu_type}\_{gene_segment-subtype}"|
+|irma_seg_ha_bam | {sample_name}_{flu_type A/B}\_{gene_segment-subypte}.bam (e.g. 24000000_A_HA-H1.bam) | Each assembled gene segment has a bam file.; just change the segment in the variable. The reference sequence is the final iterative plurality consensus. |
+|irma_seg_ha_vcf | {sample_name}_{flu_type A/B}\_{gene_segment-subypte}.vcf (e.g 24000000_A_HA-H1.vcf) | Each assembled gene segment has a vcf file; just change the segment in the variable. The reference sequence is the final iterative plurality consensus. |
 
 
  <br/>
