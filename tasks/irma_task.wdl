@@ -69,6 +69,7 @@ task perform_assembly_irma {
                 # rename file
                 new_name=$(echo ~{sample_name}_${TYPE}_${segment_subtype}_irma.fasta)
                 mv "${file}" "${new_name}"
+                echo $new_name
 
             
             done
