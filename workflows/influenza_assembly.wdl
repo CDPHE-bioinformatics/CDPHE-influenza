@@ -71,7 +71,7 @@ workflow influenza_assembly {
             total_reads_R2_cleaned = fastqc_cleaned.total_reads_R2,
             read_length_R1_cleaned = fastqc_cleaned.read_length_R1,
             read_length_R2_cleaned = fastqc_cleaned.read_length_R2,
-            read_pairs_cleaned = fastqc_cleaned.read_pairs,
+            read_pairs_cleaned = fastqc_cleaned.read_pairs
 
 
 

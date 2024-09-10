@@ -59,9 +59,9 @@ if __name__ == '__main__':
    
 
     # create summary metrics file:
-    # the issue I have is that if assemlby fails then the the post assembly
+    # the issue I have is that if assembly fails then the the post assembly
     # metrics won't be generated. Plus if the HA or NA segment fail then
-    # we won't ahve the nextclade output. 
+    # we won't have the nextclade output. 
 
     # join dfs like normal and then go back and add non-existent
     # columns if needed using list of columns and checking for the presence of 
@@ -219,14 +219,14 @@ if __name__ == '__main__':
     df['percent_flu_mapped_reads'] = round((df.total_flu_mapped_reads / df.total_reads_cleaned) * 100 , 2)
     # TODO the percent flu mapped reads we are seeing is much lower than CDC's. I'm not sure how they are doing the calcuation
     df['project_name'] = project_name
-    df = df[col_order] 
-
+    
     # check columns - if column doesn't exist then add column
     # for if assembly failed for all samples assemlby qc metrics or nextclade
     # df weren't every made; then this keeps the columns consisent regardless
     for column in col_order:
         if column not in df.columns:
             df[column] = pd.NA
+    df = df[col_order] 
    
     
     # outfile
