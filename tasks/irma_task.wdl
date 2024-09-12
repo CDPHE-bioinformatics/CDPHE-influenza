@@ -64,7 +64,7 @@ task perform_assembly_irma {
 
                 sed -i "s/>.*/>${header_name}/" ${file}
                 # add file contents to concatenated fasta file
-                cat ${file} >> ~{sample_name}_irma.fasta
+                cat ${file} >> ~{sample_name}_irma_multi.fasta
 
                 # rename file
                 new_name=$(echo ~{sample_name}_${TYPE}_${segment_subtype}_irma.fasta)
@@ -89,51 +89,24 @@ task perform_assembly_irma {
                 mv "${file}" "${new_name}"
             done
 
-        
         else 
             echo "sample_name,flu_type,gene_segment,subtype" > ~{sample_name}_irma_assembled_gene_segments.csv
             echo "~{sample_name},no IRMA assembly generated,none,none" >> ~{sample_name}_irma_assembled_gene_segments.csv
 
         fi 
-
-
     >>>
 
     output {
 
         File irma_assembled_gene_segments_csv = "~{sample_name}_irma_assembled_gene_segments.csv"
-        File? irma_multifasta = "~{sample_name}_irma.fasta"
-        
-        # assemblies
-        File? irma_seg_ha_fasta = select_first( glob("~{sample_name}_*HA*fasta") , None)
-        File? irma_seg_na_fasta = select_first( glob("~{sample_name}_*NA*fasta") ,  None)
-        File? irma_seg_pb1_fasta = select_first( glob("~{sample_name}_*PB1_irma.fasta") , None)
-        File? irma_seg_pb2_fasta = select_first( glob("~{sample_name}_*PB2_irma.fasta") , None)
-        File? irma_seg_np_fasta = select_first( glob("~{sample_name}_*NP_irma.fasta") , None)
-        File? irma_seg_pa_fasta = select_first( glob("~{sample_name}_*PA_irma.fasta") , None)
-        File? irma_seg_ns_fasta = select_first( glob("~{sample_name}_*NS_irma.fasta") , None)
-        File? irma_seg_mp_fasta = select_first( glob("~{sample_name}_*MP_irma.fasta") , None)
-
-        # alignments
-        File? irma_seg_ha_bam = select_first( glob("~{sample_name}_*HA*bam") , None)
-        File? irma_seg_na_bam = select_first( glob("~{sample_name}_*NA*bam") , None)
-        File? irma_seg_pb1_bam = select_first( glob("~{sample_name}_*PB1.bam") , None)
-        File? irma_seg_pb2_bam = select_first( glob("~{sample_name}_*PB2.bam") , None)
-        File? irma_seg_np_bam = select_first( glob("~{sample_name}_*NP.bam") , None)
-        File? irma_seg_pa_bam = select_first( glob("~{sample_name}_*PA.bam") , None)
-        File? irma_seg_ns_bam = select_first( glob("~{sample_name}_*NS.bam") , None)
-        File? irma_seg_mp_bam = select_first( glob("~{sample_name}_*MP.bam") , None)
-
-        # vcfs
-        File? irma_seg_ha_vcf = select_first( glob("~{sample_name}_*HA*vcf") , None)
-        File? irma_seg_na_vcf = select_first( glob("~{sample_name}_*NA*vcf") , None)
-        File? irma_seg_pb1_vcf = select_first( glob("~{sample_name}_*PB1.vcf") , None)
-        File? irma_seg_pb2_vcf = select_first( glob("~{sample_name}_*PB2.vcf") , None)
-        File? irma_seg_np_vcf = select_first( glob("~{sample_name}_*NP.vcf") , None)
-        File? irma_seg_pa_vcf = select_first( glob("~{sample_name}_*PA.vcf") , None)
-        File? irma_seg_ns_vcf = select_first( glob("~{sample_name}_*NS.vcf") , None)
-        File? irma_seg_mp_vcf = select_first( glob("~{sample_name}_*MP.vcf") , None)
-
+        # Added '_multi' to file name to differentiate from segment fastas
+        File? irma_multifasta = "~{sample_name}_irma_multi.fasta"
+        # globs are ordered, so if the different file types all have the same names, these should all be in the same order
+        # However this is dependent on all three files being created for every segment and subtype- does that
+        # ever not happen? If not, the logic would need to be changed but I don't think it would be difficult
+        Array[File] assemblies = glob("*_irma.fasta")
+        Array[File] alignments = glob("*.bam")
+        Array[File] segment_vcfs = glob("*.vcf")
 
         VersionInfo IRMA_version_info = object{
             software: "IRMA",
@@ -151,6 +124,34 @@ task perform_assembly_irma {
         preemptible: 0
   }
 }
+
+
+task grab_segment_info {
+    meta {
+        description: "create assembled segment structs"
+    }
+
+    input {
+        String sample_name
+        File fasta
+    }
+
+    String base_name = sub(basename(fasta, ".fasta"), "~{sample_name}_", "")
+
+    command <<<
+        echo ~{base_name} | cut -d "_" -f 1 | tee TYPE # A
+        echo ~{base_name} | cut -d "_" -f 2 | tee SEGMENT # HA or NP
+        # Does IRMA ever output things with hyphens?
+        echo ~{base_name} | cut -d "_" -f 3 | tee SUBTYPE # H1 or N1
+    >>>
+
+    output {
+        String type = read_lines('TYPE')
+        String segment = read_lines('SEGMENT')
+        String subtype = read_lines('SUBTYPE')
+    }
+}
+
 
 task get_irma_subtyping_results {
     meta {

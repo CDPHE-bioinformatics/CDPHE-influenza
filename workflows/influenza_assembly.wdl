@@ -42,6 +42,7 @@ workflow influenza_assembly {
             fastq_R1 = fastq_R1,
             fastq_R2 = fastq_R2
     }
+
     call fastq_preprocess.filter_reads_seqyclean as seqyclean {
         input:
             sample_name = sample_name,
@@ -49,12 +50,14 @@ workflow influenza_assembly {
             fastq_R2 = fastq_R2,
             contam_fasta = contam_fasta  
     }
+
     call fastq_preprocess.assess_quality_fastqc as fastqc_cleaned {
         input:
             sample_name = sample_name,
             fastq_R1 = seqyclean.fastq_R1_cleaned,
             fastq_R2 = seqyclean.fastq_R2_cleaned
     }
+
     # concatenate all preprocess qc metrics into single file
     call fastq_preprocess.concat_preprocess_qc_metrics as concat_preprocess_qc_metrics{
         input:
@@ -71,10 +74,7 @@ workflow influenza_assembly {
             total_reads_R2_cleaned = fastqc_cleaned.total_reads_R2,
             read_length_R1_cleaned = fastqc_cleaned.read_length_R1,
             read_length_R2_cleaned = fastqc_cleaned.read_length_R2,
-            read_pairs_cleaned = fastqc_cleaned.read_pairs,
-
-
-
+            read_pairs_cleaned = fastqc_cleaned.read_pairs
     }
 
     # 2- run irma
@@ -90,336 +90,86 @@ workflow influenza_assembly {
             irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv,
             sample_name = sample_name,
             python_script = irma_subtyping_results_py
-
     }
 
-
-    if (irma_subtyping_results.irma_type != 'no IRMA assembly generated') {
-        # for each successfully assembled gene segment run-
-        # 1- samtools, 2 - ivar concensus, 3 - calcualte percent_coverage, 4 - if HA or NA run nextclade
-
-        ####### 1 - HA ########
-        if (defined(irma.irma_seg_ha_bam)) {
-            call assembly_qc.calc_bam_stats_samtools as ha_bam_stats {
-                input:
-                    bam_file = irma.irma_seg_ha_bam,
-                    sample_name = sample_name
-            }
-
-            call ivar.call_consensus_ivar as ha_ivar_consensus {
-                input:
-                    bam_file = irma.irma_seg_ha_bam,
-                    sample_name = sample_name,
-                    irma_type = irma_subtyping_results.irma_type,
-                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
-                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
-            }
-
-            call assembly_qc.calc_percent_coverage as ha_calc_percent_coverage{
-                input:
-                    fasta_file = ha_ivar_consensus.ivar_consensus_fasta,
-                    python_script = calc_percent_coverage_py,
-                    sample_name = sample_name
-
-            }
-            if (irma_subtyping_results.irma_ha_subtype == "H1" || 
-                irma_subtyping_results.irma_ha_subtype == "H3" ||
-                irma_subtyping_results.irma_ha_subtype == "H5" ||
-                irma_subtyping_results.irma_type == "B") {
-                call nextclade.ha_nextclade as ha_nextclade{
-                    input:
-                        ivar_seg_ha_fasta = ha_ivar_consensus.ivar_consensus_fasta,
-                        irma_type = irma_subtyping_results.irma_type,
-                        irma_ha_subtype = irma_subtyping_results.irma_ha_subtype,
-                        sample_name = sample_name
-                }
-            }
-        }
-
-        ####### 2 - NA ########
-        if (defined(irma.irma_seg_na_bam)) {
-            call assembly_qc.calc_bam_stats_samtools as na_bam_stats {
-                input:
-                    bam_file = irma.irma_seg_na_bam,
-                    sample_name = sample_name
-            }
-
-            call ivar.call_consensus_ivar as na_ivar_consensus {
-                input:
-                    bam_file = irma.irma_seg_na_bam,
-                    sample_name = sample_name,
-                    irma_type = irma_subtyping_results.irma_type,
-                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
-                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
-            }
-
-            call assembly_qc.calc_percent_coverage as na_calc_percent_coverage{
-                input:
-                    fasta_file = na_ivar_consensus.ivar_consensus_fasta,
-                    python_script = calc_percent_coverage_py,
-                    sample_name = sample_name
-
-            }
-            if (irma_subtyping_results.irma_na_subtype == "N1" || 
-                irma_subtyping_results.irma_na_subtype == "N2"  ||
-                irma_subtyping_results.irma_type == "B") {
-                call nextclade.na_nextclade as na_nextclade{
-                    input:
-                        ivar_seg_na_fasta = na_ivar_consensus.ivar_consensus_fasta,
-                        irma_type = irma_subtyping_results.irma_type,
-                        irma_na_subtype = irma_subtyping_results.irma_na_subtype,
-                        sample_name = sample_name
-                }
-            }
-        }    
-
-        ####### 3 - PB1 ########
-        if (defined(irma.irma_seg_pb1_bam)) {
-            call assembly_qc.calc_bam_stats_samtools as pb1_bam_stats {
-                input:
-                    bam_file = irma.irma_seg_pb1_bam,
-                    sample_name = sample_name
-            }
-
-            call ivar.call_consensus_ivar as pb1_ivar_consensus {
-                input:
-                    bam_file = irma.irma_seg_pb1_bam,
-                    sample_name = sample_name,
-                    irma_type = irma_subtyping_results.irma_type,
-                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
-                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
-            }
-
-            call assembly_qc.calc_percent_coverage as pb1_calc_percent_coverage{
-                input:
-                    fasta_file = pb1_ivar_consensus.ivar_consensus_fasta,
-                    python_script = calc_percent_coverage_py,
-                    sample_name = sample_name
-
-            }
-
-        }  
-        ####### 4 - PB2 ########
-        if (defined(irma.irma_seg_pb2_bam)) {
-            call assembly_qc.calc_bam_stats_samtools as pb2_bam_stats {
-                input:
-                    bam_file = irma.irma_seg_pb2_bam,
-                    sample_name = sample_name
-            }
-
-            call ivar.call_consensus_ivar as pb2_ivar_consensus {
-                input:
-                    bam_file = irma.irma_seg_pb2_bam,
-                    sample_name = sample_name,
-                    irma_type = irma_subtyping_results.irma_type,
-                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
-                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
-            }
-
-            call assembly_qc.calc_percent_coverage as pb2_calc_percent_coverage{
-                input:
-                    fasta_file = pb2_ivar_consensus.ivar_consensus_fasta,
-                    python_script = calc_percent_coverage_py,
-                    sample_name = sample_name
-
-            }
-
-        }  
-
-        ####### 5 - NP ########
-        if (defined(irma.irma_seg_np_bam)) {
-            call assembly_qc.calc_bam_stats_samtools as np_bam_stats {
-                input:
-                    bam_file = irma.irma_seg_np_bam,
-                    sample_name = sample_name
-            }
-
-            call ivar.call_consensus_ivar as np_ivar_consensus {
-                input:
-                    bam_file = irma.irma_seg_np_bam,
-                    sample_name = sample_name,
-                    irma_type = irma_subtyping_results.irma_type,
-                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
-                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
-            }
-
-            call assembly_qc.calc_percent_coverage as np_calc_percent_coverage{
-                input:
-                    fasta_file = np_ivar_consensus.ivar_consensus_fasta,
-                    python_script = calc_percent_coverage_py,
-                    sample_name = sample_name
-
-            }
-
-        }  
-
-        ####### 6 - PA ########
-        if (defined(irma.irma_seg_pa_bam)) {
-            call assembly_qc.calc_bam_stats_samtools as pa_bam_stats {
-                input:
-                    bam_file = irma.irma_seg_pa_bam,
-                    sample_name = sample_name
-            }
-
-            call ivar.call_consensus_ivar as pa_ivar_consensus {
-                input:
-                    bam_file = irma.irma_seg_pa_bam,
-                    sample_name = sample_name,
-                    irma_type = irma_subtyping_results.irma_type,
-                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
-                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
-            }
-
-            call assembly_qc.calc_percent_coverage as pa_calc_percent_coverage{
-                input:
-                    fasta_file = pa_ivar_consensus.ivar_consensus_fasta,
-                    python_script = calc_percent_coverage_py,
-                    sample_name = sample_name
-
-            }
-
-        } 
-        ####### 7 - NS ########
-        if (defined(irma.irma_seg_ns_bam)) {
-            call assembly_qc.calc_bam_stats_samtools as ns_bam_stats {
-                input:
-                    bam_file = irma.irma_seg_ns_bam,
-                    sample_name = sample_name
-            }
-
-            call ivar.call_consensus_ivar as ns_ivar_consensus {
-                input:
-                    bam_file = irma.irma_seg_ns_bam,
-                    sample_name = sample_name,
-                    irma_type = irma_subtyping_results.irma_type,
-                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
-                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
-            }
-
-            call assembly_qc.calc_percent_coverage as ns_calc_percent_coverage{
-                input:
-                    fasta_file = ns_ivar_consensus.ivar_consensus_fasta,
-                    python_script = calc_percent_coverage_py,
-                    sample_name = sample_name
-
-            }
-
-        } 
-
-        ####### 8 - MP ########
-        if (defined(irma.irma_seg_mp_bam)) {
-            call assembly_qc.calc_bam_stats_samtools as mp_bam_stats {
-                input:
-                    bam_file = irma.irma_seg_mp_bam,
-                    sample_name = sample_name
-            }
-
-            call ivar.call_consensus_ivar as mp_ivar_consensus {
-                input:
-                    bam_file = irma.irma_seg_mp_bam,
-                    sample_name = sample_name,
-                    irma_type = irma_subtyping_results.irma_type,
-                    irma_na_subtype = irma_subtyping_results.irma_na_subtype,
-                    irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
-            }
-
-            call assembly_qc.calc_percent_coverage as mp_calc_percent_coverage{
-                input:
-                    fasta_file = mp_ivar_consensus.ivar_consensus_fasta,
-                    python_script = calc_percent_coverage_py,
-                    sample_name = sample_name
-
-            }
-
-        } 
-        # create arrays to better handle groups of files
-        # IRMA - fasta, bam, vcf
-        Array[File] irma_fasta_array = select_all([ irma.irma_seg_ha_fasta,
-                                                    irma.irma_seg_na_fasta,
-                                                    irma.irma_seg_pb1_fasta,
-                                                    irma.irma_seg_pb2_fasta,
-                                                    irma.irma_seg_np_fasta,
-                                                    irma.irma_seg_pa_fasta,
-                                                    irma.irma_seg_ns_fasta,
-                                                    irma.irma_seg_mp_fasta])
-
-        Array[File] irma_bam_array = select_all([irma.irma_seg_ha_bam,
-                                                    irma.irma_seg_na_bam,
-                                                    irma.irma_seg_pb1_bam,
-                                                    irma.irma_seg_pb2_bam,
-                                                    irma.irma_seg_np_bam,
-                                                    irma.irma_seg_pa_bam,
-                                                    irma.irma_seg_ns_bam,
-                                                    irma.irma_seg_mp_bam])
-
-        Array[File] irma_vcf_array = select_all([irma.irma_seg_ha_vcf,
-                                                    irma.irma_seg_na_vcf,
-                                                    irma.irma_seg_pb1_vcf,
-                                                    irma.irma_seg_pb2_vcf,
-                                                    irma.irma_seg_np_vcf,
-                                                    irma.irma_seg_pa_vcf,
-                                                    irma.irma_seg_ns_vcf,
-                                                    irma.irma_seg_mp_vcf])
-
-        # IVAR - fasta
-        Array[File] ivar_fasta_array = select_all([ha_ivar_consensus.ivar_consensus_fasta,
-                                                    na_ivar_consensus.ivar_consensus_fasta,
-                                                    pb1_ivar_consensus.ivar_consensus_fasta,
-                                                    pb2_ivar_consensus.ivar_consensus_fasta,
-                                                    np_ivar_consensus.ivar_consensus_fasta,
-                                                    pa_ivar_consensus.ivar_consensus_fasta,
-                                                    ns_ivar_consensus.ivar_consensus_fasta,
-                                                    mp_ivar_consensus.ivar_consensus_fasta])
-
-        # Samtools - mapped reads csv, sorted bam
-        Array[File] bam_stats_csv_array = select_all([ha_bam_stats.bam_stats_csv,
-                                                            na_bam_stats.bam_stats_csv,
-                                                            pb1_bam_stats.bam_stats_csv,
-                                                            pb2_bam_stats.bam_stats_csv,
-                                                            np_bam_stats.bam_stats_csv,
-                                                            pa_bam_stats.bam_stats_csv,
-                                                            ns_bam_stats.bam_stats_csv,
-                                                            mp_bam_stats.bam_stats_csv])
-
-        Array[File] sorted_bam_array = select_all([ha_bam_stats.sorted_bam,
-                                                        na_bam_stats.sorted_bam,
-                                                        pb1_bam_stats.sorted_bam,
-                                                        pb2_bam_stats.sorted_bam,
-                                                        np_bam_stats.sorted_bam,
-                                                        pa_bam_stats.sorted_bam,
-                                                        ns_bam_stats.sorted_bam,
-                                                        mp_bam_stats.sorted_bam])
-
-        # percent coverage - percent coverage csv
-        Array[File] percent_coverage_csv_array = select_all([ha_calc_percent_coverage.percent_coverage_csv,
-                                                                na_calc_percent_coverage.percent_coverage_csv,
-                                                                pb1_calc_percent_coverage.percent_coverage_csv,
-                                                                pb2_calc_percent_coverage.percent_coverage_csv,
-                                                                np_calc_percent_coverage.percent_coverage_csv,
-                                                                pa_calc_percent_coverage.percent_coverage_csv,
-                                                                ns_calc_percent_coverage.percent_coverage_csv,
-                                                                mp_calc_percent_coverage.percent_coverage_csv])
-
+    # Scatter each segment assembled
+    Array[Int] indexes = range(length(irma.assemblies))
+    scatter (idx in indexes) {
+        File fasta = irma.assemblies[idx]
+        File bam = irma.alignments[idx]
+        File vcf = irma.segment_vcfs[idx]
+        String base_name = basename(fasta, ".fa")
         
-        # concantenate post assembly qc metrics (coverage, depth) into a single file
-        call assembly_qc.concat_assembly_qc_metrics as concat_assembly_qc_metrics{
+        call grab_segment_info {
             input:
-                python_script = concat_assembly_qc_metrics_py,
                 sample_name = sample_name,
-                percent_coverage_csv_array = percent_coverage_csv_array,
-                bam_stats_csv_array = bam_stats_csv_array
+                fasta = fasta
         }
 
-        call assembly_qc.make_multifasta as make_ivar_multifasta{
+        # for each successfully assembled gene segment run samtools, ivar consensus, calculate percent_coverage 
+        # if HA or NA run nextclade
+        call assembly_qc.calc_bam_stats_samtools {
             input:
-                fasta_array = ivar_fasta_array,
+                sample_name = sample_name,
+                bam_file = bam, 
+                segment_name = grab_segment_info.segment,
+                base_name = base_name
+        }
+
+        call ivar.call_consensus_ivar as ivar_consensus {
+            input:
+                bam_file = bam,
+                sample_name = sample_name,
+                irma_type = type,
+                irma_subtype = subtype,
+                base_name = base_name
+        }
+
+        call assembly_qc.calc_percent_coverage as calc_percent_coverage{
+            input:
+                fasta_file = fasta,
+                python_script = calc_percent_coverage_py,
                 sample_name = sample_name
         }
+
+        if (segment == "HA" || segment == 'NA')
+            call nextclade.nextclade as nextclade {
+                input:
+                    ivar_seg_fasta = ivar_consensus.ivar_consensus_fasta,
+                    irma_type = type,
+                    irma_subtype = subtype
+                    sample_name = sample_name
+            }
+    }
+    # create arrays to better handle groups of files
+    # IRMA - fasta, bam, vcf
+    Array[File] irma_fasta_array = irma.assemblies
+    Array[File] irma_bam_array = irma.alignments
+    Array[File] irma_vcf_array = irma.vcfs
+
+    # IVAR - fasta
+    Array[File] ivar_fasta_array = ivar_consensus.ivar_consensus_fasta
+
+    # Samtools - mapped reads csv, sorted bam
+    Array[File] bam_stats_csv_array = bam_stats.bam_stats_csv
+    Array[File] sorted_bam_array = bam_stats.sorted_bam
+
+    # percent coverage - percent coverage csv
+    Array[File] percent_coverage_csv_array = calc_percent_coverage.percent_coverage_csv
+
+    # concantenate post assembly qc metrics (coverage, depth) into a single file
+    call assembly_qc.concat_assembly_qc_metrics as concat_assembly_qc_metrics{
+        input:
+            python_script = concat_assembly_qc_metrics_py,
+            sample_name = sample_name,
+            percent_coverage_csv_array = percent_coverage_csv_array,
+            bam_stats_csv_array = bam_stats_csv_array
     }
 
-    # 5 - Version capture
-    call capture_version.capture_workflow_version  as capture_workflow_version{
+    call assembly_qc.make_multifasta as make_ivar_multifasta{
         input:
+            fasta_array = ivar_fasta_array,
+            sample_name = sample_name
     }
     
     # create array of structs
@@ -427,33 +177,10 @@ workflow influenza_assembly {
         fastqc_raw.fastqc_version_info,
         seqyclean.seqyclean_version_info,
         irma.IRMA_version_info,
-        ha_bam_stats.samtools_version_info,
-        ha_ivar_consensus.ivar_version_info,
-        ha_ivar_consensus.samtools_version_info,
-        ha_nextclade.ha_nextclade_version_info,
-        na_bam_stats.samtools_version_info,
-        na_ivar_consensus.ivar_version_info,
-        na_ivar_consensus.samtools_version_info,
-        na_nextclade.na_nextclade_version_info,
-        pb1_bam_stats.samtools_version_info,
-        pb1_ivar_consensus.ivar_version_info,
-        pb1_ivar_consensus.samtools_version_info,
-        pb2_bam_stats.samtools_version_info,
-        pb2_ivar_consensus.ivar_version_info,
-        pb2_ivar_consensus.samtools_version_info,
-        np_bam_stats.samtools_version_info,
-        np_ivar_consensus.ivar_version_info,
-        np_ivar_consensus.samtools_version_info,
-        pa_bam_stats.samtools_version_info,
-        pa_ivar_consensus.ivar_version_info,
-        pa_ivar_consensus.samtools_version_info,
-        ns_bam_stats.samtools_version_info,
-        ns_ivar_consensus.ivar_version_info,
-        ns_ivar_consensus.samtools_version_info,
-        mp_bam_stats.samtools_version_info,
-        mp_ivar_consensus.ivar_version_info,
-        mp_ivar_consensus.samtools_version_info
-
+        bam_stats.samtools_version_info,
+        ivar_consensus.ivar_version_info,
+        ivar_consensus.samtools_version_info,
+        nextclade.ha_nextclade_version_info
     ])
 
     call capture_version.capture_task_version as capture_task_version {
@@ -467,7 +194,6 @@ workflow influenza_assembly {
             capture_version_py = capture_version_py
     }
     
-
     # 6 - Transfer some intermediate files and all final files to gcp bucket
     call transfer.transfer_assembly_wdl as transfer_assembly_wdl {
         input:
@@ -502,25 +228,17 @@ workflow influenza_assembly {
             ivar_fasta_array = ivar_fasta_array,
             ivar_multifasta = make_ivar_multifasta.multifasta,
 
-            # from samtoosls - sorted bams
+            # from samtools - sorted bams
             sorted_bam_array = sorted_bam_array,
-
             assembly_qc_metrics = concat_assembly_qc_metrics.assembly_qc_metrics_summary,
 
             # nextclade
-            na_nextclade_json = na_nextclade.na_nextclade_json,
-            na_nextclade_tsv = na_nextclade.na_nextclade_tsv,
-            na_nextclade_translation_fasta = na_nextclade.na_nextclade_translation_fasta,
-
-            ha_nextclade_json = ha_nextclade.ha_nextclade_json,
-            ha_nextclade_tsv = ha_nextclade.ha_nextclade_tsv,
-            ha_nextclade_HA1_translation_fasta = ha_nextclade.ha_nextclade_HA1_translation_fasta,
-            ha_nextclade_HA2_translation_fasta = ha_nextclade.ha_nextclade_HA2_translation_fasta,
-            ha_nextclade_SigPep_translation_fasta = ha_nextclade.ha_nextclade_SigPep_translation_fasta,
-            ha_nextclade_translation_fasta = ha_nextclade.ha_nextclade_translation_fasta
-
-
-    
+            nextclade_json = nextclade.nextclade_json,
+            nextclade_tsv = nextclade.nextclade_tsv,
+            nextclade_translation_fasta = nextclade.nextclade_translation_fasta,
+            nextclade_HA1_translation_fasta = nextclade.nextclade_HA1_translation_fasta,
+            nextclade_HA2_translation_fasta = nextclade.nextclade_HA2_translation_fasta,
+            nextclade_SigPep_translation_fasta = nextclade.nextclade_SigPep_translation_fasta,
     }
 
 
@@ -543,9 +261,9 @@ workflow influenza_assembly {
         # output from irma
         File irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv
         File? irma_multifasta = irma.irma_multifasta
-        Array[File]? irma_fasta_array_out = irma_fasta_array
-        Array[File]? irma_bam_array_out = irma_bam_array
-        Array[File]? irma_vcf_array_out = irma_vcf_array
+        Array[File] irma_fasta_array_out = irma_fasta_array
+        Array[File] irma_bam_array_out = irma_bam_array
+        Array[File] irma_vcf_array_out = irma_vcf_array
 
 
         # output from irma_subtyping_results
@@ -555,18 +273,14 @@ workflow influenza_assembly {
         String irma_na_subtype = irma_subtyping_results.irma_na_subtype
 
         # output from post assembly
-        Array[File]? ivar_fasta_array_out = ivar_fasta_array
+        Array[File] ivar_fasta_array_out = ivar_fasta_array
         File? ivar_multifasta = make_ivar_multifasta.multifasta
-        Array[File]? percent_coverage_csv_array_out = percent_coverage_csv_array
-        Array[File]? sorted_bam_array_out = sorted_bam_array
+        Array[File] percent_coverage_csv_array_out = percent_coverage_csv_array
+        Array[File] sorted_bam_array_out = sorted_bam_array
         File? assembly_qc_metrics = concat_assembly_qc_metrics.assembly_qc_metrics_summary
 
 
         # output from nextclade
-        File? na_nextclade_json = na_nextclade.na_nextclade_json
-        File? na_nextclade_tsv = na_nextclade.na_nextclade_tsv
-        File? na_translation_fasta = na_nextclade.na_nextclade_translation_fasta
-
         File? ha_nextclade_json = ha_nextclade.ha_nextclade_json
         File? ha_nextclade_tsv = ha_nextclade.ha_nextclade_tsv
         File? ha_nextclade_HA1_translation_fasta = ha_nextclade.ha_nextclade_HA1_translation_fasta

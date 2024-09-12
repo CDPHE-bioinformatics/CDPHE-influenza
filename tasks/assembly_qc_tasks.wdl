@@ -15,41 +15,39 @@ task calc_bam_stats_samtools {
     input {
         File? bam_file
         String sample_name
+        String segment_name
+        String base_name
     }
 
+    String sorted_bam_fn = "~{base_name}.sorted.bam"
     String docker = "staphb/samtools:1.10"
 
     command <<<
-
-        # create name for sorted bam file
-        prefix=$(basename ~{bam_file} | cut -d "." -f 1)
-        sorted_bam=$(echo ${prefix}.sorted.bam)
-        
-        # # pull sample id, segment name, and gene name from original ba file
-        # these are the same because I don't want to input the type and subtpye into
+        # segment name and gene name are the same because I don't want to input the type and subtpye into
         # and downstream that info is not pulled from this file
-        segment_name=$(echo "${prefix/~{sample_name}/*}" | cut -d "_" -f 2)
-        gene_name=$(echo "${prefix/~{sample_name}/*}" | cut -d "_" -f 2)
+
+        # Gene name??
+        # gene_name=$(echo "${prefix/~{sample_name}/*}" | cut -d "_" -f 2)
 
         # create sorted bam file
-        samtools sort ~{bam_file} -o ${sorted_bam}
+        samtools sort ~{bam_file} -o ${sorted_bam_fn}
 
         # use sorted bam file to get number mapped reads and mean depth
-        samtools view -c -F 260 ${sorted_bam} > num_mapped_reads.txt
-        samtools coverage ${sorted_bam} | tail -1 | cut -f 7 > mean_depth.txt
+        samtools view -c -F 260 ${sorted_bam_fn} > num_mapped_reads.txt
+        samtools coverage ${sorted_bam_fn} | tail -1 | cut -f 7 > mean_depth.txt
 
         # create output file
+        # why is the file set up like this? why not have num_mapped_reads and mean_depth be their own columns?
         echo "sample_name,file_name,segment_name,gene_name,description,value" > bam_stats.csv
-        echo "~{sample_name},${sorted_bam},${segment_name},${gene_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> bam_stats.csv
-        echo "~{sample_name},${sorted_bam},${segment_name},${gene_name},mean_depth,$(cat mean_depth.txt)" >> bam_stats.csv
+        echo "~{sample_name},${sorted_bam_fn},${segment_name},${segment_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> bam_stats.csv
+        echo "~{sample_name},${sorted_bam_fn},${segment_name},${segment_name},mean_depth,$(cat mean_depth.txt)" >> bam_stats.csv
 
         samtools --version | awk '/samtools/ {print $2}' | tee VERSION
-
     >>>
 
     output {
         File bam_stats_csv = "bam_stats.csv"
-        File sorted_bam = select_first(glob("*.sorted.bam"))
+        File sorted_bam = sorted_bam_fn
 
         VersionInfo samtools_version_info = object{
             software: "samtools",
@@ -80,15 +78,10 @@ task calc_percent_coverage{
         File python_script
         File fasta_file
         String sample_name
-
     }
 
     command <<<
-
-    python ~{python_script} \
-    --fasta_file "~{fasta_file}" \
-    --sample_name "~{sample_name}"
-    
+        python ~{python_script}  --fasta_file "~{fasta_file}" --sample_name "~{sample_name}"
     >>>
 
     output{
@@ -118,19 +111,15 @@ task concat_assembly_qc_metrics{
         
     }
     
-
-
     command <<<
-
-    python ~{python_script} \
-        --sample_name "~{sample_name}" \
-        --bam_stats_csv_list "~{sep= " " bam_stats_csv_array}" \
-        --percent_coverage_csv_list "~{sep = " " percent_coverage_csv_array}"
-
+        python ~{python_script} \
+            --sample_name "~{sample_name}" \
+            --bam_stats_csv_list "~{sep= " " bam_stats_csv_array}" \
+            --percent_coverage_csv_list "~{sep = " " percent_coverage_csv_array}"
     >>>
 
     output{
-        File? assembly_qc_metrics_summary = "~{sample_name}_assembly_qc_metrics.csv"
+        File assembly_qc_metrics_summary = "~{sample_name}_assembly_qc_metrics.csv"
     }
 
     runtime {
@@ -155,11 +144,9 @@ task make_multifasta {
     }
 
     command <<<
-        
+        # Is this different than what IRMA outputs?
         # Concatenate all the FASTA files into a single file
         cat ~{sep=' ' fasta_array} > ~{sample_name}_ivar.fasta
-
-
     >>>
 
     output {
