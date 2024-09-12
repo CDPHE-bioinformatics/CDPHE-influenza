@@ -309,6 +309,7 @@ Performed only if the HA and/or NA gene segment was successfully assembled.
  <br/>
 
 **Post Assembly Processing Outputs**
+
 |WDL Output variable name | File Name | Description |
 |-------|------|------------|
 |sorted_bam_array_out| {sample_name}_{gene_segment}.sorted.bam| Array of bam files from IRMA run through samtools sort; used for all post assembly qc metrics calucations|
