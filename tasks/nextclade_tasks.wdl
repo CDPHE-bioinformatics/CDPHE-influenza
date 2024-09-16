@@ -14,8 +14,8 @@ task nextclade {
 
     input {
         File ivar_seg_fasta
-        String irma_type
-        String irma_subtype
+        String segment_name
+        String subtype_name
         String sample_name 
     }
     
@@ -52,7 +52,7 @@ task nextclade {
     output {
         File nextclade_json = "~{base_name}.json"
         File nextclade_tsv = "~{base_name}.tsv"
-        File nextclade_translation_fasta = "~{base_name}.cds_translation.~{irma_subtype}.fasta"
+        File? nextclade_translation_fasta = "~{base_name}.cds_translation.~{irma_subtype}.fasta"
         File? nextclade_HA1_translation_fasta = "~{base_name}.cds_translation.HA1.fasta"
         File? nextclade_HA2_translation_fasta = "~{base_name}.cds_translation.HA2.fasta"
         File? nextclade_SigPep_translation_fasta = "~{base_name}.cds_translation.SigPep.fasta"

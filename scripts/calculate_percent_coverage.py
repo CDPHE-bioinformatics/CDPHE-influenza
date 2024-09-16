@@ -33,29 +33,38 @@ def getOptions(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Parses command.")
     parser.add_argument( "--fasta_file")
     parser.add_argument('--sample_name')
+    parser.add_argument('--base_name')
+    # parser.add_argument('--Type')
+    parser.add_argument('--segment_name')
+    # parser.add_argument('--subtype')
     options = parser.parse_args(args)
     return options
 
-def get_fasta_filename(fasta_file_path):
-    filename = fasta_file_path.split('/')[-1] # strip directories # {sample}_A_HA-H1 or {sample}_A_NP
-    return filename
+# def get_fasta_filename(fasta_file_path):
+#     filename = fasta_file_path.split('/')[-1] # strip directories # {sample}_A_HA-H1 or {sample}_A_NP
+#     return filename
 
-def get_fasta_header(fasta_file_path):
-    record = SeqIO.read(fasta_file_path, 'fasta')
-    header = record.id # 34456_A_HA-H3, 3454567_B_PB1
-    return header
+# def get_fasta_header(fasta_file_path):
+#     record = SeqIO.read(fasta_file_path, 'fasta')
+#     header = record.id # 34456_A_HA-H3, 3454567_B_PB1
+#     return header
 
 
-def get_segment_name(header, sample_name):
-    segment_name = header.split(sample_name)[-1].lstrip("_") 
-    # header = 49487387_B_NS, split gets us _B_NS, so need to strip the leading "_" to get B_NS
-    # or A_HA-H1
-    return segment_name
+# def get_segment_name(header, sample_name):
+#     segment_name = header.split(sample_name)[-1].lstrip("_") 
+#     # header = 49487387_B_NS, split gets us _B_NS, so need to strip the leading "_" to get B_NS
+#     # or A_HA-H1
+#     return segment_name
 
-def get_gene_name(segment_name):
-    gene_name = segment_name.split('_')[1].split('-')[0] #B_NS --> NS or A_HA-H1 --> HA 
-    return gene_name
+# def get_gene_name(segment_name):
+#     gene_name = segment_name.split('_')[1].split('-')[0] #B_NS --> NS or A_HA-H1 --> HA 
+#     return gene_name
 
+def get_ref_seg(base_name):
+    ref_seg = '_'.join(base_name.split('_')[1:])
+    # ref seg will have type, segment and subytpe in it,
+    # to match the dictionary of seq_lens
+    return ref_seg
 
 def get_seq_len(fasta_file_path):
     # read in fasta file
@@ -64,17 +73,16 @@ def get_seq_len(fasta_file_path):
     # get length of non ambigous bases
     seq = record.seq
     seq_len = (seq.count('A') + seq.count('C') + seq.count('G') + seq.count('T'))
-
     return seq_len
 
-def calc_percent_cov(seq_len, ref_len_dict, segment_name):
+def calc_percent_cov(seq_len, ref_len_dict, ref_seg):
     # calcuat per cov based on expected ref length
-    expected_length = ref_len_dict[segment_name]
+    expected_length = ref_len_dict[ref_seg]
     per_cov = round(((seq_len/expected_length)*100), 2)
 
     return per_cov
 
-def create_output(sample_name, filename, segment_name, gene_name, seq_len, per_cov, expected_len):
+def create_output(sample_name, segment_name, seq_len, per_cov, expected_len):
 
     df = pd.DataFrame()
     description_list = ['expected_len', 'seq_len', 'percent_coverage']
@@ -82,11 +90,9 @@ def create_output(sample_name, filename, segment_name, gene_name, seq_len, per_c
     df['description'] = description_list
     df['value'] = value_list
     df['sample_name'] = sample_name
-    df['file_name'] = filename
-    df['segment_name'] = segment_name
-    df['gene_name'] = gene_name
+    df['segment'] = segment_name
     
-    col_order = ['sample_name', 'file_name', 'segment_name', 'gene_name', 'description', 'value']
+    col_order = ['sample_name', 'segment_name', 'description', 'value']
     df = df[col_order]
 
     outfile=f'percent_coverage_results.csv' 
@@ -99,24 +105,19 @@ if __name__ == '__main__':
     options = getOptions()
     fasta_file_path = options.fasta_file
     sample_name = options.sample_name
+    base_name = options.base_name
+    segment = options.segment
 
-    filename = get_fasta_filename(fasta_file_path=fasta_file_path)
-    header = get_fasta_header(fasta_file_path=fasta_file_path)
-
-    segment_name = get_segment_name(header=header, sample_name = sample_name)
-    gene_name = get_gene_name(segment_name=segment_name)
-
+    ref_seg = get_ref_seg(base_name = base_name)
     seq_len = get_seq_len(fasta_file_path=fasta_file_path)
     per_cov = calc_percent_cov(seq_len=seq_len, 
                                 ref_len_dict=ref_len_dict, 
-                                segment_name=segment_name)
+                                ref_seg = ref_seg)
 
-    expected_len = ref_len_dict[segment_name]
+    expected_len = ref_len_dict[ref_seg]
 
     create_output(sample_name = sample_name, 
-                    filename = filename, 
-                    segment_name=segment_name, 
-                    gene_name=gene_name,
+                    segment = segment,
                     seq_len=seq_len, 
                     per_cov=per_cov, 
                     expected_len=expected_len)

@@ -28,10 +28,10 @@ if __name__ == '__main__':
     sample_name = options.sample_name
 
 
-    df = pd.read_csv(irma_assembled_gene_segments_csv, dtype = {'sample_name' : object})
-    df = df.dropna(how = 'all')
-    df.gene_segment = df.gene_segment.fillna('NA')
-    df = df.fillna('none')
+    df = pd.read_csv(irma_assembled_gene_segments_csv, 
+                     dtype = {'sample_name' : object},
+                     na_filter = False)
+    # use na_filter so that NA segment is not interpreted as Null value
 
     # check for mixed types
     TYPES = df.flu_type.unique().tolist()
@@ -41,8 +41,8 @@ if __name__ == '__main__':
         TYPE = TYPES[0]
 
     # pull out subtypes
-    HA_subtype = 'none'
-    NA_subtype = 'none'
+    # HA_subtype = 'none'
+    # NA_subtype = 'none'
 
     for row in range(df.shape[0]):
         gene_segment = df.gene_segment[row] 

@@ -20,6 +20,7 @@ task calc_bam_stats_samtools {
     }
 
     String sorted_bam_fn = "~{base_name}.sorted.bam"
+    String sorted_bai_fn = "~{base_name}.sorted.bam.bai"
     String docker = "staphb/samtools:1.10"
 
     command <<<
@@ -30,17 +31,22 @@ task calc_bam_stats_samtools {
         # gene_name=$(echo "${prefix/~{sample_name}/*}" | cut -d "_" -f 2)
 
         # create sorted bam file
-        samtools sort ~{bam_file} -o ${sorted_bam_fn}
+        samtools sort ~{bam_file} -o ~{sorted_bam_fn}
+        samtools index ~{bam_file} -o ~{sorted_bam_fn}
 
         # use sorted bam file to get number mapped reads and mean depth
-        samtools view -c -F 260 ${sorted_bam_fn} > num_mapped_reads.txt
-        samtools coverage ${sorted_bam_fn} | tail -1 | cut -f 7 > mean_depth.txt
+        samtools view -c -F 260 ~{sorted_bam_fn} > num_mapped_reads.txt
+        samtools coverage ~{sorted_bam_fn} | tail -1 | cut -f 7 > mean_depth.txt
 
         # create output file
         # why is the file set up like this? why not have num_mapped_reads and mean_depth be their own columns?
-        echo "sample_name,file_name,segment_name,gene_name,description,value" > bam_stats.csv
-        echo "~{sample_name},${sorted_bam_fn},${segment_name},${segment_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> bam_stats.csv
-        echo "~{sample_name},${sorted_bam_fn},${segment_name},${segment_name},mean_depth,$(cat mean_depth.txt)" >> bam_stats.csv
+        # it has to do with the way the summary script formats headers
+        # it uses {segment_name}_{description} -- "HA- num_mapped_reads"
+        # so it was just easier to loop through the data with a description column and segment name column
+        
+        echo "sample_name,segment_name,description,value" > bam_stats.csv
+        echo "~{sample_name},${segment_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> bam_stats.csv
+        echo "~{sample_name},${segment_name},mean_depth,$(cat mean_depth.txt)" >> bam_stats.csv
 
         samtools --version | awk '/samtools/ {print $2}' | tee VERSION
     >>>
@@ -48,6 +54,7 @@ task calc_bam_stats_samtools {
     output {
         File bam_stats_csv = "bam_stats.csv"
         File sorted_bam = sorted_bam_fn
+        File sorted_bai = sorted_bai_fn
 
         VersionInfo samtools_version_info = object{
             software: "samtools",
@@ -78,10 +85,15 @@ task calc_percent_coverage{
         File python_script
         File fasta_file
         String sample_name
+        String base_name
+        String segment
     }
 
     command <<<
-        python ~{python_script}  --fasta_file "~{fasta_file}" --sample_name "~{sample_name}"
+        python ~{python_script}  --fasta_file "~{fasta_file}" \
+        --sample_name "~{sample_name}" \
+        --base_name "~{base_name}" \
+        --segment "~{segment}"
     >>>
 
     output{

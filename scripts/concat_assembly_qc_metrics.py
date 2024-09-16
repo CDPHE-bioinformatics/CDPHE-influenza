@@ -25,8 +25,12 @@ import subprocess
 ### LISTS AND DICTIONARIES ###
 segment_list = ['HA', 'NA', 'MP', 'NP', 'NS', 'PA', 'PB1', 'PB2']
 metric_variables = ['per_cov', 'mean_depth', 'num_mapped_reads', 'seq_len', 'expected_len']
+# these will be determined for each segment
 
-col_headers = ['sample_name', 'total_segments','total_flu_mapped_reads', 'average_per_cov', 'average_mean_depth']
+col_headers = ['sample_name', 'total_segments','total_flu_mapped_reads', 
+               'average_per_cov', 'average_mean_depth']
+# metrics variables will be added to end of list one for each segment
+# see crate_col_headers function
 
 
 #### FUNCTIONS #####
@@ -37,13 +41,6 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--percent_coverage_csv_list")
     options = parser.parse_args(args)
     return options
-
-# def create_list_from_write_lines_input(write_lines_input):
-#     list = []
-#     with open(write_lines_input, 'r') as f:
-#         for line in f:
-#             list.append(line.strip())
-#     return list
 
 def create_list_from_string_input(string_input):
     list = string_input.split(' ')
@@ -87,12 +84,11 @@ if __name__ == '__main__':
     print('/n/n')
     for bam_stats_csv_file in bam_stats_csv_file_list:
         num_segs = num_segs + 1
-        bam_stats_df = pd.read_csv(bam_stats_csv_file)
-        # fill in "NAs" the NA gene is being read as NA
-        bam_stats_df = bam_stats_df.fillna('NA')
-        gene_name = bam_stats_df.gene_name[0]
+        bam_stats_df = pd.read_csv(bam_stats_csv_file, 
+                                   dtype = {'sample_name' : object},
+                                    na_filter = False )
+        segment_name = bam_stats_df.segment_name[0]
         for row in range(bam_stats_df.shape[0]):
-            
             description = bam_stats_df.description[row]
             value = bam_stats_df.value[row]
 
@@ -100,33 +96,40 @@ if __name__ == '__main__':
                 total_mapped_reads = total_mapped_reads + value
 
             # get correct column header name
-            col_name = "%s_%s" % (gene_name, description)
+            col_name = f"{segment_name}_{description}"
             df.at[0, col_name] = value
 
     # insert per cov results into data frame
     complete_segments = 0
+    percent_coverage_total = 0
     for percent_coverage_csv_file in percent_coverage_csv_file_list:
-        percent_coverage_df = pd.read_csv(percent_coverage_csv_file)
-        percent_coverage_df = percent_coverage_df.fillna("NA")
-        gene_name = percent_coverage_df.gene_name[0]
+        percent_coverage_df = pd.read_csv(percent_coverage_csv_file,
+                                         dtype = {'sample_name' : object},
+                                        na_filter = False )
+        segment_name = percent_coverage_df.segment_name[0]
         for row in range(percent_coverage_df.shape[0]):
             description = percent_coverage_df.description[row]
             value = percent_coverage_df.value[row]
             
             # get correct column header name
-            col_name = "%s_%s" % (gene_name, description)
+            col_name = f"{segment_name}_{description}"
             df.at[0, col_name] = value
 
             # iterate up if percent coverage = description
             # and percent coverage > 90%
-            if description == 'percent_coverage' and value >=90:
-                complete_segments +=1
+            if description == 'percent_coverage':
+                percent_coverage_total = percent_coverage_total + value
+                if value >=90:
+                    complete_segments +=1
 
 
     # add in final columns
     df.at[0, 'assembled_segments'] = num_segs
     df.at[0, 'total_flu_mapped_reads'] = total_mapped_reads
     df.at[0, 'complete_segments'] = complete_segments
+
+    df.at[0, 'average_per_cov'] = percent_coverage_total/num_segs
+    df.at[0, 'average_mean_depth'] = total_mapped_reads/num_segs
 
     # save df
     outfile = f"{sample_name}_assembly_qc_metrics.csv"

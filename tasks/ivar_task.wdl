@@ -16,8 +16,6 @@ task call_consensus_ivar {
     input {
         File? bam_file
         String sample_name
-        String irma_type
-        String irma_subtype
         String base_name
     }
 
@@ -30,54 +28,25 @@ task call_consensus_ivar {
 
     command <<<
 
-        # create name for sorted bam file (34345_A_HA-H1.bam or 3455_A_NP.bam)
-        # bam_file = some_directory/2400000_A_HA-H1.bam
-        # this line of code returns 240000_A_HA-H1 (so strips the upper directories and the file suffix)
-        # some_directory/2400000_A_HA-H1.bam ---> 24000000_A_HA-H1.bam ---> 2400000_A_HA-H1
-        
-        # pull sample id, segment base_name/~{sample_name}/}" | cut -d "_" -f 2-) 
-        # shell replacement syntax: varname/pattern/replacement - to replace teh first occurance of teh pattern
-        # 2400000_HA --> _HA ---> HA
         
         # generate consensus; first sort bam file
+        # sorted bam and bai files are made and transfered from
+        # the calc samtools stats task
         samtools sort ~{bam_file} -o sorted.bam
         samtools mpileup -A --a -B -Q ~{ivar_min_qual} sorted.bam | \
-        ivar consensus -p ${base_name} -q ~{ivar_min_qual} -t ~{ivar_min_freq} -m ~{ivar_min_depth} | tee ${base_name}_ivar_screen_capture.txt
+        ivar consensus -p ~{base_name} -q ~{ivar_min_qual} -t ~{ivar_min_freq} -m ~{ivar_min_depth} | tee ${base_name}_ivar_screen_capture.txt
         
-        # fasta will be named base_name.fa
-        cat ${base_name}.fa # for troubleshooting purposes print fasta contents to screen
-
-        # rename consensus header
-        # header_name = $(echo ${base_name})
-
-        # rename consensus header
-        # header name = 24000000_A_HA-H1, 24000000_A_NP, etc.
-        # if [ "~{irma_type}" == "A" ]; then
-        #     if [ "$segment_name" == "HA" ]; then
-        #         subtype="~{irma_ha_subtype}"
-        #     elif [ "$segment_name" == "NA" ]; then
-        #         subtype="~{irma_na_subtype}"
-        #     else
-        #         subtype=""  # Default if segment is neither "HA" nor "NA"
-        #     fi
-        # elif [ "$irma_type" == "B" ]; then
-        #     subtype=""  # Set subtype to empty string if irma_type is "B"
-
-        # fi
+        # fasta will be named base_name.fa out of ivar; rename with .fasta ending
+        mv ~{base_name}.fa ~{base_name}.fasta
+        cat ~{base_name}.fa # for troubleshooting purposes print fasta contents to screen
         
-        # if [${subtype} == ""]; then
-        #     header_name=$(echo ~{sample_name}_~{irma_type}_${segment_name})
-        # else
-        #     header_name=$(echo ~{sample_name}_~{irma_type}_${segment_name}_${subtype})
-        # fi
-
-        # echo ${header_name} # print for troubleshooting purposes
-        
-        sed -i "s/>.*/>${base_name}/" ${base_name}.fa
+        # rename fasta header
+        sed -i "s/>.*/>${base_name}/" ${base_name}.fasta
         # for sed, -i means edit file in place, s means substitution
         # s/regular expression/replacement/
 
-        cat ${base_name}.fa # for troubleshooting purposes print fasta contents to screen
+        # for troubleshooting-print fasta contents to screen
+        cat ~{base_name}.fasta 
 
         # output ivar parameters and version
         ivar version | awk '/version/ {print $3}' | tee VERSION_ivar
@@ -89,10 +58,8 @@ task call_consensus_ivar {
     >>>
 
     output {
-        File ivar_consensus_fasta = select_first(glob("*.fa"))
-        File? ivar_seg_ha_fasta = "~{sample_name}_HA*fa"
-        File? ivar_seg_na_fasta = "~{sample_name}_NA*fa"
-        File ivar_output = select_first(glob("*_ivar_screen_capture.txt")) # currently not an output or transfered
+        File ivar_consensus_fasta = "~{base_name}.fasta"
+        File ivar_output = "~{base_name}_ivar_screen_capture.txt"# currently not an output or transfered
         File ivar_parameters = "ivar_parameters.csv"
 
         VersionInfo ivar_version_info = object{
