@@ -106,7 +106,7 @@ task perform_assembly_irma {
         # ever not happen? If not, the logic would need to be changed but I don't think it would be difficult
         Array[File] assemblies = glob("*_irma.fasta")
         Array[File] alignments = glob("*.bam")
-        Array[File] segment_vcfs = glob("*.vcf")
+        Array[File] vcfs = glob("*.vcf")
 
         VersionInfo IRMA_version_info = object{
             software: "IRMA",

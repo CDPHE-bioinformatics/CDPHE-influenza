@@ -13,28 +13,41 @@ task nextclade {
     }
 
     input {
-        File ivar_seg_fasta
-        String segment_name
-        String subtype_name
-        String sample_name 
+        File ivar_fasta
+        String type
+        String segment
+        String subtype
+        String sample_name
     }
     
     String docker = "nextstrain/nextclade:3.8.2"
+
+    # use subtype_name to determine flu b dataset
     Map[String, String] a_dict = {
         "H1": "flu_h1n1pdm_ha",
         "H3": "flu_h3n2_ha",
-        "H5": "community/moncla-lab/iav-h5/ha/all-clades"
+        "H5": "community/moncla-lab/iav-h5/ha/all-clades",
+        "N1" : "flu_h1n1pdm_na",
+        "N2" : "flu_h3n2_na"
     }
-    String base_name = "~{sample_name}_nextclade_~{irma_subtype}"
+
+    # use segment_name to determine flu b dataset
+    Map[String, String] b_dict = {
+        "NA" : "flu_vic_na",
+        "HA" : "flu_vic_ha"
+    }
+
+
+    String base_name = "~{sample_name}_{type}_{segment}-{subtype}"
     
     command <<<
         # Check the value of irma_type and assign dataset accordingly
-        if [ "~{irma_type}" = "A" ]; then
-            dataset = a_dict["~{irma_type}"]
-        elif [ "~{irma_type}" = "B" ]; then
-            dataset="flu_vic_ha"
+        if [ "~{type}" = "A" ]; then
+            dataset = a_dict["~{subtype}"]
+        elif [ "~{type}" = "B" ]; then
+            dataset = b_dict["~{segment}"]
         else
-            echo "Invalid irma_type: $irma_type"
+            echo "Invalid irma_type: $type"
             exit 1  # Exit the script with an error status
         fi
 
@@ -46,18 +59,19 @@ task nextclade {
         nextclade dataset get --name ${dataset} --output-dir "data/flu"
 
         #2- run nextclade
-        nextclade run --input-dataset data/flu --output-all ~{ivar_seg_fasta} --output-basename ~{base_name}
+        nextclade run --input-dataset data/flu --output-all ~{ivar_fasta} --output-basename ~{base_name}
     >>>
 
     output {
         File nextclade_json = "~{base_name}.json"
         File nextclade_tsv = "~{base_name}.tsv"
-        File? nextclade_translation_fasta = "~{base_name}.cds_translation.~{irma_subtype}.fasta"
-        File? nextclade_HA1_translation_fasta = "~{base_name}.cds_translation.HA1.fasta"
-        File? nextclade_HA2_translation_fasta = "~{base_name}.cds_translation.HA2.fasta"
-        File? nextclade_SigPep_translation_fasta = "~{base_name}.cds_translation.SigPep.fasta"
+        File? nextclade_HA_translation_fasta = "~{base_name}.cds_translation.HA.fasta" # H5 only
+        File? nextclade_HA1_translation_fasta = "~{base_name}.cds_translation.HA1.fasta" # H1, H3
+        File? nextclade_HA2_translation_fasta = "~{base_name}.cds_translation.HA2.fasta" # H1, H3
+        File? nextclade_SigPep_translation_fasta = "~{base_name}.cds_translation.SigPep.fasta" # H1, H3
+        File? nextclade_NA_translation_fasta = "~{base_name}.cds_translation.NA.fasta" # N1, N3
 
-        VersionInfo ha_nextclade_version_info = object{
+        VersionInfo nextclade_version_info = object{
             software: "nextclade",
             docker: docker,
             version: read_string("VERSION")
