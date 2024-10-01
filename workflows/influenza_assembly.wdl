@@ -127,7 +127,9 @@ workflow influenza_assembly {
             input:
                 fasta_file = fasta,
                 python_script = calc_percent_coverage_py,
-                sample_name = sample_name
+                sample_name = sample_name,
+                segment = grab_segment_info.segment,
+                base_name = base_name
         }
 
         if (grab_segment_info.segment == "HA" || grab_segment_info.segment == 'NA') {
@@ -137,7 +139,8 @@ workflow influenza_assembly {
                     type = grab_segment_info.type,
                     segment = grab_segment_info.segment,
                     subtype = grab_segment_info.subtype,
-                    sample_name = sample_name
+                    sample_name = sample_name, 
+                    base_name = base_name
             }
         }
     }

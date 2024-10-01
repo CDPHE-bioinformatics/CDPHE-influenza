@@ -18,6 +18,7 @@ task nextclade {
         String segment
         String subtype
         String sample_name
+        String base_name
     }
     
     String docker = "nextstrain/nextclade:3.8.2"
@@ -38,7 +39,7 @@ task nextclade {
     }
 
 
-    String base_name = "~{sample_name}_{type}_{segment}-{subtype}"
+    # String base_name = "~{sample_name}_{type}_{segment}-{subtype}"
     
     command <<<
         # Check the value of irma_type and assign dataset accordingly
