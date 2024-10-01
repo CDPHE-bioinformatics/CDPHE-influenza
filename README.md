@@ -311,6 +311,8 @@ Performed only if the HA and/or NA gene segment was successfully assembled.
 |irma_seg_ha_vcf | {sample_name}_{flu_type A/B}\_{gene_segment-subypte}.vcf (e.g 24000000_A_HA-H1.vcf) | Each assembled gene segment has a vcf file; just change the segment in the variable. The reference sequence is the final iterative plurality consensus. |
 
 
+
+
  <br/>
 
 **Post Assembly Processing Outputs**
