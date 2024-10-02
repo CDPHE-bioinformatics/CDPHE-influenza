@@ -154,6 +154,14 @@ task grab_segment_info {
         String segment = read_lines('SEGMENT')
         String subtype = read_lines('SUBTYPE')
     }
+
+    runtime {
+        docker: "theiagen/utility:1.0"
+        memory: "4 GiB"
+        cpu: 4
+        disks: "local-disk 50 SSD"
+        preemptible: 0
+  }
 }
 
 
