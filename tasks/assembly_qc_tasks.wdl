@@ -24,15 +24,20 @@ task calc_bam_stats_samtools {
     String docker = "staphb/samtools:1.10"
 
     command <<<
-        # segment name and gene name are the same because I don't want to input the type and subtpye into
-        # and downstream that info is not pulled from this file
 
-        # Gene name??
-        # gene_name=$(echo "${prefix/~{sample_name}/*}" | cut -d "_" -f 2)
+        echo "base_name"
+        echo ~{base_name}
+        echo "bam_file"
+        echo ~{bam_file}
+        echo "sorted_bam_fn"
+        echo ~{sorted_bam_fn}
+        echo "sorted_bai_fn"
+        echo ~{sorted_bai_fn}
 
         # create sorted bam file
         samtools sort ~{bam_file} -o ~{sorted_bam_fn}
-        samtools index ~{bam_file} -o ~{sorted_bam_fn}
+        samtools index ~{sorted_bam_fn}
+
 
         # use sorted bam file to get number mapped reads and mean depth
         samtools view -c -F 260 ~{sorted_bam_fn} > num_mapped_reads.txt

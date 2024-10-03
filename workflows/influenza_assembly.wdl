@@ -92,13 +92,24 @@ workflow influenza_assembly {
             python_script = irma_subtyping_results_py
     }
 
-    # Scatter each segment assembled
+    # add in if irma assembly was successful
+
+    if (irma_subtyping_results.irma_type == "no IRMA assembly generated") {
+        String exit_reason = "no IRMA assemlby generated"
+        call exit_wdl {
+            input:
+            exit_reason = exit_reason
+        }
+    }
+    # Scatter each segment assembled, run samtools, ivar consensus, calculate percent_coverage 
+    # if HA or NA run nextclade
+
     Array[Int] indexes = range(length(irma.assemblies))
     scatter (idx in indexes) {
         File fasta = irma.assemblies[idx]
         File bam = irma.alignments[idx]
         File vcf = irma.vcfs[idx]
-        String base_name = basename(fasta, ".fa")
+        String base_name = sub(basename(fasta, ".fasta"), "_irma", "")
         
         call irma_task.grab_segment_info as grab_segment_info {
             input:
@@ -106,8 +117,6 @@ workflow influenza_assembly {
                 fasta = fasta
         }
 
-        # for each successfully assembled gene segment run samtools, ivar consensus, calculate percent_coverage 
-        # if HA or NA run nextclade
         call assembly_qc.calc_bam_stats_samtools as bam_stats {
             input:
                 sample_name = sample_name,
@@ -132,7 +141,7 @@ workflow influenza_assembly {
                 base_name = base_name
         }
 
-        if (grab_segment_info.segment == "HA" || grab_segment_info.segment == 'NA') {
+        if (grab_segment_info.segment=="HA") {
             call nextclade_tasks.nextclade as nextclade {
                 input:
                     ivar_fasta = ivar_consensus.ivar_consensus_fasta,
@@ -187,6 +196,7 @@ workflow influenza_assembly {
             sample_name = sample_name
     }
     
+
     # create array of structs
     Array[VersionInfo] version_array = select_all([
         fastqc_raw.fastqc_version_info,
@@ -197,7 +207,9 @@ workflow influenza_assembly {
         select_first(ivar_consensus.samtools_version_info),
         select_first(nextclade.nextclade_version_info)
     ])
+    
 
+    # capture version
     call capture_version.capture_workflow_version as capture_workflow_version{
         input:
     }
@@ -212,6 +224,7 @@ workflow influenza_assembly {
             analysis_date = capture_workflow_version.analysis_date,
             capture_version_py = capture_version_py
     }
+    
     
     # 6 - Transfer some intermediate files and all final files to gcp bucket
     call transfer.transfer_assembly_wdl as transfer_assembly_wdl {
@@ -284,9 +297,9 @@ workflow influenza_assembly {
         # output from irma
         File irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv
         File? irma_multifasta = irma.irma_multifasta
-        Array[File] irma_fasta_array_out = irma_fasta_array
-        Array[File] irma_bam_array_out = irma_bam_array
-        Array[File] irma_vcf_array_out = irma_vcf_array
+        Array[File]? irma_fasta_array_out = irma_fasta_array
+        Array[File]? irma_bam_array_out = irma_bam_array
+        Array[File]? irma_vcf_array_out = irma_vcf_array
 
 
         # output from irma_subtyping_results
@@ -296,28 +309,44 @@ workflow influenza_assembly {
         String irma_na_subtype = irma_subtyping_results.irma_na_subtype
 
         # output from post assembly
-        Array[File] ivar_fasta_array_out = ivar_fasta_array
-        File? ivar_parameters = select_first(ivar_consensus.ivar_parameters)
+        Array[File]? ivar_fasta_array_out = ivar_fasta_array
+        File ivar_parameters = select_first(ivar_consensus.ivar_parameters)
         File? ivar_multifasta = make_ivar_multifasta.multifasta
-        Array[File] percent_coverage_csv_array_out = percent_coverage_csv_array
-        Array[File] sorted_bam_array_out = sorted_bam_array
-        Array[File] sorted_bai_array_out = sorted_bai_array
+        Array[File]? percent_coverage_csv_array_out = percent_coverage_csv_array
+        Array[File]? sorted_bam_array_out = sorted_bam_array
+        Array[File]? sorted_bai_array_out = sorted_bai_array
         File? assembly_qc_metrics = concat_assembly_qc_metrics.assembly_qc_metrics_summary
 
 
         # output from nextclade
-        Array[File] nextclade_json = nextclade_json_array
-        Array[File] nextclade_tsv = nextclade_tsv_array
-        Array[File] nextclade_HA1_translation_fasta = nextclade_HA1_translation_fasta_array 
-        Array[File] nextclade_HA2_translation_fasta = nextclade_HA2_translation_fasta_array 
-        Array[File] nextclade_SigPep_translation_fasta = nextclade_SigPep_translation_fasta_array 
-        Array[File] nextclade_HA_translation_fasta = nextclade_HA_translation_fasta_array 
-        Array[File] nextclade_NA_translation_fasta = nextclade_NA_translation_fasta_array 
+        Array[File]? nextclade_json = nextclade_json_array
+        Array[File]? nextclade_tsv = nextclade_tsv_array
+        Array[File]? nextclade_HA1_translation_fasta = nextclade_HA1_translation_fasta_array 
+        Array[File]? nextclade_HA2_translation_fasta = nextclade_HA2_translation_fasta_array 
+        Array[File]? nextclade_SigPep_translation_fasta = nextclade_SigPep_translation_fasta_array 
+        Array[File]? nextclade_HA_translation_fasta = nextclade_HA_translation_fasta_array 
+        Array[File]? nextclade_NA_translation_fasta = nextclade_NA_translation_fasta_array 
         
         # version capture
         File version_capture_file = capture_task_version.version_capture_file
 
         # output from transfer
         String transfer_date=transfer_assembly_wdl.transfer_date
+    }
+}
+
+task exit_wdl {
+    input {
+        String exit_reason
+    }
+    
+    command <<<
+        echo "~{exit_reason}"
+        exit 1
+    >>>
+
+    runtime {
+        return_codes: 0
+        docker: "ubuntu:latest"
     }
 }

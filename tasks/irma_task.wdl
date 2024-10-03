@@ -136,17 +136,19 @@ task grab_segment_info {
         File fasta
     }
 
-    String base_name = sub(basename(fasta, ".fasta"), "~{sample_name}_", "")
+    String base_name = sub(basename(fasta, ".fasta"), "~{sample_name}_", "") # A_HA-H1_irma or A_NP_irma
 
     command <<<
-        # base file name looks like
-        # {sample_name}_A_HA-H1 --> A_HA-H1
-        # {sample_name}_A_NP --> A_NP
+        echo "base_name"
+        echo ~{base_name}
 
+        echo "TYPE"
         echo ~{base_name} | cut -d "_" -f 1 | tee TYPE # A
-        echo ~{base_name} | cut -d "_" -f 2 | tee SEGMENT # HA or NP
+        echo "Segment"
+        echo ~{base_name} | cut -d "_" -f 2 | cut -d "-" -f 1 | tee SEGMENT # HA or NP
         # Does IRMA ever output things with hyphens?
-        echo ~{base_name} | cut -d "-" -f 3 | tee SUBTYPE # H1 or N1
+        echo "subtype"
+        echo ~{base_name} | cut -d "_" -f 2 | cut -d "-" -f 2 | tee SUBTYPE # H1 or N1
     >>>
 
     output {

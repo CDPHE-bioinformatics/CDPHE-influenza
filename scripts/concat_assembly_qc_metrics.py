@@ -106,7 +106,7 @@ if __name__ == '__main__':
         percent_coverage_df = pd.read_csv(percent_coverage_csv_file,
                                          dtype = {'sample_name' : object},
                                         na_filter = False )
-        segment_name = percent_coverage_df.segment_name[0]
+        segment_name = percent_coverage_df.segment[0]
         for row in range(percent_coverage_df.shape[0]):
             description = percent_coverage_df.description[row]
             value = percent_coverage_df.value[row]
