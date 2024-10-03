@@ -45,11 +45,11 @@ task transfer_assembly_wdl{
         # nextclade
         Array[File]? nextclade_json_array 
         Array[File]? nextclade_tsv_array 
-        Array[File]? nextclade_SigPep_translation_fasta_array 
-        Array[File]? nextclade_HA1_translation_fasta_array 
-        Array[File]? nextclade_HA2_translation_fasta_array 
-        Array[File]? nextclade_HA_translation_fasta_array 
-        Array[File]? nextclade_NA_translation_fasta_array 
+        File? nextclade_SigPep_translation_fasta
+        File? nextclade_HA1_translation_fasta
+        File? nextclade_HA2_translation_fasta
+        File? nextclade_HA_translation_fasta
+        File? nextclade_NA_translation_fasta
 
         # version
         File? version_capture_file
@@ -102,11 +102,11 @@ task transfer_assembly_wdl{
         # transfer nextclade
         gsutil -m cp ~{sep = " " nextclade_json_array} ~{out_path}/nextclade_out/~{sample_name}/
         gsutil -m cp ~{sep = " " nextclade_tsv_array} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{sep = " " nextclade_HA_translation_fasta_array} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{sep = " " nextclade_HA1_translation_fasta_array} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{sep = " " nextclade_HA2_translation_fasta_array} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{sep = " " nextclade_SigPep_translation_fasta_array} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{sep = " " nextclade_NA_translation_fasta_array} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{nextclade_HA_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{nextclade_HA1_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{nextclade_HA2_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{nextclade_SigPep_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{nextclade_NA_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
 
         # transfer date
         transferdate=`date`
