@@ -141,7 +141,7 @@ workflow influenza_assembly {
                 base_name = base_name
         }
 
-        if (grab_segment_info.segment=="HA") {
+        if (grab_segment_info.segment=="HA" || grab_segment_info.segment=="NA") {
             call nextclade_tasks.nextclade as nextclade {
                 input:
                     ivar_fasta = ivar_consensus.ivar_consensus_fasta,
