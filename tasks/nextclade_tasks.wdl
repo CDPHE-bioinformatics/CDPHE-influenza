@@ -38,39 +38,55 @@ task nextclade {
         "HA" : "flu_vic_ha"
     }
 
+    # # select dataset
+    # if ("~{type}" == "A" ) {
+    #        String dataset = a_dict["~{subtype}"]
+    # }
 
-    # String base_name = "~{sample_name}_{type}_{segment}-{subtype}"
+    # if ("~{type}" == 'B') {
+    #     String dataset = b_dict["~{segment}"]
+    # }
+    String dataset = if "~{type}" == "A" then a_dict["~{subtype}"] else b_dict["~{subtype}"]
+
+    # String base_name = "~{sample_name}_~{type}_~{segment}-~{subtype}"
     
     command <<<
-        # Check the value of irma_type and assign dataset accordingly
-        if [ "~{type}" = "A" ]; then
-            dataset = a_dict["~{subtype}"]
-        elif [ "~{type}" = "B" ]; then
-            dataset = b_dict["~{segment}"]
-        else
-            echo "Invalid irma_type: $type"
-            exit 1  # Exit the script with an error status
-        fi
+        # # Check the value of irma_type and assign dataset accordingly
+        # if [[ "~{type}" == "A" ]]; then
+        #     dataset = a_dict["~{subtype}"]
+        # elif [[ "~{type}" == "B" ]]; then
+        #     dataset = b_dict["~{segment}"]
+        # else
+        #     echo "Invalid irma_type: $type"
+        #     exit 1  # Exit the script with an error status
+        # fi
+
+        echo "datasets selected"
+        echo ~{dataset}
+
 
         # run nextclade:
         # 0- capture nextclade version
         nextclade --version | tee VERSION
 
         # 1- download the dataset
-        nextclade dataset get --name ${dataset} --output-dir "data/flu"
+        nextclade dataset get --name "~{dataset}" --output-dir "data/flu"
+
+        echo "got dataset"
 
         #2- run nextclade
-        nextclade run --input-dataset data/flu --output-all ~{ivar_fasta} --output-basename ~{base_name}
+        nextclade run --input-dataset data/flu --output-all=output/ --output-basename "~{base_name}" "~{ivar_fasta}"
+        echo "ran nextclade"
     >>>
 
     output {
-        File nextclade_json = "~{base_name}.json"
-        File nextclade_tsv = "~{base_name}.tsv"
-        File? nextclade_HA_translation_fasta = "~{base_name}.cds_translation.HA.fasta" # H5 only
-        File? nextclade_HA1_translation_fasta = "~{base_name}.cds_translation.HA1.fasta" # H1, H3
-        File? nextclade_HA2_translation_fasta = "~{base_name}.cds_translation.HA2.fasta" # H1, H3
-        File? nextclade_SigPep_translation_fasta = "~{base_name}.cds_translation.SigPep.fasta" # H1, H3
-        File? nextclade_NA_translation_fasta = "~{base_name}.cds_translation.NA.fasta" # N1, N3
+        File nextclade_json = "output/~{base_name}.json"
+        File nextclade_tsv = "output/~{base_name}.tsv"
+        File? nextclade_HA_translation_fasta = "output/~{base_name}.cds_translation.HA.fasta" # H5 only
+        File? nextclade_HA1_translation_fasta = "output/~{base_name}.cds_translation.HA1.fasta" # H1, H3
+        File? nextclade_HA2_translation_fasta = "output/~{base_name}.cds_translation.HA2.fasta" # H1, H3
+        File? nextclade_SigPep_translation_fasta = "output/~{base_name}.cds_translation.SigPep.fasta" # H1, H3
+        File? nextclade_NA_translation_fasta = "output/~{base_name}.cds_translation.NA.fasta" # N1, N3
 
         VersionInfo nextclade_version_info = object{
             software: "nextclade",

@@ -144,17 +144,31 @@ task grab_segment_info {
 
         echo "TYPE"
         echo ~{base_name} | cut -d "_" -f 1 | tee TYPE # A
+        echo ""
         echo "Segment"
-        echo ~{base_name} | cut -d "_" -f 2 | cut -d "-" -f 1 | tee SEGMENT # HA or NP
+        echo ~{base_name} | cut -d "_" -f 2 | cut -d "-" -f 1 | tee SEGMENT # HA or 
+        echo ""
+        echo "segment variable"
+        # capture segment as variable to use in if statement
+        segment=$(echo ~{base_name} | cut -d "_" -f 2 | cut -d "-" -f 1) 
+        echo $segment
+        echo ""
+
         # Does IRMA ever output things with hyphens?
         echo "subtype"
-        echo ~{base_name} | cut -d "_" -f 2 | cut -d "-" -f 2 | tee SUBTYPE # H1 or N1
+
+        if [[ $segment == "HA" ]] || [[ $segment == "NA" ]]; then
+            echo "yes this HA or NA!"
+            echo ~{base_name} | cut -d "_" -f 2 | cut -d "-" -f 2 | tee SUBTYPE # H1 or N1
+        else
+            echo "" | tee SUBTYPE
+        fi
     >>>
 
     output {
-        String type = read_lines('TYPE')
-        String segment = read_lines('SEGMENT')
-        String subtype = read_lines('SUBTYPE')
+        String type = select_all(read_lines('TYPE'))[0]
+        String segment = select_all(read_lines('SEGMENT'))[0]
+        String subtype = select_all(read_lines('SUBTYPE'))[0]
     }
 
     runtime {

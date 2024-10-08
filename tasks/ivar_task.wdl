@@ -35,6 +35,7 @@ task call_consensus_ivar {
         # the calc samtools stats task
         echo "base_name"
         echo ~{base_name}
+        
         samtools sort ~{bam_file} -o sorted.bam
         samtools mpileup -A --a -B -Q ~{ivar_min_qual} sorted.bam | \
         ivar consensus -p ~{base_name} -q ~{ivar_min_qual} -t ~{ivar_min_freq} -m ~{ivar_min_depth} | tee ~{base_name}_ivar_screen_capture.txt
@@ -44,7 +45,7 @@ task call_consensus_ivar {
         cat ~{base_name}.fasta # for troubleshooting purposes print fasta contents to screen
         
         # rename fasta header
-        sed -i "s/>.*/>${base_name}/" ~{base_name}.fasta
+        sed -i "s/>.*/>~{base_name}/" ~{base_name}.fasta
         # for sed, -i means edit file in place, s means substitution
         # s/regular expression/replacement/
 
