@@ -127,7 +127,9 @@ if __name__ == '__main__':
             if re.search("NA", segment):
                 # pull sample_name from seqName
                 seq_name = df.seqName[0]
-                sample_name = re.findall(f'{type}_{segment}', seq_name)[0]
+                print('NA - seq_name: ', seq_name)
+                sample_name = seq_name.split(f'{type}_{segment}')[0].rstrip('_')
+                print('NA - sample_name: ', sample_name)
 
                 # add and rename columns
                 df['sample_name'] = sample_name
@@ -154,7 +156,9 @@ if __name__ == '__main__':
             elif re.search('HA', segment):
                 # pull sample_name from seqName
                 seq_name = df.seqName[0]
-                sample_name = re.findall(f'{type}_{segment}', seq_name)[0]
+                print('HA - seq_name: ', seq_name)
+                sample_name = seq_name.split(f'{type}_{segment}')[0].rstrip('_')
+                print('HA - sample_name: ', sample_name)
 
                 # add column and rename columns
                 df['sample_name'] = sample_name
@@ -193,10 +197,7 @@ if __name__ == '__main__':
     else:
         na_nextclade_df = pd.DataFrame()
 
-    print('\nNA nextclade\n')
-    print(na_nextclade_df)
-    print('\nHA nextclade\n')
-    print(ha_nextclade_df)
+
 
     # post assembly qc metrics
     post_qc_metrics_df_list = []
@@ -211,8 +212,7 @@ if __name__ == '__main__':
     else:
         # create empty df for joining downstream
         post_qc_metrics_df = pd.DataFrame()
-    print('\npost assembly qc metrics\n')
-    print(post_qc_metrics_df)
+
     
     # join all the dfs together
     df = pd.DataFrame(sample_name_list, columns = ['sample_name']).set_index('sample_name')
