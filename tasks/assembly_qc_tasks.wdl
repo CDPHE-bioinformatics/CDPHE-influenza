@@ -27,6 +27,8 @@ task calc_bam_stats_samtools {
 
         echo "base_name"
         echo ~{base_name}
+        echo "segment_name"
+        echo ~{segment_name}
         echo "bam_file"
         echo ~{bam_file}
         echo "sorted_bam_fn"
@@ -50,8 +52,8 @@ task calc_bam_stats_samtools {
         # so it was just easier to loop through the data with a description column and segment name column
         
         echo "sample_name,segment_name,description,value" > bam_stats.csv
-        echo "~{sample_name},${segment_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> bam_stats.csv
-        echo "~{sample_name},${segment_name},mean_depth,$(cat mean_depth.txt)" >> bam_stats.csv
+        echo "~{sample_name},~{segment_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> bam_stats.csv
+        echo "~{sample_name},~{segment_name},mean_depth,$(cat mean_depth.txt)" >> bam_stats.csv
 
         samtools --version | awk '/samtools/ {print $2}' | tee VERSION
     >>>

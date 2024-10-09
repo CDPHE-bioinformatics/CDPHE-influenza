@@ -24,7 +24,7 @@ import subprocess
 
 ### LISTS AND DICTIONARIES ###
 segment_list = ['HA', 'NA', 'MP', 'NP', 'NS', 'PA', 'PB1', 'PB2']
-metric_variables = ['per_cov', 'mean_depth', 'num_mapped_reads', 'seq_len', 'expected_len']
+metric_variables = ['percent_coverage', 'mean_depth', 'num_mapped_reads', 'seq_len', 'expected_len']
 # these will be determined for each segment
 
 col_headers = ['sample_name', 'total_segments','total_flu_mapped_reads', 
@@ -82,12 +82,14 @@ if __name__ == '__main__':
     total_mapped_reads = 0
 
     print('/n/n')
+    print('bam stats')
     for bam_stats_csv_file in bam_stats_csv_file_list:
         num_segs = num_segs + 1
         bam_stats_df = pd.read_csv(bam_stats_csv_file, 
                                    dtype = {'sample_name' : object},
                                     na_filter = False )
         segment_name = bam_stats_df.segment_name[0]
+        print(segment_name)
         for row in range(bam_stats_df.shape[0]):
             description = bam_stats_df.description[row]
             value = bam_stats_df.value[row]
@@ -98,15 +100,18 @@ if __name__ == '__main__':
             # get correct column header name
             col_name = f"{segment_name}_{description}"
             df.at[0, col_name] = value
-
+            print(col_name, value)
     # insert per cov results into data frame
     complete_segments = 0
     percent_coverage_total = 0
+    
+    print('\npercnt coverage')
     for percent_coverage_csv_file in percent_coverage_csv_file_list:
         percent_coverage_df = pd.read_csv(percent_coverage_csv_file,
                                          dtype = {'sample_name' : object},
                                         na_filter = False )
         segment_name = percent_coverage_df.segment[0]
+        print(segment_name)
         for row in range(percent_coverage_df.shape[0]):
             description = percent_coverage_df.description[row]
             value = percent_coverage_df.value[row]
@@ -114,7 +119,7 @@ if __name__ == '__main__':
             # get correct column header name
             col_name = f"{segment_name}_{description}"
             df.at[0, col_name] = value
-
+            print(col_name, value)
             # iterate up if percent coverage = description
             # and percent coverage > 90%
             if description == 'percent_coverage':
