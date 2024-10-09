@@ -44,7 +44,7 @@ if __name__ == '__main__':
     preprocess_qc_metrics_txt = options.preprocess_qc_metrics
     irma_typing_txt = options.irma_typing
     post_qc_metrics_txt = options.assembly_qc_metrics
-    nextclade_tsv_txt = options.na_nextclade_tsv
+    nextclade_tsv_txt = options.nextclade_tsv
     workflow_version = options.workflow_version
     project_name = options.project_name
     analysis_date = options.analysis_date
@@ -126,7 +126,7 @@ if __name__ == '__main__':
             
             if re.search("NA", segment):
                 # pull sample_name from seqName
-                seq_name = df.SeqName[0]
+                seq_name = df.seqName[0]
                 sample_name = re.findall(f'{type}_{segment}', seq_name)[0]
 
                 # add and rename columns
@@ -153,7 +153,7 @@ if __name__ == '__main__':
 
             elif re.search('HA', segment):
                 # pull sample_name from seqName
-                seq_name = df.SeqName[0]
+                seq_name = df.seqName[0]
                 sample_name = re.findall(f'{type}_{segment}', seq_name)[0]
 
                 # add column and rename columns
@@ -193,6 +193,11 @@ if __name__ == '__main__':
     else:
         na_nextclade_df = pd.DataFrame()
 
+    print('\nNA nextclade\n')
+    print(na_nextclade_df)
+    print('\nHA nextclade\n')
+    print(ha_nextclade_df)
+
     # post assembly qc metrics
     post_qc_metrics_df_list = []
     if len(post_qc_metrics_list) >= 1:
@@ -206,7 +211,8 @@ if __name__ == '__main__':
     else:
         # create empty df for joining downstream
         post_qc_metrics_df = pd.DataFrame()
-
+    print('\npost assembly qc metrics\n')
+    print(post_qc_metrics_df)
     
     # join all the dfs together
     df = pd.DataFrame(sample_name_list, columns = ['sample_name']).set_index('sample_name')
