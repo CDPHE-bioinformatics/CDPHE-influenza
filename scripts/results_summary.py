@@ -5,6 +5,7 @@ import pandas as pd
 import sys
 import argparse
 import subprocess
+import re
 
 
 #### FUNCTIONS #####
@@ -14,8 +15,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--preprocess_qc_metrics")
     parser.add_argument( "--irma_typing")
     parser.add_argument( "--assembly_qc_metrics")
-    parser.add_argument( "--na_nextclade_tsv")
-    parser.add_argument( "--ha_nextclade_tsv")
+    parser.add_argument( "--nextclade_tsv")
     parser.add_argument('--workflow_version')
     parser.add_argument( "--analysis_date")
     parser.add_argument( "--project_name")
@@ -44,8 +44,7 @@ if __name__ == '__main__':
     preprocess_qc_metrics_txt = options.preprocess_qc_metrics
     irma_typing_txt = options.irma_typing
     post_qc_metrics_txt = options.assembly_qc_metrics
-    na_nextclade_tsv_txt = options.na_nextclade_tsv
-    ha_nextclade_tsv_txt = options.ha_nextclade_tsv
+    nextclade_tsv_txt = options.na_nextclade_tsv
     workflow_version = options.workflow_version
     project_name = options.project_name
     analysis_date = options.analysis_date
@@ -54,21 +53,14 @@ if __name__ == '__main__':
     preprocess_qc_metrics_list = create_list_from_write_lines_input(write_lines_input = preprocess_qc_metrics_txt)
     irma_typing_list = create_list_from_write_lines_input(write_lines_input = irma_typing_txt)
     post_qc_metrics_list= create_list_from_write_lines_input(write_lines_input = post_qc_metrics_txt)
-    na_nextclade_tsv_list = create_list_from_write_lines_input(write_lines_input = na_nextclade_tsv_txt)
-    ha_nextclade_tsv_list = create_list_from_write_lines_input(write_lines_input = ha_nextclade_tsv_txt)
+    nextclade_tsv_list = create_list_from_write_lines_input(write_lines_input = nextclade_tsv_txt)
+    
    
 
     # create summary metrics file:
     # the issue I have is that if assemlby fails then the the post assembly
     # metrics won't be generated. Plus if the HA or NA segment fail then
-    # we won't ahve the nextclade output. 
-
-    # join dfs like normal and then go back and add non-existent
-    # columns if needed using list of columns and checking for the presence of 
-    # of each column
-
-    # issue with this join method though is that if df doesn't exist, so need to add
-    # if statements to check that the df exists before joining!
+    # we won't have the nextclade output. 
 
     # dropped seq_len and expected length from columns
     # nextclade columns to drop - totalMissing, totalNonACGTNs, totalUnknownAa,
@@ -119,76 +111,87 @@ if __name__ == '__main__':
     irma_typing_df = pd.concat(irma_typing_df_list).set_index('sample_name')
 
 
-    # na nextclade
+    # nextclade
     na_nextclade_df_list = []
-    # check that files exist
-    if len(na_nextclade_tsv_list) >= 1:
-        for nextclade_tsv in na_nextclade_tsv_list:
-            sample_name = nextclade_tsv.split('/')[-1].split('_nextclade')[0]
-            df = pd.read_csv(nextclade_tsv, sep ='\t')
-            df['sample_name'] = sample_name
-            df['nextclade_coverage'] = df['coverage']
-
-            # reorder columns
-            col_keep = ['sample_name', 'clade', 
-                        'totalSubstitutions','totalDeletions', 'totalInsertions', 
-                        'totalFrameShifts', 'totalMissing','totalNonACGTNs', 'totalAminoacidSubstitutions',
-                        'totalAminoacidDeletions', 'totalAminoacidInsertions', 'totalUnknownAa', 
-                        'nextclade_coverage','aaSubstitutions', 'aaDeletions', 'aaInsertions',
-                        'warnings', 'errors']
-            # add "na" prefix to all column headers
-            rename_cols = {}
-            for col in col_keep:
-                if col != 'sample_name':
-                    new_column = f'NA_{col}'
-                    rename_cols[col] = new_column
-
-            df = df[col_keep]
-            df = df.rename(columns = rename_cols)
-            na_nextclade_df_list.append(df)
-        na_nextclade_df = pd.concat(na_nextclade_df_list).set_index('sample_name')
-    else:
-        # create empty df for joining downstream
-        na_nextclade_df = pd.DataFrame()
-
-
-    # ha nextclade
     ha_nextclade_df_list = []
-    # check that columns exist
-    if len(ha_nextclade_tsv_list) >= 1:
-        for nextclade_tsv in ha_nextclade_tsv_list:
-            sample_name = nextclade_tsv.split('/')[-1].split('_nextclade')[0]
-            df = pd.read_csv(nextclade_tsv, sep ='\t')
-            df['sample_name'] = sample_name
-            df['nextclade_coverage'] = df['coverage']
-            # add missing columns
-            # HA: add short-clade (For bvic only)
-            if "subclade" not in df.columns:
-                df['subclade'] = ""
-            if "short-clade" not in df.columns:
-                df['short-clade'] = ""
-            # reorder columns
-            col_keep = ['sample_name', 'clade', 'short-clade', 'subclade', 
-                        'totalSubstitutions','totalDeletions', 'totalInsertions', 
-                        'totalFrameShifts', 'totalMissing','totalNonACGTNs', 'totalAminoacidSubstitutions',
-                        'totalAminoacidDeletions', 'totalAminoacidInsertions', 'totalUnknownAa', 
-                        'nextclade_coverage','aaSubstitutions', 'aaDeletions', 'aaInsertions',
-                        'warnings', 'errors']
-            # add "ha" prefix to all column headers
-            rename_cols = {}
-            for col in col_keep:
-                if col != 'sample_name':
-                    new_column = f'HA_{col}'
-                    rename_cols[col] = new_column
 
-            df = df[col_keep]
-            df = df.rename(columns = rename_cols)
-            ha_nextclade_df_list.append(df)
+    # check that files exist
+    if len(nextclade_tsv_list) >= 1:
+        for nextclade_tsv in nextclade_tsv_list:
+            df = pd.read_csv(nextclade_tsv, sep ='\t')
+            # determine if HA or NA segment using the file name
+            # example file name "sample_A_HA-H1.tsv" or "sample_B_HA.tsv"
+            segment = nextclade_tsv.split('.tsv')[0].split('_')[-1] # this gives you HA-H1 or HA depednig if A or B
+            type = nextclade_tsv.split('.tsv')[0].split('_')[-2] # this give A or B
+            
+            if re.search("NA", segment):
+                # pull sample_name from seqName
+                seq_name = df.SeqName[0]
+                sample_name = re.findall(f'{type}_{segment}', seq_name)[0]
+
+                # add and rename columns
+                df['sample_name'] = sample_name
+                df['nextclade_coverage'] = df['coverage']
+
+                # reorder columns
+                col_keep = ['sample_name', 'clade', 
+                            'totalSubstitutions','totalDeletions', 'totalInsertions', 
+                            'totalFrameShifts', 'totalMissing','totalNonACGTNs', 'totalAminoacidSubstitutions',
+                            'totalAminoacidDeletions', 'totalAminoacidInsertions', 'totalUnknownAa', 
+                            'nextclade_coverage','aaSubstitutions', 'aaDeletions', 'aaInsertions',
+                            'warnings', 'errors']
+                # add "na" prefix to all column headers
+                rename_cols = {}
+                for col in col_keep:
+                    if col != 'sample_name':
+                        new_column = f'NA_{col}'
+                        rename_cols[col] = new_column
+
+                df = df[col_keep]
+                df = df.rename(columns = rename_cols)
+                na_nextclade_df_list.append(df)
+
+            elif re.search('HA', segment):
+                # pull sample_name from seqName
+                seq_name = df.SeqName[0]
+                sample_name = re.findall(f'{type}_{segment}', seq_name)[0]
+
+                # add column and rename columns
+                df['sample_name'] = sample_name
+                df['nextclade_coverage'] = df['coverage']
+
+                # add missing columns
+                # HA: add short-clade (For bvic only)
+                if "subclade" not in df.columns:
+                    df['subclade'] = ""
+                if "short-clade" not in df.columns:
+                    df['short-clade'] = ""
+                # reorder columns
+                col_keep = ['sample_name', 'clade', 'short-clade', 'subclade', 
+                            'totalSubstitutions','totalDeletions', 'totalInsertions', 
+                            'totalFrameShifts', 'totalMissing','totalNonACGTNs', 'totalAminoacidSubstitutions',
+                            'totalAminoacidDeletions', 'totalAminoacidInsertions', 'totalUnknownAa', 
+                            'nextclade_coverage','aaSubstitutions', 'aaDeletions', 'aaInsertions',
+                            'warnings', 'errors']
+                # add "ha" prefix to all column headers
+                rename_cols = {}
+                for col in col_keep:
+                    if col != 'sample_name':
+                        new_column = f'HA_{col}'
+                        rename_cols[col] = new_column
+
+                df = df[col_keep]
+                df = df.rename(columns = rename_cols)
+                ha_nextclade_df_list.append(df)
+    
+    if len(ha_nextclade_df_list) > 0:
         ha_nextclade_df = pd.concat(ha_nextclade_df_list).set_index('sample_name')
     else:
-        #create empty df for joining downstream
         ha_nextclade_df = pd.DataFrame()
-
+    if len(na_nextclade_df_list) > 0:
+        na_nextclade_df = pd.concat(na_nextclade_df_list).set_index('sample_name')
+    else:
+        na_nextclade_df = pd.DataFrame()
 
     # post assembly qc metrics
     post_qc_metrics_df_list = []
@@ -217,7 +220,8 @@ if __name__ == '__main__':
     # add some columns and do a calcuation
     df["analysis_date"] = analysis_date
     df['percent_flu_mapped_reads'] = round((df.total_flu_mapped_reads / df.total_reads_cleaned) * 100 , 2)
-    # TODO the percent flu mapped reads we are seeing is much lower than CDC's. I'm not sure how they are doing the calcuation
+    # TODO the percent flu mapped reads we are seeing is much lower than CDC's. 
+    # I think they are somehow dividing by the total flu "classified" reads
     df['project_name'] = project_name
     df = df[col_order] 
 

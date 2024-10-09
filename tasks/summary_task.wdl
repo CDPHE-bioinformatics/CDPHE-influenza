@@ -10,8 +10,7 @@ task results_summary {
         Array[File] preprocess_qc_metrics
         Array[File] irma_typing
         Array[File] assembly_qc_metrics
-        Array[File] na_nextclade_tsv
-        Array[File] ha_nextclade_tsv
+        Array[File] nextclade_tsv_flatten
         String workflow_version
         String analysis_date
         File python_script
@@ -26,8 +25,7 @@ task results_summary {
         --preprocess_qc_metrics ~{write_lines(preprocess_qc_metrics)} \
         --irma_typing ~{write_lines(irma_typing)} \
         --assembly_qc_metrics ~{write_lines(assembly_qc_metrics)} \
-        --na_nextclade_tsv ~{write_lines(na_nextclade_tsv)} \
-        --ha_nextclade_tsv ~{write_lines(ha_nextclade_tsv)} \
+        --nextclade_tsv ~{write_lines(nextclade_tsv_flatten)} \
         --workflow_version ~{workflow_version}\
         --project_name "~{project_name}" \
         --analysis_date "~{analysis_date}" 
