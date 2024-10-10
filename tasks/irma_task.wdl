@@ -30,6 +30,7 @@ task perform_assembly_irma {
         
         # determine if assembly was successful
         if compgen -G "~{sample_name}/*.fasta"; then
+            echo "irma assembly pass" | tee irma_qc.txt
             echo "sample_name,flu_type,gene_segment,subtype" > ~{sample_name}_irma_assembled_gene_segments.csv
             for file in ~{sample_name}/*.fasta; do
             echo ${file}
@@ -90,6 +91,7 @@ task perform_assembly_irma {
             done
 
         else 
+            echo "irma assembly fail" | tee irma_qc.txt
             echo "sample_name,flu_type,gene_segment,subtype" > ~{sample_name}_irma_assembled_gene_segments.csv
             echo "~{sample_name},no IRMA assembly generated,none,none" >> ~{sample_name}_irma_assembled_gene_segments.csv
 
@@ -101,12 +103,13 @@ task perform_assembly_irma {
         File irma_assembled_gene_segments_csv = "~{sample_name}_irma_assembled_gene_segments.csv"
         # Added '_multi' to file name to differentiate from segment fastas
         File? irma_multifasta = "~{sample_name}_irma_multi.fasta"
-        # globs are ordered, so if the different file types all have the same names, these should all be in the same order
+        # globs are ordered, so if the diffierent file types all have the same names, these should all be in the same order
         # However this is dependent on all three files being created for every segment and subtype- does that
         # ever not happen? If not, the logic would need to be changed but I don't think it would be difficult
         Array[File] assemblies = glob("*_irma.fasta")
         Array[File] alignments = glob("*.bam")
         Array[File] vcfs = glob("*.vcf")
+        String irma_assembly_qc = read_string("irma_qc.txt")
 
         VersionInfo IRMA_version_info = object{
             software: "IRMA",
@@ -166,9 +169,9 @@ task grab_segment_info {
     >>>
 
     output {
-        String type = select_all(read_lines('TYPE'))[0]
-        String segment = select_all(read_lines('SEGMENT'))[0]
-        String subtype = select_all(read_lines('SUBTYPE'))[0]
+        String type = read_string('TYPE')
+        String segment = read_string('SEGMENT')
+        String subtype = read_string('SUBTYPE')
     }
 
     runtime {
@@ -179,6 +182,7 @@ task grab_segment_info {
         preemptible: 0
   }
 }
+
 
 
 task get_irma_subtyping_results {
