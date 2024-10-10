@@ -190,13 +190,13 @@ workflow influenza_assembly {
         Array[File] percent_coverage_csv_array = calc_percent_coverage.percent_coverage_csv
 
         # nextclade
-        Array[File?] nextclade_json_array = select_all(nextclade.nextclade_json)
-        Array[File?] nextclade_tsv_array = select_all(nextclade.nextclade_tsv)
-        Array[File?] nextclade_HA1_translation_fasta = select_all(nextclade.nextclade_HA1_translation_fasta)
-        Array[File?] nextclade_HA2_translation_fasta = select_all(nextclade.nextclade_HA2_translation_fasta)
-        Array[File?] nextclade_SigPep_translation_fasta = select_all(nextclade.nextclade_SigPep_translation_fasta)
-        Array[File?] nextclade_HA_translation_fasta = select_all(nextclade.nextclade_HA_translation_fasta)
-        Array[File?] nextclade_NA_translation_fasta = select_all(nextclade.nextclade_NA_translation_fasta)
+        Array[File] nextclade_json_array = select_all(nextclade.nextclade_json)
+        Array[File] nextclade_tsv_array = select_all(nextclade.nextclade_tsv)
+        Array[File] nextclade_HA1_translation_fasta = select_all(nextclade.nextclade_HA1_translation_fasta)
+        Array[File] nextclade_HA2_translation_fasta = select_all(nextclade.nextclade_HA2_translation_fasta)
+        Array[File] nextclade_SigPep_translation_fasta = select_all(nextclade.nextclade_SigPep_translation_fasta)
+        Array[File] nextclade_HA_translation_fasta = select_all(nextclade.nextclade_HA_translation_fasta)
+        Array[File] nextclade_NA_translation_fasta = select_all(nextclade.nextclade_NA_translation_fasta)
 
         # concantenate post assembly qc metrics (coverage, depth) into a single file
         call assembly_qc.concat_assembly_qc_metrics as concat_assembly_qc_metrics{
@@ -336,13 +336,13 @@ workflow influenza_assembly {
 
 
         # output from nextclade
-        Array[File?]? nextclade_json = nextclade_json_array
-        Array[File?]? nextclade_tsv = nextclade_tsv_array
-        Array[File?]? nextclade_HA1_translation_fasta1 = nextclade_HA1_translation_fasta 
-        Array[File?]? nextclade_HA2_translation_fasta1 = nextclade_HA2_translation_fasta
-        Array[File?]? nextclade_SigPep_translation_fasta1 = nextclade_SigPep_translation_fasta
-        Array[File?]? nextclade_HA_translation_fasta1 = nextclade_HA_translation_fasta
-        Array[File?]? nextclade_NA_translation_fasta1 = nextclade_NA_translation_fasta
+        Array[File]? nextclade_json = nextclade_json_array
+        Array[File]? nextclade_tsv = nextclade_tsv_array
+        Array[File]? nextclade_HA1_translation_fasta1 = nextclade_HA1_translation_fasta 
+        Array[File]? nextclade_HA2_translation_fasta1 = nextclade_HA2_translation_fasta
+        Array[File]? nextclade_SigPep_translation_fasta1 = nextclade_SigPep_translation_fasta
+        Array[File]? nextclade_HA_translation_fasta1 = nextclade_HA_translation_fasta
+        Array[File]? nextclade_NA_translation_fasta1 = nextclade_NA_translation_fasta
         
         # version capture
         File? version_capture_file = capture_task_version.version_capture_file
