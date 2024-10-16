@@ -55,6 +55,8 @@ if __name__ == '__main__':
     post_qc_metrics_list= create_list_from_write_lines_input(write_lines_input = post_qc_metrics_txt)
     nextclade_tsv_list = create_list_from_write_lines_input(write_lines_input = nextclade_tsv_txt)
     
+    print(nextclade_tsv_txt)
+    print(nextclade_tsv_list)
    
 
     # create summary metrics file:
@@ -94,6 +96,7 @@ if __name__ == '__main__':
         ]
 
     # preprocess
+    print('starting preprocess handling')
     preprocess_qc_metrics_df_list = []
     for preprocess_qc_metrics in preprocess_qc_metrics_list:
         df = pd.read_csv(preprocess_qc_metrics, dtype = {'sample_name' : object})
@@ -104,26 +107,32 @@ if __name__ == '__main__':
     preprocess_qc_metrics_df = pd.concat(preprocess_qc_metrics_df_list).set_index('sample_name')
 
     # irma subtyping
+    print('starting irma typing handling')
     irma_typing_df_list = []
     for irma_typing in irma_typing_list:
         df = pd.read_csv(irma_typing, dtype = {'sample_name' : object})
         irma_typing_df_list.append(df)
     irma_typing_df = pd.concat(irma_typing_df_list).set_index('sample_name')
 
-
-    # nextclade
+     # nextclade
+    print('starting nextclade handling')
     na_nextclade_df_list = []
     ha_nextclade_df_list = []
 
     # check that files exist
     if len(nextclade_tsv_list) >= 1:
         for nextclade_tsv in nextclade_tsv_list:
+            print(nextclade_tsv)
+
             df = pd.read_csv(nextclade_tsv, sep ='\t')
             # determine if HA or NA segment using the file name
             # example file name "sample_A_HA-H1.tsv" or "sample_B_HA.tsv"
             segment = nextclade_tsv.split('.tsv')[0].split('_')[-1] # this gives you HA-H1 or HA depednig if A or B
-            type = nextclade_tsv.split('.tsv')[0].split('_')[-2] # this give A or B
+            type = nextclade_tsv.split('.tsv')[0].split('_')[-2] # this gives A or B
             
+            print(segment)
+            print(type)
+
             if re.search("NA", segment):
                 # pull sample_name from seqName
                 seq_name = df.seqName[0]
@@ -151,7 +160,9 @@ if __name__ == '__main__':
 
                 df = df[col_keep]
                 df = df.rename(columns = rename_cols)
+                print('rows = ', df.shape[0])
                 na_nextclade_df_list.append(df)
+                print('len na_nextclade_df_list = ', len(na_nextclade_df_list))
 
             elif re.search('HA', segment):
                 # pull sample_name from seqName
@@ -186,7 +197,12 @@ if __name__ == '__main__':
 
                 df = df[col_keep]
                 df = df.rename(columns = rename_cols)
+
+                print('rows = ', df.shape[0])
+
                 ha_nextclade_df_list.append(df)
+
+                print('len ha_nextclade_df_list = ', len(ha_nextclade_df_list))
     
     if len(ha_nextclade_df_list) > 0:
         ha_nextclade_df = pd.concat(ha_nextclade_df_list).set_index('sample_name')
@@ -200,6 +216,7 @@ if __name__ == '__main__':
 
 
     # post assembly qc metrics
+    print('starting pos assembly handling')
     post_qc_metrics_df_list = []
     if len(post_qc_metrics_list) >= 1:
         for post_qc_metrics in post_qc_metrics_list:
@@ -215,6 +232,7 @@ if __name__ == '__main__':
 
     
     # join all the dfs together
+    print('joining dfs')
     df = pd.DataFrame(sample_name_list, columns = ['sample_name']).set_index('sample_name')
     df = df.join(preprocess_qc_metrics_df, how = 'left')
     df = df.join(irma_typing_df, how = 'left')
@@ -229,7 +247,6 @@ if __name__ == '__main__':
     # TODO the percent flu mapped reads we are seeing is much lower than CDC's. 
     # I think they are somehow dividing by the total flu "classified" reads
     df['project_name'] = project_name
-    df = df[col_order] 
 
     # check columns - if column doesn't exist then add column
     # for if assembly failed for all samples assemlby qc metrics or nextclade
@@ -237,7 +254,7 @@ if __name__ == '__main__':
     for column in col_order:
         if column not in df.columns:
             df[column] = pd.NA
-   
+    df = df[col_order] 
     
     # outfile
     outfile = f'{project_name}_sequencing_results_{workflow_version}.csv' 

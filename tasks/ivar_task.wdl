@@ -23,7 +23,7 @@ task call_consensus_ivar {
     # String prefix = sub(base_name, "_irma", "")
 
     #record parameters
-    Int ivar_min_depth = 25
+    Int ivar_min_depth = 30
     Float ivar_min_freq = 0.5
     Int ivar_min_qual = 20
 
