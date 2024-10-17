@@ -13,7 +13,7 @@ task nextclade {
     }
 
     input {
-        File ivar_fasta
+        File fasta
         String type
         String segment
         String subtype
@@ -75,7 +75,7 @@ task nextclade {
         echo "got dataset"
 
         #2- run nextclade
-        nextclade run --input-dataset data/flu --output-all=output/ --output-basename "~{base_name}" "~{ivar_fasta}"
+        nextclade run --input-dataset data/flu --output-all=output/ --output-basename "~{base_name}" "~{fasta}"
         echo "ran nextclade"
     >>>
 

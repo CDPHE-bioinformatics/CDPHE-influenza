@@ -91,9 +91,6 @@ task transfer_assembly_wdl{
         # transfer ivar assemblies and sorted bams 
         gsutil -m cp ~{sep = " " sorted_bam_array} ~{out_path}/sorted_bams/~{sample_name}/
         gsutil -m cp ~{sep = " " sorted_bai_array} ~{out_path}/sorted_bams/~{sample_name}/
-        # gsutil -m cp ~{sep = " " ivar_fasta_array} ~{out_path}/ivar_assemblies/~{sample_name}
-        # gsutil -m cp ~{ivar_parameters} ~{out_path}/ivar_assemblies/
-        # gsutil -m cp ~{ivar_multifasta} ~{out_path}/ivar_assembly_multifasta/
          
 
         # transfer post assembly qc

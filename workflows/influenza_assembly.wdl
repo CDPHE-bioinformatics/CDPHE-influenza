@@ -161,7 +161,7 @@ workflow influenza_assembly {
             if (is_ha || is_na) {
                 call nextclade_tasks.nextclade as nextclade {
                     input:
-                        ivar_fasta = ivar_consensus.ivar_consensus_fasta,
+                        fasta = fasta,
                         type = grab_segment_info.type,
                         segment = grab_segment_info.segment,
                         subtype = grab_segment_info.subtype,
@@ -207,11 +207,11 @@ workflow influenza_assembly {
                 bam_stats_csv_array = bam_stats_csv_array
         }
 
-        call assembly_qc.make_multifasta as make_ivar_multifasta{
-            input:
-                fasta_array = ivar_fasta_array,
-                sample_name = sample_name
-        }
+        # call assembly_qc.make_multifasta as make_ivar_multifasta{
+        #     input:
+        #         fasta_array = ivar_fasta_array,
+        #         sample_name = sample_name
+        # }
         
 
         # create array of structs
