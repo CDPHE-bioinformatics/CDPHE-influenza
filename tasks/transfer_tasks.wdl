@@ -34,24 +34,25 @@ task transfer_assembly_wdl{
 
         # ivar & sorted bams
         Array[File]? ivar_fasta_array
+        File? ivar_parameters
         File? ivar_multifasta
         Array[File]? sorted_bam_array
+        Array[File]? sorted_bai_array
 
         # post assembly qc outputs
         File? assembly_qc_metrics
 
         # nextclade
-        File? na_nextclade_json
-        File? na_nextclade_tsv
-        File? na_nextclade_translation_fasta
+        Array[File] nextclade_json_array 
+        Array[File] nextclade_tsv_array 
+        Array[File] nextclade_SigPep_translation_fasta
+        Array[File] nextclade_HA1_translation_fasta
+        Array[File] nextclade_HA2_translation_fasta
+        Array[File] nextclade_HA_translation_fasta
+        Array[File] nextclade_NA_translation_fasta
 
-        File? ha_nextclade_json
-        File? ha_nextclade_tsv
-        File? ha_nextclade_HA1_translation_fasta
-        File? ha_nextclade_HA2_translation_fasta
-        File? ha_nextclade_SigPep_translation_fasta
-
-        File version_capture_file
+        # version
+        File? version_capture_file
 
 
     }
@@ -89,7 +90,9 @@ task transfer_assembly_wdl{
 
         # transfer ivar assemblies and sorted bams 
         gsutil -m cp ~{sep = " " sorted_bam_array} ~{out_path}/sorted_bams/~{sample_name}/
+        gsutil -m cp ~{sep = " " sorted_bai_array} ~{out_path}/sorted_bams/~{sample_name}/
         gsutil -m cp ~{sep = " " ivar_fasta_array} ~{out_path}/ivar_assemblies/~{sample_name}
+        gsutil -m cp ~{ivar_parameters} ~{out_path}/ivar_assemblies/
         gsutil -m cp ~{ivar_multifasta} ~{out_path}/ivar_assembly_multifasta/
          
 
@@ -97,16 +100,13 @@ task transfer_assembly_wdl{
         gsutil -m cp ~assembly_qc_metrics ~{out_path}/assembly_qc_metrics/
 
         # transfer nextclade
-        gsutil -m cp ~{na_nextclade_json} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{na_nextclade_tsv} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{na_nextclade_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{ha_nextclade_json} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{ha_nextclade_tsv} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{ha_nextclade_HA1_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{ha_nextclade_HA2_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{ha_nextclade_SigPep_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
-        
-
+        gsutil -m cp ~{sep = " " nextclade_json_array} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{sep = " " nextclade_tsv_array} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{sep = " " nextclade_HA_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{sep = " " nextclade_HA1_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{sep = " " nextclade_HA2_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{sep = " " nextclade_SigPep_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{sep = " " nextclade_NA_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
 
         # transfer date
         transferdate=`date`

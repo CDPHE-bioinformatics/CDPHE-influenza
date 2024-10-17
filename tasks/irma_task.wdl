@@ -30,6 +30,7 @@ task perform_assembly_irma {
         
         # determine if assembly was successful
         if compgen -G "~{sample_name}/*.fasta"; then
+            echo "irma assembly pass" | tee irma_qc.txt
             echo "sample_name,flu_type,gene_segment,subtype" > ~{sample_name}_irma_assembled_gene_segments.csv
             for file in ~{sample_name}/*.fasta; do
             echo ${file}
@@ -37,88 +38,78 @@ task perform_assembly_irma {
                 # read in header of fasta file and grab type (e.g. A,B), 
                 # gene_segment (e.g. HA, NA, PB1) and subtype (e.g. N2, H1) (ok if subtype doesn't exist)
 
-                segment=$(basename ${file%.*} | cut -d "." -f 1)
-                TYPE=$(echo ${segment} | cut -d "_" -f 1)
-                gene_segment=$(echo ${segment} | cut -d "_" -f 2)
-                subtype=$(echo ${segment} | cut -d "_" -f 3)
+                full=$(basename ${file%.*} | cut -d "." -f 1) # A_HA_H1 or A_NP
+                TYPE=$(echo ${full} | cut -d "_" -f 1) # A
+                segment=$(echo ${full} | cut -d "_" -f 2) # HA or NP
+                subtype=$(echo ${full} | cut -d "_" -f 3) # H1 or none
+                echo "assembled_gene_segments.csv"
+                echo $full $TYPE $segment $subtype 
                    
-                echo "~{sample_name},${TYPE},${gene_segment},${subtype}" >> ~{sample_name}_irma_assembled_gene_segments.csv
+                echo "~{sample_name},${TYPE},${segment},${subtype}" >> ~{sample_name}_irma_assembled_gene_segments.csv
             done
 
             # rename header and file name for fasta
             ## also create an array of the segment names
             for file in ~{sample_name}/*.fasta; do
                 # grab base name and drop .fasta
-                segment=$(basename ${file} | cut -d "." -f 1)
-                gene=$(echo ${segment} | cut -d "_" -f 2)
+                full=$(basename ${file} | cut -d "." -f 1) # A_HA_H1 or A_NP
+                TYPE=$(echo ${full} | cut -d "_" -f 1) # A
+                segment_subtype=$(echo ${full} | cut -d "_" -f 2-) # HA_H1 or NP
+                segment_subtype=${segment_subtype//_/-} # HA-H1 or NP
                 # echo $segement >> segment_list.txt
-                header_name=$(echo ~{sample_name}_${segment})
-                sed -i "s/>.*/>${header_name}/" ${file}
+                header_name=$(echo ~{sample_name}_${TYPE}_${segment_subtype})
 
+                echo "fasta file variables"
+                echo $full $TYPE $segment_subtype 
+                echo $header_name
+
+                sed -i "s/>.*/>${header_name}/" ${file}
                 # add file contents to concatenated fasta file
-                cat ${fiile} >> ~{sample_name}_irma.fasta
+                cat ${file} >> ~{sample_name}_irma_multi.fasta
 
                 # rename file
-                new_name=$(echo ~{sample_name}_${gene}_irma.fasta)
+                new_name=$(echo ~{sample_name}_${TYPE}_${segment_subtype}_irma.fasta)
                 mv "${file}" "${new_name}"
+                echo $new_name
 
             
             done
 
             # rename bam and vcf files
             for file in ~{sample_name}/*{.vcf,.bam}; do
-                base_name=$(basename ${file%.*})
-                gene=$(echo $base_name | cut -d "_" -f 2)
+                base_name=$(basename ${file%.*}) # to grab the extenstion
+
+                full=$(basename ${file} | cut -d "." -f 1) # A_HA_H1 or A_NP
+                TYPE=$(echo ${full} | cut -d "_" -f 1) # A
+                segment_subtype=$(echo ${full} | cut -d "_" -f 2-) # HA_H1 or NP
+                segment_subtype=${segment_subtype//_/-} # HA-H1 or NP
+                
                 extension="${file##*.}"
-                new_name=$(echo ~{sample_name}_${gene}.${extension})
+                
+                new_name=$(echo ~{sample_name}_${TYPE}_${segment_subtype}.${extension})
                 mv "${file}" "${new_name}"
             done
 
-        
         else 
+            echo "irma assembly fail" | tee irma_qc.txt
             echo "sample_name,flu_type,gene_segment,subtype" > ~{sample_name}_irma_assembled_gene_segments.csv
             echo "~{sample_name},no IRMA assembly generated,none,none" >> ~{sample_name}_irma_assembled_gene_segments.csv
 
         fi 
-
-
     >>>
 
     output {
 
         File irma_assembled_gene_segments_csv = "~{sample_name}_irma_assembled_gene_segments.csv"
-        File? irma_multifasta = "~{sample_name}_irma.fasta"
-        
-        # assemblies
-        File? irma_seg_ha_fasta = "~{sample_name}_HA_irma.fasta"
-        File? irma_seg_na_fasta = "~{sample_name}_NA_irma.fasta"
-        File? irma_seg_pb1_fasta = "~{sample_name}_PB1_irma.fasta"
-        File? irma_seg_pb2_fasta = "~{sample_name}_PB2_irma.fasta"
-        File? irma_seg_np_fasta = "~{sample_name}_NP_irma.fasta"
-        File? irma_seg_pa_fasta = "~{sample_name}_PA_irma.fasta"
-        File? irma_seg_ns_fasta = "~{sample_name}_NS_irma.fasta"
-        File? irma_seg_mp_fasta = "~{sample_name}_MP_irma.fasta"
-
-        # alignments
-        File? irma_seg_ha_bam = "~{sample_name}_HA.bam"
-        File? irma_seg_na_bam = "~{sample_name}_NA.bam"
-        File? irma_seg_pb1_bam = "~{sample_name}_PB1.bam"
-        File? irma_seg_pb2_bam = "~{sample_name}_PB2.bam"
-        File? irma_seg_np_bam = "~{sample_name}_NP.bam"
-        File? irma_seg_pa_bam = "~{sample_name}_PA.bam"
-        File? irma_seg_ns_bam = "~{sample_name}_NS.bam"
-        File? irma_seg_mp_bam = "~{sample_name}_MP.bam"
-
-        # vcfs
-        File? irma_seg_ha_vcf = "~{sample_name}_HA.vcf"
-        File? irma_seg_na_vcf = "~{sample_name}_NA.vcf"
-        File? irma_seg_pb1_vcf = "~{sample_name}_PB1.vcf"
-        File? irma_seg_pb2_vcf = "~{sample_name}_PB2.vcf"
-        File? irma_seg_np_vcf = "~{sample_name}_NP.vcf"
-        File? irma_seg_pa_vcf = "~{sample_name}_PA.vcf"
-        File? irma_seg_ns_vcf = "~{sample_name}_NS.vcf"
-        File? irma_seg_mp_vcf = "~{sample_name}_MP.vcf"
-
+        # Added '_multi' to file name to differentiate from segment fastas
+        File? irma_multifasta = "~{sample_name}_irma_multi.fasta"
+        # globs are ordered, so if the diffierent file types all have the same names, these should all be in the same order
+        # However this is dependent on all three files being created for every segment and subtype- does that
+        # ever not happen? If not, the logic would need to be changed but I don't think it would be difficult
+        Array[File] assemblies = glob("*_irma.fasta")
+        Array[File] alignments = glob("*.bam")
+        Array[File] vcfs = glob("*.vcf")
+        String irma_assembly_qc = read_string("irma_qc.txt")
 
         VersionInfo IRMA_version_info = object{
             software: "IRMA",
@@ -136,6 +127,63 @@ task perform_assembly_irma {
         preemptible: 0
   }
 }
+
+
+task grab_segment_info {
+    meta {
+        description: "create assembled segment structs"
+    }
+
+    input {
+        String sample_name
+        File fasta
+    }
+
+    String base_name = sub(basename(fasta, ".fasta"), "~{sample_name}_", "") # A_HA-H1_irma or A_NP_irma
+
+    command <<<
+        echo "base_name"
+        echo ~{base_name}
+
+        echo "TYPE"
+        echo ~{base_name} | cut -d "_" -f 1 | tee TYPE # A
+        echo ""
+        echo "Segment"
+        echo ~{base_name} | cut -d "_" -f 2 | cut -d "-" -f 1 | tee SEGMENT # HA or 
+        echo ""
+        echo "segment variable"
+        # capture segment as variable to use in if statement
+        segment=$(echo ~{base_name} | cut -d "_" -f 2 | cut -d "-" -f 1) 
+        echo $segment
+        echo ""
+
+        # Does IRMA ever output things with hyphens?
+        echo "subtype"
+
+        if [[ $segment == "HA" ]] || [[ $segment == "NA" ]]; then
+            echo "yes this HA or NA!"
+            echo ~{base_name} | cut -d "_" -f 2 | cut -d "-" -f 2 | tee SUBTYPE # H1 or N1
+        else
+            echo "" | tee SUBTYPE
+        fi
+    >>>
+
+    output {
+        String type = read_string('TYPE')
+        String segment = read_string('SEGMENT')
+        String subtype = read_string('SUBTYPE')
+    }
+
+    runtime {
+        docker: "theiagen/utility:1.0"
+        memory: "4 GiB"
+        cpu: 4
+        disks: "local-disk 50 SSD"
+        preemptible: 0
+  }
+}
+
+
 
 task get_irma_subtyping_results {
     meta {
