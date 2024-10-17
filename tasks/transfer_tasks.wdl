@@ -36,6 +36,8 @@ task transfer_assembly_wdl{
         # Array[File]? ivar_fasta_array
         # File? ivar_parameters
         # File? ivar_multifasta
+        Array[File]? sam_coverage_array
+        Array[File]? sam_depth_array
         Array[File]? sorted_bam_array
         Array[File]? sorted_bai_array
 
@@ -91,7 +93,8 @@ task transfer_assembly_wdl{
         # transfer ivar assemblies and sorted bams 
         gsutil -m cp ~{sep = " " sorted_bam_array} ~{out_path}/sorted_bams/~{sample_name}/
         gsutil -m cp ~{sep = " " sorted_bai_array} ~{out_path}/sorted_bams/~{sample_name}/
-         
+        gsutil -m cp ~{sep = " " sam_coverage_array} ~{out_path}/bam_stats/~{sample_name}/
+        gsutil -m cp ~{sep = " " sam_depth_array} ~{out_path}/bam_stats/~{sample_name}/
 
         # transfer post assembly qc
         gsutil -m cp ~assembly_qc_metrics ~{out_path}/assembly_qc_metrics/

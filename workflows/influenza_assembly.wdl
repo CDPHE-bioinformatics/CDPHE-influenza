@@ -183,6 +183,8 @@ workflow influenza_assembly {
 
         # Samtools - mapped reads csv, sorted bam
         Array[File] bam_stats_csv_array = bam_stats.bam_stats_csv
+        Array[File] sam_coverage_array = bam_stats.sam_coverage
+        Array[File] sam_depth_array = bam_stats.sam_depth
         Array[File] sorted_bam_array = bam_stats.sorted_bam
         Array[File] sorted_bai_array = bam_stats.sorted_bai
 
@@ -282,6 +284,8 @@ workflow influenza_assembly {
                 # from samtools - sorted bams
                 sorted_bam_array = sorted_bam_array,
                 sorted_bai_array = sorted_bai_array,
+                sam_coverage_array = sam_coverage_array,
+                sam_depth_array = sam_depth _array,
                 assembly_qc_metrics = concat_assembly_qc_metrics.assembly_qc_metrics_summary,
 
                 # nextclade
@@ -332,6 +336,8 @@ workflow influenza_assembly {
         Array[File?]? percent_coverage_csv_array_out = percent_coverage_csv_array
         Array[File?]? sorted_bam_array_out = sorted_bam_array
         Array[File?]? sorted_bai_array_out = sorted_bai_array
+        Array[File?]? sam_coverage_array_out = sam_coverage_array
+        Array[File?]? sam_depth_array_out = sam_depth_array
         File? assembly_qc_metrics = concat_assembly_qc_metrics.assembly_qc_metrics_summary
 
 
