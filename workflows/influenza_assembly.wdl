@@ -138,12 +138,12 @@ workflow influenza_assembly {
                     base_name = base_name
             }
 
-            call ivar.call_consensus_ivar as ivar_consensus {
-                input:
-                    bam_file = bam,
-                    sample_name = sample_name,
-                    base_name = base_name
-            }
+            # call ivar.call_consensus_ivar as ivar_consensus {
+            #     input:
+            #         bam_file = bam,
+            #         sample_name = sample_name,
+            #         base_name = base_name
+            # }
 
             call assembly_qc.calc_percent_coverage as calc_percent_coverage{
                 input:
@@ -177,9 +177,9 @@ workflow influenza_assembly {
         Array[File] irma_bam_array = irma.alignments
         Array[File] irma_vcf_array = irma.vcfs
 
-        # IVAR - fasta
-        Array[File] ivar_fasta_array = ivar_consensus.ivar_consensus_fasta
-        File ivar_parameters_file = select_first(ivar_consensus.ivar_parameters)
+        # # IVAR - fasta
+        # Array[File] ivar_fasta_array = ivar_consensus.ivar_consensus_fasta
+        # File ivar_parameters_file = select_first(ivar_consensus.ivar_parameters)
 
         # Samtools - mapped reads csv, sorted bam
         Array[File] bam_stats_csv_array = bam_stats.bam_stats_csv
@@ -220,8 +220,8 @@ workflow influenza_assembly {
             seqyclean.seqyclean_version_info,
             irma.IRMA_version_info,
             select_first(bam_stats.samtools_version_info),
-            select_first(ivar_consensus.ivar_version_info),
-            select_first(ivar_consensus.samtools_version_info),
+            # select_first(ivar_consensus.ivar_version_info),
+            # select_first(ivar_consensus.samtools_version_info),
             select_all(nextclade.nextclade_version_info)[0]
         ])
         
@@ -274,9 +274,9 @@ workflow influenza_assembly {
                 irma_vcf_array = irma_vcf_array,
 
                 # ivar
-                ivar_fasta_array = ivar_fasta_array,
-                ivar_multifasta = make_ivar_multifasta.multifasta,
-                ivar_parameters = ivar_parameters_file,
+                # ivar_fasta_array = ivar_fasta_array,
+                # ivar_multifasta = make_ivar_multifasta.multifasta,
+                # ivar_parameters = ivar_parameters_file,
 
 
                 # from samtools - sorted bams
@@ -326,9 +326,9 @@ workflow influenza_assembly {
         String irma_na_subtype = irma_subtyping_results.irma_na_subtype
 
         # output from post assembly
-        Array[File?]? ivar_fasta_array_out = ivar_fasta_array
-        File? ivar_parameters = ivar_parameters_file
-        File? ivar_multifasta = make_ivar_multifasta.multifasta
+        # Array[File?]? ivar_fasta_array_out = ivar_fasta_array
+        # File? ivar_parameters = ivar_parameters_file
+        # File? ivar_multifasta = make_ivar_multifasta.multifasta
         Array[File?]? percent_coverage_csv_array_out = percent_coverage_csv_array
         Array[File?]? sorted_bam_array_out = sorted_bam_array
         Array[File?]? sorted_bai_array_out = sorted_bai_array
