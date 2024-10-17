@@ -38,9 +38,9 @@ task calc_bam_stats_samtools {
         echo "sorted_bai_fn"
         echo ~{sorted_bai_fn}
         echo "sam_coverage"
-        echo ~{sam_coverage}
+        echo ~{sam_coverage_fn}
         echo "sam_depth"
-        echo ~{sam_depth}
+        echo ~{sam_depth_fn}
 
         # create sorted bam file
         samtools sort ~{bam_file} -o ~{sorted_bam_fn}

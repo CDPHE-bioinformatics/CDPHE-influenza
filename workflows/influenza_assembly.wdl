@@ -285,7 +285,7 @@ workflow influenza_assembly {
                 sorted_bam_array = sorted_bam_array,
                 sorted_bai_array = sorted_bai_array,
                 sam_coverage_array = sam_coverage_array,
-                sam_depth_array = sam_depth _array,
+                sam_depth_array = sam_depth_array,
                 assembly_qc_metrics = concat_assembly_qc_metrics.assembly_qc_metrics_summary,
 
                 # nextclade
