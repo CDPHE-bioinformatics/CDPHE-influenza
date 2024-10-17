@@ -147,7 +147,7 @@ workflow influenza_assembly {
 
             call assembly_qc.calc_percent_coverage as calc_percent_coverage{
                 input:
-                    fasta_file = fasta,
+                    fasta_file = ivar_consensus.ivar_consensus_fasta,
                     python_script = calc_percent_coverage_py,
                     sample_name = sample_name,
                     segment = grab_segment_info.segment,
