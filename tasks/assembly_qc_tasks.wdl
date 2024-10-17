@@ -50,7 +50,7 @@ task calc_bam_stats_samtools {
         # will use the depth file to calcuate the percent coverage at 30x.
 
         samtools coverage -o ~{sam_coverage_fn} ~{bam_file}
-        samtools depth -aJ ~{sam_depth_fn} ~{bam_file}
+        samtools depth -a -o ~{sam_depth_fn} ~{bam_file}
 
 
         # use sorted bam file to get number mapped reads and mean depth
