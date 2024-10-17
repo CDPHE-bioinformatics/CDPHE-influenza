@@ -25,8 +25,14 @@ task perform_assembly_irma {
         IRMA | head -n1 | awk -F' ' '{ print "IRMA " $5 }' | tee VERSION
         version=$(cat VERSION)
 
+        # set config file
+        touch irma_config.sh 
+        echo 'MIN_CONS_SUPPORT="30"' >> irma_config.sh
+        echo 'DEL_TYPE="DEL"' >> irma_config.sh
+        echo 'MIN_CONS_QUALITY="20"' >> irma_config.sh
+
         # run IRMA
-        IRMA FLU ~{fastq_R1} ~{fastq_R2} ~{sample_name}
+        IRMA FLU ~{fastq_R1} ~{fastq_R2} ~{sample_name} --external-config irma_config.sh
         
         # determine if assembly was successful
         if compgen -G "~{sample_name}/*.fasta"; then
