@@ -28,57 +28,101 @@ task perform_assembly_irma {
         # set config file
         touch irma_config.sh 
         echo 'MIN_CONS_SUPPORT="30"' >> irma_config.sh
+        # any base with less than 30x depth will be called an N
+        # the fasta files in the amended_consensus directory will have the MIN_CONS_SUPPORT added
+        # The fasta files in the amended_consensus directory will also have IUPAC for mixed based calls
+        # I will change IUPAC letters to Ns
+
         echo 'DEL_TYPE="DEL"' >> irma_config.sh
         echo 'MIN_CONS_QUALITY="20"' >> irma_config.sh
 
         # run IRMA
         IRMA FLU ~{fastq_R1} ~{fastq_R2} ~{sample_name} --external-config irma_config.sh
-        
+
+        # declare associative arrays for segment numbers
+        # declare formatted name assoicate array which will be [seg_num] = [A_HA-H1] or [seg_num] = [B_MP]
+        # and will be filled in during the loop
+        declare -A FluA=(["PB2"]="1" ["PB1"]="2" ["PA"]="3" ["HA"]="4" ["NP"]="5" ["NA"]="6" ["MP"]="7" ["NS"]="8" )
+        declare -A FluB=(["PB1"]="1" ["PB2"]="2" ["PA"]="3" ["HA"]="4" ["NP"]="5" ["NA"]="6" ["MP"]="7" ["NS"]="8" )      
+        declare -A formatted_name_dict
+
+        # IUPAC bases to replace in amended fasta files
+        IUPAC=( "B" "D" "H" "K" "M" "N" "R" "S" "V" "W" "Y" )
+
         # determine if assembly was successful
         if compgen -G "~{sample_name}/*.fasta"; then
             echo "irma assembly pass" | tee irma_qc.txt
             echo "sample_name,flu_type,gene_segment,subtype" > ~{sample_name}_irma_assembled_gene_segments.csv
+            
+            # first want ot make my assembled dataframe
+            # this is old, with exception that I'm now tracking subtype and TYPE
             for file in ~{sample_name}/*.fasta; do
-            echo ${file}
-                # grab type
-                # read in header of fasta file and grab type (e.g. A,B), 
-                # gene_segment (e.g. HA, NA, PB1) and subtype (e.g. N2, H1) (ok if subtype doesn't exist)
-
+                echo $file
                 full=$(basename ${file%.*} | cut -d "." -f 1) # A_HA_H1 or A_NP
                 TYPE=$(echo ${full} | cut -d "_" -f 1) # A
                 segment=$(echo ${full} | cut -d "_" -f 2) # HA or NP
-                subtype=$(echo ${full} | cut -d "_" -f 3) # H1 or none
-                echo "assembled_gene_segments.csv"
-                echo $full $TYPE $segment $subtype 
-                   
-                echo "~{sample_name},${TYPE},${segment},${subtype}" >> ~{sample_name}_irma_assembled_gene_segments.csv
-            done
-
-            # rename header and file name for fasta
-            ## also create an array of the segment names
-            for file in ~{sample_name}/*.fasta; do
-                # grab base name and drop .fasta
-                full=$(basename ${file} | cut -d "." -f 1) # A_HA_H1 or A_NP
-                TYPE=$(echo ${full} | cut -d "_" -f 1) # A
                 segment_subtype=$(echo ${full} | cut -d "_" -f 2-) # HA_H1 or NP
                 segment_subtype=${segment_subtype//_/-} # HA-H1 or NP
-                # echo $segement >> segment_list.txt
-                header_name=$(echo ~{sample_name}_${TYPE}_${segment_subtype})
+                # subtype=$(echo ${full} | cut -d "_" -f 3) # H1 or none
+                
+                formatted_name=$(echo ~{sample_name}_${TYPE}_${segment_subtype})
+                echo $formatted_name
+                
+                # this if statement won't work if the PB1 and PB2 are mixed types
+                # one will be overwritten in the associative array
+                # but also the files would be overwritten in the ammended fasta
+                # this should be so rare; but wanted to make a note in the failed logic
+                if [ $TYPE == "A" ]; then
+                    segment_num=${FluA[$segment]}
+                    echo $segment_num
+                    formatted_name_dict+=( [$segment_num]=$header_name )
+                    echo ${formatted_name_dict[$segment_num]}
+                elif [ $TYPE == "B" ]; then
+                    echo $segment_num
+                    segment_num=${FluB[$segment]}
+                    formatted_name+=( [$segment_num]=$header_name )
+                    echo ${formatted_name_dict[$segment_num]}
+                fi
 
-                echo "fasta file variables"
-                echo $full $TYPE $segment_subtype 
-                echo $header_name
+            done
 
+            # use amended fastas because they ahve the 30x cut off
+            # this is new
+            for file in ~{sample_name}/amended_consensus/*.fa; do
+                echo ${file}
+
+                # grab segment number
+                BFN=$(basename ${file%.*})
+                segment_number==$(echo $BFN | grep -o '[^_]*$')
+
+                # use associative array to get the formatted name
+                header_name=$(echo $formatted_name_dict[$segment_number])
+
+                # replace header
                 sed -i "s/>.*/>${header_name}/" ${file}
-                # add file contents to concatenated fasta file
-                cat ${file} >> ~{sample_name}_irma_multi.fasta
+
+                # replace IUPAC bases with Ns
+                for base in ${IUPAC[@]}; do
+                    sed -i "/^>/! s/${base}/N/g" $file
+                    echo ''
+                done
+
+                # remove "-" since these represent gaps relative to refernece
+                # replace periods with Ns
+                sed -i "/^>/! s/-//g" $file
+                sed -i "/^>/! s/\./N/g" $file
 
                 # rename file
-                new_name=$(echo ~{sample_name}_${TYPE}_${segment_subtype}_irma.fasta)
+                new_name=$(echo ${header_name}_irma.fasta)
                 mv "${file}" "${new_name}"
-                echo $new_name
 
-            
+                echo "DEBUG: print contents of final fasta file"
+                echo $new_name
+                cat $new_name
+
+                # add file contents to concatenated fasta file
+                cat ${new_name} >> ~{sample_name}_irma_multi.fasta
+
             done
 
             # rename bam and vcf files
