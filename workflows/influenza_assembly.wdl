@@ -183,8 +183,11 @@ workflow influenza_assembly {
 
         # Samtools - mapped reads csv, sorted bam
         Array[File] bam_stats_csv_array = bam_stats.bam_stats_csv
+        Array[File] sam_coverage_array = bam_stats.sam_coverage
+        Array[File] sam_depth_array = bam_stats.sam_depth
         Array[File] sorted_bam_array = bam_stats.sorted_bam
         Array[File] sorted_bai_array = bam_stats.sorted_bai
+
 
         # percent coverage - percent coverage csv
         Array[File] percent_coverage_csv_array = calc_percent_coverage.percent_coverage_csv
@@ -282,6 +285,8 @@ workflow influenza_assembly {
                 # from samtools - sorted bams
                 sorted_bam_array = sorted_bam_array,
                 sorted_bai_array = sorted_bai_array,
+                sam_coverage_array = sam_coverage_array,
+                sam_depth_array = sam_depth_array,
                 assembly_qc_metrics = concat_assembly_qc_metrics.assembly_qc_metrics_summary,
 
                 # nextclade
@@ -325,15 +330,16 @@ workflow influenza_assembly {
         String irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
         String irma_na_subtype = irma_subtyping_results.irma_na_subtype
 
-        # output from post assembly
+         # output from post assembly
         # Array[File?]? ivar_fasta_array_out = ivar_fasta_array
         # File? ivar_parameters = ivar_parameters_file
         # File? ivar_multifasta = make_ivar_multifasta.multifasta
         Array[File?]? percent_coverage_csv_array_out = percent_coverage_csv_array
         Array[File?]? sorted_bam_array_out = sorted_bam_array
         Array[File?]? sorted_bai_array_out = sorted_bai_array
+        Array[File?]? sam_coverage_array_out = sam_coverage_array
+        Array[File?]? sam_depth_array_out = sam_depth_array
         File? assembly_qc_metrics = concat_assembly_qc_metrics.assembly_qc_metrics_summary
-
 
         # output from nextclade
         Array[File]? nextclade_json = nextclade_json_array

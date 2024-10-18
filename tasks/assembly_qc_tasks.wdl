@@ -21,6 +21,8 @@ task calc_bam_stats_samtools {
 
     String sorted_bam_fn = "~{base_name}.sorted.bam"
     String sorted_bai_fn = "~{base_name}.sorted.bam.bai"
+    String sam_coverage_fn = '~{base_name}_coverage.txt'
+    String sam_depth_fn = '~{base_name}_depth.txt'
     String docker = "staphb/samtools:1.10"
 
     command <<<
@@ -35,10 +37,20 @@ task calc_bam_stats_samtools {
         echo ~{sorted_bam_fn}
         echo "sorted_bai_fn"
         echo ~{sorted_bai_fn}
+        echo "sam_coverage"
+        echo ~{sam_coverage_fn}
+        echo "sam_depth"
+        echo ~{sam_depth_fn}
 
         # create sorted bam file
         samtools sort ~{bam_file} -o ~{sorted_bam_fn}
         samtools index ~{sorted_bam_fn}
+
+        # get coverage and depth files as outputs 
+        # will use the depth file to calcuate the percent coverage at 30x.
+
+        samtools coverage -o ~{sam_coverage_fn} ~{bam_file}
+        samtools depth -a -o ~{sam_depth_fn} ~{bam_file}
 
 
         # use sorted bam file to get number mapped reads and mean depth
@@ -60,6 +72,8 @@ task calc_bam_stats_samtools {
 
     output {
         File bam_stats_csv = "bam_stats.csv"
+        File sam_coverage = sam_coverage_fn
+        File sam_depth = sam_depth_fn
         File sorted_bam = sorted_bam_fn
         File sorted_bai = sorted_bai_fn
 
