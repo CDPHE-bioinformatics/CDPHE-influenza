@@ -63,11 +63,14 @@ task perform_assembly_irma {
                 segment=$(echo ${full} | cut -d "_" -f 2) # HA or NP
                 segment_subtype=$(echo ${full} | cut -d "_" -f 2-) # HA_H1 or NP
                 segment_subtype=${segment_subtype//_/-} # HA-H1 or NP
-                # subtype=$(echo ${full} | cut -d "_" -f 3) # H1 or none
+                subtype=$(echo ${full} | cut -d "_" -f 3) # H1 or none
                 
-                formatted_name=$(echo ~{sample_name}_${TYPE}_${segment_subtype})
-                echo $formatted_name
+                header_name=$(echo ~{sample_name}_${TYPE}_${segment_subtype})
+                echo $header_name
                 
+                # add to assembled_gene_segments.csv
+                echo "~{sample_name},${TYPE},${segment},${subtype}" >> ~{sample_name}_irma_assembled_gene_segments.csv
+
                 # this if statement won't work if the PB1 and PB2 are mixed types
                 # one will be overwritten in the associative array
                 # but also the files would be overwritten in the ammended fasta
@@ -93,10 +96,14 @@ task perform_assembly_irma {
 
                 # grab segment number
                 BFN=$(basename ${file%.*})
-                segment_number==$(echo $BFN | grep -o '[^_]*$')
+                segment_number=$(echo $BFN | grep -o '[^_]*$')
 
                 # use associative array to get the formatted name
-                header_name=$(echo $formatted_name_dict[$segment_number])
+                header_name=${formatted_name_dict[$segment_number]}
+                echo "DEBUG: checking header name pulled form the formatted_name_dict"
+                echo ${formatted_name_dict[$segment_number]}
+                echo $segment_number
+                echo $header
 
                 # replace header
                 sed -i "s/>.*/>${header_name}/" ${file}
