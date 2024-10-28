@@ -215,93 +215,98 @@ workflow influenza_assembly {
         #         fasta_array = ivar_fasta_array,
         #         sample_name = sample_name
         # }
+
         
-
-        # create array of structs
-        Array[VersionInfo] version_array = select_all([
-            fastqc_raw.fastqc_version_info,
-            seqyclean.seqyclean_version_info,
-            irma.IRMA_version_info,
-            select_first(bam_stats.samtools_version_info),
-            # select_first(ivar_consensus.ivar_version_info),
-            # select_first(ivar_consensus.samtools_version_info),
-            select_all(nextclade.nextclade_version_info)[0]
-        ])
-        
-
-        # capture version
-        call capture_version.capture_workflow_version as capture_workflow_version{
-            input:
-        }
-
-        call capture_version.capture_task_version as capture_task_version {
-            input:
-                version_array = version_array,
-                workflow_name = "influenza_assembly",
-                workflow_version = capture_workflow_version.workflow_version,
-                project_name = project_name,
-                sample_name = sample_name,
-                analysis_date = capture_workflow_version.analysis_date,
-                capture_version_py = capture_version_py
-        }
-        
-        
-        # 6 - Transfer some intermediate files and all final files to gcp bucket
-        call transfer.transfer_assembly_wdl as transfer_assembly_wdl {
-            input:
-                workflow_version = capture_workflow_version.workflow_version,
-                version_capture_file = capture_task_version.version_capture_file,
-                sample_name = sample_name, 
-                bucket_path = out_bucket_path,
-
-                # preprocess and preprocesss qc metrics files
-                fastqc1_html_raw = fastqc_raw.fastqc1_html,
-                fastqc1_zip_raw = fastqc_raw.fastqc1_zip,
-                fastqc2_html_raw = fastqc_raw.fastqc2_html,
-                fastqc2_zip_raw = fastqc_raw.fastqc2_zip,
-
-                seqyclean_summary = seqyclean.seqyclean_summary,
-
-                fastqc1_html_cleaned = fastqc_cleaned.fastqc1_html,
-                fastqc1_zip_cleaned = fastqc_cleaned.fastqc1_zip,
-                fastqc2_html_cleaned = fastqc_cleaned.fastqc2_html,
-                fastqc2_zip_cleaned = fastqc_cleaned.fastqc2_zip,
-
-                preprocess_qc_metrics = concat_preprocess_qc_metrics.preprocess_qc_metrics,
-
-                # irma
-                irma_read_counts = irma.irma_read_counts,
-                irma_run_info = irma.irma_run_info,
-                irma_nr_counts = irma.irma_nr_counts,
-                irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv,
-                irma_multifasta = irma.irma_multifasta,
-                irma_fasta_array = irma_fasta_array,
-                irma_bam_array = irma_bam_array,
-                irma_vcf_array = irma_vcf_array,
-
-                # ivar
-                # ivar_fasta_array = ivar_fasta_array,
-                # ivar_multifasta = make_ivar_multifasta.multifasta,
-                # ivar_parameters = ivar_parameters_file,
-
-
-                # from samtools - sorted bams
-                sorted_bam_array = sorted_bam_array,
-                sorted_bai_array = sorted_bai_array,
-                sam_coverage_array = sam_coverage_array,
-                sam_depth_array = sam_depth_array,
-                assembly_qc_metrics = concat_assembly_qc_metrics.assembly_qc_metrics_summary,
-
-                # nextclade
-                nextclade_json_array  = nextclade_json_array,
-                nextclade_tsv_array  = nextclade_tsv_array,
-                nextclade_HA_translation_fasta  = nextclade_HA_translation_fasta,
-                nextclade_HA1_translation_fasta  = nextclade_HA1_translation_fasta ,
-                nextclade_HA2_translation_fasta  = nextclade_HA2_translation_fasta ,
-                nextclade_SigPep_translation_fasta  = nextclade_SigPep_translation_fasta,
-                nextclade_NA_translation_fasta = nextclade_NA_translation_fasta
-        }
     }
+    # exit if irma successful loop
+        
+    # do version capture and transfer for all samples regardless if passed irma
+
+    # create array of structs
+    Array[VersionInfo] version_array = select_all([
+        fastqc_raw.fastqc_version_info,
+        seqyclean.seqyclean_version_info,
+        irma.IRMA_version_info,
+        select_first(bam_stats.samtools_version_info),
+        # select_first(ivar_consensus.ivar_version_info),
+        # select_first(ivar_consensus.samtools_version_info),
+        select_all(nextclade.nextclade_version_info)[0]
+    ])
+    
+
+    # capture version
+    call capture_version.capture_workflow_version as capture_workflow_version{
+        input:
+    }
+
+    call capture_version.capture_task_version as capture_task_version {
+        input:
+            version_array = version_array,
+            workflow_name = "influenza_assembly",
+            workflow_version = capture_workflow_version.workflow_version,
+            project_name = project_name,
+            sample_name = sample_name,
+            analysis_date = capture_workflow_version.analysis_date,
+            capture_version_py = capture_version_py
+    }
+        
+
+    # 6 - Transfer some intermediate files and all final files to gcp bucket
+    call transfer.transfer_assembly_wdl as transfer_assembly_wdl {
+        input:
+            workflow_version = capture_workflow_version.workflow_version,
+            version_capture_file = capture_task_version.version_capture_file,
+            sample_name = sample_name, 
+            bucket_path = out_bucket_path,
+
+            # preprocess and preprocesss qc metrics files
+            fastqc1_html_raw = fastqc_raw.fastqc1_html,
+            fastqc1_zip_raw = fastqc_raw.fastqc1_zip,
+            fastqc2_html_raw = fastqc_raw.fastqc2_html,
+            fastqc2_zip_raw = fastqc_raw.fastqc2_zip,
+
+            seqyclean_summary = seqyclean.seqyclean_summary,
+
+            fastqc1_html_cleaned = fastqc_cleaned.fastqc1_html,
+            fastqc1_zip_cleaned = fastqc_cleaned.fastqc1_zip,
+            fastqc2_html_cleaned = fastqc_cleaned.fastqc2_html,
+            fastqc2_zip_cleaned = fastqc_cleaned.fastqc2_zip,
+
+            preprocess_qc_metrics = concat_preprocess_qc_metrics.preprocess_qc_metrics,
+
+            # irma
+            irma_read_counts = irma.irma_read_counts,
+            irma_run_info = irma.irma_run_info,
+            irma_nr_counts = irma.irma_nr_counts,
+            irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv,
+            irma_multifasta = irma.irma_multifasta,
+            irma_fasta_array = irma_fasta_array,
+            irma_bam_array = irma_bam_array,
+            irma_vcf_array = irma_vcf_array,
+
+            # ivar
+            # ivar_fasta_array = ivar_fasta_array,
+            # ivar_multifasta = make_ivar_multifasta.multifasta,
+            # ivar_parameters = ivar_parameters_file,
+
+
+            # from samtools - sorted bams
+            sorted_bam_array = sorted_bam_array,
+            sorted_bai_array = sorted_bai_array,
+            sam_coverage_array = sam_coverage_array,
+            sam_depth_array = sam_depth_array,
+            assembly_qc_metrics = concat_assembly_qc_metrics.assembly_qc_metrics_summary,
+
+            # nextclade
+            nextclade_json_array  = nextclade_json_array,
+            nextclade_tsv_array  = nextclade_tsv_array,
+            nextclade_HA_translation_fasta  = nextclade_HA_translation_fasta,
+            nextclade_HA1_translation_fasta  = nextclade_HA1_translation_fasta ,
+            nextclade_HA2_translation_fasta  = nextclade_HA2_translation_fasta ,
+            nextclade_SigPep_translation_fasta  = nextclade_SigPep_translation_fasta,
+            nextclade_NA_translation_fasta = nextclade_NA_translation_fasta
+    }
+
 
     output {
         # output from preprocess
@@ -320,6 +325,9 @@ workflow influenza_assembly {
         File preprocess_qc_metrics = concat_preprocess_qc_metrics.preprocess_qc_metrics
 
         # output from irma
+        File? irma_read_counts = irma.irma_read_counts
+        File? irma_run_info = irma.irma_run_info
+        File? irm_nr_counts = irma.irma_nr_counts
         File? irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv
         File? irma_multifasta = irma.irma_multifasta
         Array[File]? irma_fasta_array_out = irma_fasta_array
@@ -328,10 +336,10 @@ workflow influenza_assembly {
 
 
         # output from irma_subtyping_results
-        File irma_typing = irma_subtyping_results.irma_typing
-        String irma_type = irma_subtyping_results.irma_type
-        String irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
-        String irma_na_subtype = irma_subtyping_results.irma_na_subtype
+        File? irma_typing = irma_subtyping_results.irma_typing
+        String? irma_type = irma_subtyping_results.irma_type
+        String? irma_ha_subtype = irma_subtyping_results.irma_ha_subtype
+        String? irma_na_subtype = irma_subtyping_results.irma_na_subtype
 
          # output from post assembly
         # Array[File?]? ivar_fasta_array_out = ivar_fasta_array
