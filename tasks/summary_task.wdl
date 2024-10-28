@@ -11,7 +11,6 @@ task results_summary {
         Array[File] irma_typing
         Array[File] assembly_qc_metrics
         Array[File] nextclade_tsv_flatten
-        String workflow_version
         String analysis_date
         File python_script
         String project_name
@@ -26,14 +25,13 @@ task results_summary {
         --irma_typing ~{write_lines(irma_typing)} \
         --assembly_qc_metrics ~{write_lines(assembly_qc_metrics)} \
         --nextclade_tsv ~{write_lines(nextclade_tsv_flatten)} \
-        --workflow_version ~{workflow_version}\
         --project_name "~{project_name}" \
         --analysis_date "~{analysis_date}" 
 
     >>>
 
     output {
-        File sequencing_results_csv = "~{project_name}_sequencing_results_~{workflow_version}.csv" 
+        File sequencing_results_csv = "~{project_name}_sequencing_results.csv" 
 
     }
 

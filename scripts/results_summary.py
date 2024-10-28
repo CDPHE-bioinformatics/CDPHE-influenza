@@ -16,7 +16,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--irma_typing")
     parser.add_argument( "--assembly_qc_metrics")
     parser.add_argument( "--nextclade_tsv")
-    parser.add_argument('--workflow_version')
+    # parser.add_argument('--workflow_version')
     parser.add_argument( "--analysis_date")
     parser.add_argument( "--project_name")
 
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     irma_typing_txt = options.irma_typing
     post_qc_metrics_txt = options.assembly_qc_metrics
     nextclade_tsv_txt = options.nextclade_tsv
-    workflow_version = options.workflow_version
+    # workflow_version = options.workflow_version
     project_name = options.project_name
     analysis_date = options.analysis_date
 
@@ -257,7 +257,7 @@ if __name__ == '__main__':
     df = df[col_order] 
     
     # outfile
-    outfile = f'{project_name}_sequencing_results_{workflow_version}.csv' 
+    outfile = f'{project_name}_sequencing_results.csv' 
     df.to_csv(outfile, index = False)
 
 

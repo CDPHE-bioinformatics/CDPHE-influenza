@@ -270,6 +270,9 @@ workflow influenza_assembly {
                 preprocess_qc_metrics = concat_preprocess_qc_metrics.preprocess_qc_metrics,
 
                 # irma
+                irma_read_counts = irma.irma_read_counts,
+                irma_run_info = irma.irma_run_info,
+                irma_nr_counts = irma.irma_nr_counts,
                 irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv,
                 irma_multifasta = irma.irma_multifasta,
                 irma_fasta_array = irma_fasta_array,

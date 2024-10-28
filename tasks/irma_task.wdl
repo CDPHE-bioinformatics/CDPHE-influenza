@@ -28,6 +28,7 @@ task perform_assembly_irma {
         # set config file
         touch irma_config.sh 
         echo 'MIN_CONS_SUPPORT="30"' >> irma_config.sh
+        echo 'MIN_LEN="70"' >> irma_config.sh
         # any base with less than 30x depth will be called an N
         # the fasta files in the amended_consensus directory will have the MIN_CONS_SUPPORT added
         # The fasta files in the amended_consensus directory will also have IUPAC for mixed based calls
@@ -153,9 +154,31 @@ task perform_assembly_irma {
             echo "~{sample_name},no IRMA assembly generated,none,none" >> ~{sample_name}_irma_assembled_gene_segments.csv
 
         fi 
+
+        # copy read_counts file: path = sample_name/tables/READ_COUNTS.txt
+        # copy run_info.tx file: path = sample_name/logs/run_info.txt
+        # copy NR counts log: pat = sample_name/logs/NR_COUNTS_log.txt
+        # rename with sample name in the file name
+        read_counts_fn='~{sample_name}/tables/READ_COUNTS.txt'
+        new_fn="${sample_name}_READ_COUNTS.txt"
+        mv ${read_counts_fn} {new_fn}
+
+        run_info_fn='~{sample_name}/logs/run_info.txt'
+        new_fn="~{sample_name}_run_info.txt"
+        mv ${run_info_fn} {new_fn}
+
+        nr_counts_fn="~{sample_name}/logs/NR_COUNTS_log.txt"
+        new_fn="~{sample_name}_NR_COUNTS_log.txt"
+        mv ${nr_counts_fn} {new_fn}
+
     >>>
 
     output {
+
+        # want some of the irma output files
+        File irma_read_counts = "~{sample_name}_READ_COUNTS.txt"
+        File irma_run_info = "~{sample_name}_run_info.txt"
+        File irma_nr_counts = "~{sample_name}_NR_COUNTS_log.txt"
 
         File irma_assembled_gene_segments_csv = "~{sample_name}_irma_assembled_gene_segments.csv"
         # Added '_multi' to file name to differentiate from segment fastas
