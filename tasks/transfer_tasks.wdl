@@ -48,13 +48,13 @@ task transfer_assembly_wdl{
         File? assembly_qc_metrics
 
         # nextclade
-        Array[File] nextclade_json_array 
-        Array[File] nextclade_tsv_array 
-        Array[File] nextclade_SigPep_translation_fasta
-        Array[File] nextclade_HA1_translation_fasta
-        Array[File] nextclade_HA2_translation_fasta
-        Array[File] nextclade_HA_translation_fasta
-        Array[File] nextclade_NA_translation_fasta
+        Array[File]? nextclade_json_array 
+        Array[File]? nextclade_tsv_array 
+        Array[File]? nextclade_SigPep_translation_fasta
+        Array[File]? nextclade_HA1_translation_fasta
+        Array[File]? nextclade_HA2_translation_fasta
+        Array[File]? nextclade_HA_translation_fasta
+        Array[File]? nextclade_NA_translation_fasta
 
         # version
         File? version_capture_file

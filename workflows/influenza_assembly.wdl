@@ -94,14 +94,14 @@ workflow influenza_assembly {
 
     # add in if irma assembly was successful
 
-    if (irma.irma_assembly_qc == "irma assembly fail") {
-        String exit_reason = "no IRMA assemlby generated"
+    # if (irma.irma_assembly_qc == "irma assembly fail") {
+    #     String exit_reason = "no IRMA assemlby generated"
         
-        call exit_wdl {
-            input:
-            exit_reason = exit_reason
-        }
-    }
+    #     call exit_wdl {
+    #         input:
+    #         exit_reason = exit_reason
+    #     }
+    # }
 
     # only allow workflow to proceed if irma assembly is pass
     if (irma.irma_assembly_qc == "irma assembly pass") {
@@ -168,6 +168,8 @@ workflow influenza_assembly {
                         sample_name = sample_name, 
                         base_name = base_name
                 }
+            # pull out nextclade version info struct here 
+            # VersionInfo nextclade_version_info select_first(nextclade.nextclade_version_info)
             }
         }
         # create arrays to better handle groups of files
@@ -187,6 +189,7 @@ workflow influenza_assembly {
         Array[File] sam_depth_array = bam_stats.sam_depth
         Array[File] sorted_bam_array = bam_stats.sorted_bam
         Array[File] sorted_bai_array = bam_stats.sorted_bai
+        # VersionInfo samtools_version_info select_first(bam_stats.samtools_version_info)
 
 
         # percent coverage - percent coverage csv
@@ -219,19 +222,18 @@ workflow influenza_assembly {
         
     }
     # exit if irma successful loop
-        
     # do version capture and transfer for all samples regardless if passed irma
-
     # create array of structs
-    Array[VersionInfo] version_array = select_all([
-        fastqc_raw.fastqc_version_info,
+    # Array[VersionInfo] my
+
+    Array[VersionInfo?] version_array = flatten([fastqc_raw.fastqc_version_info, 
         seqyclean.seqyclean_version_info,
         irma.IRMA_version_info,
-        select_first(bam_stats.samtools_version_info),
+        select_all([bam_stats.samtools_version_info, '']),
+        nextclade.nextclade_version_info])
         # select_first(ivar_consensus.ivar_version_info),
-        # select_first(ivar_consensus.samtools_version_info),
-        select_all(nextclade.nextclade_version_info)[0]
-    ])
+        # select_first(ivar_consensus.samtools_version_info),nextclade.nextclade_version_info]
+    
     
 
     # capture version
@@ -241,7 +243,7 @@ workflow influenza_assembly {
 
     call capture_version.capture_task_version as capture_task_version {
         input:
-            version_array = version_array,
+            version_array = select_all(version_array),
             workflow_name = "influenza_assembly",
             workflow_version = capture_workflow_version.workflow_version,
             project_name = project_name,
