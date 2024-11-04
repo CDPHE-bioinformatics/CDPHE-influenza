@@ -27,7 +27,12 @@ segment_list = ['HA', 'NA', 'MP', 'NP', 'NS', 'PA', 'PB1', 'PB2']
 metric_variables = ['percent_coverage', 'mean_depth', 'num_mapped_reads', 'seq_len', 'expected_len']
 # these will be determined for each segment
 
-col_headers = ['sample_name', 'total_segments','total_flu_mapped_reads', 
+# col_headers = ['sample_name', 'total_segments','total_flu_mapped_reads', 
+#                'average_per_cov', 'average_mean_depth']
+
+col_headers = ['sample_name', 'total_segments', 
+               'filtered_reads_irma', 'flu_mapped_reads_irma', # from red_counts.txt
+               'flu_mapped_reads_samtools', # from samtools outputs
                'average_per_cov', 'average_mean_depth']
 # metrics variables will be added to end of list one for each segment
 # see crate_col_headers function
@@ -39,6 +44,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--sample_name")
     parser.add_argument( "--bam_stats_csv_list")
     parser.add_argument( "--percent_coverage_csv_list")
+    parser.add_argument( "--irma_read_counts_txt")
     options = parser.parse_args(args)
     return options
 
@@ -47,7 +53,7 @@ def create_list_from_string_input(string_input):
     return list
 
 def create_col_headers(segment_list, metric_variables):
-    header_list = ['sample_name', 'complete_segments','assembled_segments', 'total_flu_mapped_reads']
+    header_list = ['sample_name', 'complete_segments','assembled_segments', 'flu_mapped_reads', 'flu_classified_reads']
     for segment in segment_list:
         for metric in metric_variables:
             header_name = "%s_%s" % (segment, metric)
@@ -62,8 +68,15 @@ if __name__ == '__main__':
     sample_name = options.sample_name
     bam_stats_files_string_input = options.bam_stats_csv_list
     percent_coverage_csv_file_string_input= options.percent_coverage_csv_list
+    read_counts_txt = options.irma_read_count_txt
 
-    
+
+    # read in READ_COUNTS.txt file
+    read_counts_df = pd.read_csv(read_counts_txt, sep = '\t')
+    filtered_reads = read_counts_df[read_counts_df.Record == '1-initial'].Reads.iloc[0]
+    flu_mapped_reads = read_counts_df[read_counts_df.Record == '3-match'].Reads.iloc[0]
+    # flu_mapped_reads also == reads mapped
+
 
     # set up the pandas dataframe
     header_list = create_col_headers(segment_list = segment_list, 
@@ -130,8 +143,11 @@ if __name__ == '__main__':
 
     # add in final columns
     df.at[0, 'assembled_segments'] = num_segs
-    df.at[0, 'total_flu_mapped_reads'] = total_mapped_reads
     df.at[0, 'complete_segments'] = complete_segments
+    df.at[0, 'filtered_reads_irma'] = filtered_reads
+    df.at[0, 'flu_mapped_reads_samtools'] = total_mapped_reads 
+    df.at[0, 'flu_mapped_reads_irma'] = flu_mapped_reads
+    
 
     df.at[0, 'average_per_cov'] = percent_coverage_total/num_segs
     df.at[0, 'average_mean_depth'] = total_mapped_reads/num_segs

@@ -8,13 +8,14 @@ import "../tasks/assembly_qc_tasks.wdl" as assembly_qc
 import "../tasks/transfer_tasks.wdl" as transfer
 import "../tasks/nextclade_tasks.wdl" as nextclade_tasks
 import "../tasks/capture_version_tasks.wdl" as capture_version
+# struct defined in capture version task
 
-# define struct
-struct VersionInfo {
-  String software
-  String docker
-  String version
-}
+# # define struct
+# struct VersionInfo {
+#   String software
+#   String docker
+#   String version
+# }
 
 # begin workflow
 workflow influenza_assembly {
@@ -210,7 +211,8 @@ workflow influenza_assembly {
                 python_script = concat_assembly_qc_metrics_py,
                 sample_name = sample_name,
                 percent_coverage_csv_array = percent_coverage_csv_array,
-                bam_stats_csv_array = bam_stats_csv_array
+                bam_stats_csv_array = bam_stats_csv_array,
+                irma_read_counts_txt = irma.irma_read_counts
         }
 
         # call assembly_qc.make_multifasta as make_ivar_multifasta{
@@ -226,10 +228,10 @@ workflow influenza_assembly {
     # create array of structs
     # Array[VersionInfo] my
 
-    Array[VersionInfo?] version_array = flatten([fastqc_raw.fastqc_version_info, 
+    Array[VersionInfo?] version_array = select_all([fastqc_raw.fastqc_version_info, 
         seqyclean.seqyclean_version_info,
         irma.IRMA_version_info,
-        select_all([bam_stats.samtools_version_info, '']),
+        bam_stats.samtools_version_info,
         nextclade.nextclade_version_info])
         # select_first(ivar_consensus.ivar_version_info),
         # select_first(ivar_consensus.samtools_version_info),nextclade.nextclade_version_info]

@@ -19,6 +19,7 @@ def getOptions(args=sys.argv[1:]):
     # parser.add_argument('--workflow_version')
     parser.add_argument( "--analysis_date")
     parser.add_argument( "--project_name")
+    # parser.add_argument( "--irma_read_counts_txt")
 
     options = parser.parse_args(args)
     return options
@@ -48,15 +49,18 @@ if __name__ == '__main__':
     # workflow_version = options.workflow_version
     project_name = options.project_name
     analysis_date = options.analysis_date
+    # read_counts_txt = options.irma_read_counts_txt
 
     sample_name_list = create_list_from_write_lines_input(write_lines_input = sample_name_txt)
     preprocess_qc_metrics_list = create_list_from_write_lines_input(write_lines_input = preprocess_qc_metrics_txt)
     irma_typing_list = create_list_from_write_lines_input(write_lines_input = irma_typing_txt)
     post_qc_metrics_list= create_list_from_write_lines_input(write_lines_input = post_qc_metrics_txt)
     nextclade_tsv_list = create_list_from_write_lines_input(write_lines_input = nextclade_tsv_txt)
-    
-    print(nextclade_tsv_txt)
-    print(nextclade_tsv_list)
+    # read_counts_txt_list = create_list_from_write_lines_input(write_lines_input = read_counts_txt)
+
+
+    # print(nextclade_tsv_txt)
+    # print(nextclade_tsv_list)
    
 
     # create summary metrics file:
@@ -76,7 +80,12 @@ if __name__ == '__main__':
         'HA_clade', 'HA_short-clade', 'HA_subclade',
         'NA_clade', 
         'complete_segments', 'assembled_segments', 
-        'total_flu_mapped_reads', 'percent_flu_mapped_reads','total_reads_cleaned',
+        'flu_mapped_reads_samtools', # original way to count up mapped reads
+        'flu_mapped_reads_irma', # from read_counts.txt
+        # 'total_flu_mapped_reads', 
+        'percent_flu_mapped_reads','reads_cleaned', # original calc
+        'percent_flu_mapped_reads_irma', 'filtered_reads_irma', # from read_counts.txt
+
         'HA_percent_coverage','HA_mean_depth', 'HA_num_mapped_reads', 
         'NA_percent_coverage', 'NA_mean_depth', 'NA_num_mapped_reads', 
         'MP_percent_coverage', 'MP_mean_depth', 'MP_num_mapped_reads',
@@ -85,9 +94,9 @@ if __name__ == '__main__':
         'PA_percent_coverage', 'PA_mean_depth', 'PA_num_mapped_reads', 
         'PB1_percent_coverage', 'PB1_mean_depth','PB1_num_mapped_reads', 
         'PB2_percent_coverage', 'PB2_mean_depth', 'PB2_num_mapped_reads', 
-        'total_read_diff',  'total_reads_R1_raw', 'total_reads_R2_raw', 'read_pairs_raw', 'total_reads_raw', 
+        'read_diff',  'reads_R1_raw', 'reads_R2_raw', 'read_pairs_raw', 'reads_raw', 
         'read_length_R1_raw', 'read_length_R2_raw',
-        'total_reads_R1_cleaned', 'total_reads_R2_cleaned', 'read_pairs_cleaned', 
+        'reads_R1_cleaned', 'reads_R2_cleaned', 'read_pairs_cleaned', 
         'read_length_R1_cleaned', 'read_length_R2_cleaned',
         'HA_totalSubstitutions', 'HA_totalDeletions', 'HA_totalInsertions', 'HA_totalFrameShifts',  
         'HA_totalAminoacidSubstitutions', 'HA_totalAminoacidDeletions', 'HA_totalAminoacidInsertions', 
@@ -243,9 +252,18 @@ if __name__ == '__main__':
 
     # add some columns and do a calcuation
     df["analysis_date"] = analysis_date
-    df['percent_flu_mapped_reads'] = round((df.total_flu_mapped_reads / df.total_reads_cleaned) * 100 , 2)
+    df['percent_flu_mapped_reads_samtools'] = round((df.flu_mapped_reads_samtools / df.reads_cleaned) * 100 , 2)
     # TODO the percent flu mapped reads we are seeing is much lower than CDC's. 
     # I think they are somehow dividing by the total flu "classified" reads
+    df['percent_flu_mapped_reads_irma'] = round(df.flu_mapped_reads_irma / df.filtered_reads_irma) * 100 , 2)
+
+# 'flu_mapped_reads_samtools', # original way to count up mapped reads
+        # 'flu_mapped_reads_irma', # from read_counts.txt
+        # 'total_flu_mapped_reads', 
+        # 'percent_flu_mapped_reads','reads_cleaned', # original calc
+        # 'percent_flu_mapped_reads_irma', 'filtered_reads_irma', # from read_counts.txt
+
+
     df['project_name'] = project_name
 
     # check columns - if column doesn't exist then add column

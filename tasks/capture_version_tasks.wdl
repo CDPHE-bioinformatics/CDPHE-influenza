@@ -6,6 +6,7 @@ struct VersionInfo {
   String version
 }
 
+
 # workaround cromwell bug with read_json of Array
 # https://github.com/openwdl/wdl/issues/409
 struct VersionInfoArray {

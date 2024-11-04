@@ -1,11 +1,12 @@
 version 1.0
 
 # define structure
-struct VersionInfo {
-  String software
-  String docker
-  String version
-}
+# struct VersionInfo {
+#   String software
+#   String docker
+#   String version
+# }
+import "../tasks/capture_version_tasks.wdl" as capture_version
 
 task calc_bam_stats_samtools {
     meta {
@@ -139,6 +140,7 @@ task concat_assembly_qc_metrics{
     input{
         File python_script
         String sample_name
+        File irma_read_counts_txt
         Array[File] bam_stats_csv_array
         Array[File] percent_coverage_csv_array
         
@@ -147,6 +149,7 @@ task concat_assembly_qc_metrics{
     command <<<
         python ~{python_script} \
             --sample_name "~{sample_name}" \
+            --irma_read_counts_txt "~{irma_read_counts_txt}"
             --bam_stats_csv_list "~{sep= " " bam_stats_csv_array}" \
             --percent_coverage_csv_list "~{sep = " " percent_coverage_csv_array}"
     >>>
