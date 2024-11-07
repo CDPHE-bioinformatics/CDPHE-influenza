@@ -28,6 +28,7 @@ task calc_bam_stats_samtools {
 
     command <<<
 
+        echo "DEBUG:"
         echo "base_name"
         echo ~{base_name}
         echo "segment_name"
@@ -55,7 +56,7 @@ task calc_bam_stats_samtools {
 
 
         # use sorted bam file to get number mapped reads and mean depth
-        samtools view -c -F 260 ~{sorted_bam_fn} > num_mapped_reads.txt
+        samtools view -c -F 260 ~{sorted_bam_fn} > num_mapped_reads.txt # this seems to be paired reaads mapped
         samtools coverage ~{sorted_bam_fn} | tail -1 | cut -f 7 > mean_depth.txt
 
         # create output file
@@ -65,7 +66,7 @@ task calc_bam_stats_samtools {
         # so it was just easier to loop through the data with a description column and segment name column
         
         echo "sample_name,segment_name,description,value" > bam_stats.csv
-        echo "~{sample_name},~{segment_name},num_mapped_reads,$(cat num_mapped_reads.txt)" >> bam_stats.csv
+        echo "~{sample_name},~{segment_name},mapped_reads,$(cat num_mapped_reads.txt)" >> bam_stats.csv
         echo "~{sample_name},~{segment_name},mean_depth,$(cat mean_depth.txt)" >> bam_stats.csv
 
         samtools --version | awk '/samtools/ {print $2}' | tee VERSION
@@ -169,31 +170,31 @@ task concat_assembly_qc_metrics{
 }
 
 
-task make_multifasta {
-    meta {
-        description: "create a mulitfasta of the consensus assemblies"
-    }
+# task make_multifasta {
+#     meta {
+#         description: "create a mulitfasta of the consensus assemblies"
+#     }
 
-    input {
-        Array[File] fasta_array
-        String sample_name
-    }
+#     input {
+#         Array[File] fasta_array
+#         String sample_name
+#     }
 
-    command <<<
-        # Is this different than what IRMA outputs?
-        # Concatenate all the FASTA files into a single file
-        cat ~{sep=' ' fasta_array} > ~{sample_name}_ivar.fasta
-    >>>
+#     command <<<
+#         # Is this different than what IRMA outputs?
+#         # Concatenate all the FASTA files into a single file
+#         cat ~{sep=' ' fasta_array} > ~{sample_name}_ivar.fasta
+#     >>>
 
-    output {
-        File multifasta = "~{sample_name}_ivar.fasta"
+#     output {
+#         File multifasta = "~{sample_name}_ivar.fasta"
 
-    }
-        runtime {
-        docker: "theiagen/utility:1.0"
-        memory: "16 GiB"
-        cpu: 4
-        disks: "local-disk 50 SSD"
-        preemptible: 0
-    }
-}
+#     }
+#         runtime {
+#         docker: "theiagen/utility:1.0"
+#         memory: "16 GiB"
+#         cpu: 4
+#         disks: "local-disk 50 SSD"
+#         preemptible: 0
+#     }
+# }
