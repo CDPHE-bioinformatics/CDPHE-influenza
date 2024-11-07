@@ -83,7 +83,7 @@ if __name__ == '__main__':
         'flu_mapped_reads_samtools', # original way to count up mapped reads
         'flu_mapped_reads_irma', # from read_counts.txt
         # 'total_flu_mapped_reads', 
-        'percent_flu_mapped_reads','reads_cleaned', # original calc
+        'percent_flu_mapped_reads_samtools','reads_cleaned', # original calc
         'percent_flu_mapped_reads_irma', 'filtered_reads_irma', # from read_counts.txt
 
         'HA_percent_coverage','HA_mean_depth', 'HA_num_mapped_reads', 
@@ -255,7 +255,7 @@ if __name__ == '__main__':
     df['percent_flu_mapped_reads_samtools'] = round((df.flu_mapped_reads_samtools / df.reads_cleaned) * 100 , 2)
     # TODO the percent flu mapped reads we are seeing is much lower than CDC's. 
     # I think they are somehow dividing by the total flu "classified" reads
-    df['percent_flu_mapped_reads_irma'] = round(df.flu_mapped_reads_irma / df.filtered_reads_irma) * 100 , 2)
+    df['percent_flu_mapped_reads_irma'] = round((df.flu_mapped_reads_irma / df.filtered_reads_irma) * 100 , 2)
 
 # 'flu_mapped_reads_samtools', # original way to count up mapped reads
         # 'flu_mapped_reads_irma', # from read_counts.txt

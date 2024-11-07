@@ -44,7 +44,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--sample_name")
     parser.add_argument( "--bam_stats_csv_list")
     parser.add_argument( "--percent_coverage_csv_list")
-    parser.add_argument( "--irma_read_counts_txt")
+    parser.add_argument( "--irma_read_counts")
     options = parser.parse_args(args)
     return options
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     sample_name = options.sample_name
     bam_stats_files_string_input = options.bam_stats_csv_list
     percent_coverage_csv_file_string_input= options.percent_coverage_csv_list
-    read_counts_txt = options.irma_read_count_txt
+    read_counts_txt = options.irma_read_counts
 
 
     # read in READ_COUNTS.txt file

@@ -38,19 +38,19 @@ workflow influenza_assembly_summary{
             assembly_qc_metrics = assembly_qc_metrics,
             nextclade_tsv_flatten = nextclade_tsv_flatten,
             analysis_date = capture_workflow_version.analysis_date,
-            workflow_version = capture_workflow_version.workflow_version,
+            # workflow_version = capture_workflow_version.workflow_version,
             python_script = results_summary_py,
             project_name = project_name
         
     }
 
-        call summary.capture_version_summary as capture_version_summary {
-        input:
-            workflow_version = capture_workflow_version.workflow_version,
-            workflow_name = "influenza_assembly_summary",
-            analysis_date = capture_workflow_version.analysis_date,
-            python_script = capture_version_summary_py,
-            project_name = project_name
+    call summary.capture_version_summary as capture_version_summary {
+    input:
+        workflow_version = capture_workflow_version.workflow_version,
+        workflow_name = "influenza_assembly_summary",
+        analysis_date = capture_workflow_version.analysis_date,
+        python_script = capture_version_summary_py,
+        project_name = project_name
         
     }
 

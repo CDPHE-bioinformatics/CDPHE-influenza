@@ -11,6 +11,7 @@ task results_summary {
         Array[File] irma_typing
         Array[File] assembly_qc_metrics
         Array[File] nextclade_tsv_flatten
+        # String workflow_version
         String analysis_date
         File python_script
         String project_name

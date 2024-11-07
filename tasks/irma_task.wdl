@@ -44,6 +44,7 @@ task perform_assembly_irma {
         # declare associative arrays for segment numbers
         # declare formatted name assoicate array which will be [seg_num] = [A_HA-H1] or [seg_num] = [B_MP]
         # and will be filled in during the loop
+        # formatted_name_dict: [segment number] = header name
         declare -A FluA=(["PB2"]="1" ["PB1"]="2" ["PA"]="3" ["HA"]="4" ["NP"]="5" ["NA"]="6" ["MP"]="7" ["NS"]="8" )
         declare -A FluB=(["PB1"]="1" ["PB2"]="2" ["PA"]="3" ["HA"]="4" ["NP"]="5" ["NA"]="6" ["MP"]="7" ["NS"]="8" )      
         declare -A formatted_name_dict
@@ -51,6 +52,8 @@ task perform_assembly_irma {
         # IUPAC bases to replace in amended fasta files
         IUPAC=( "B" "D" "H" "K" "M" "N" "R" "S" "V" "W" "Y" )
 
+        echo ""
+        echo "IRMA DONE"
         # determine if assembly was successful
         if compgen -G "~{sample_name}/*.fasta"; then
             echo "irma assembly pass" | tee irma_qc.txt
@@ -58,7 +61,10 @@ task perform_assembly_irma {
             
             # first want ot make my assembled dataframe
             # this is old, with exception that I'm now tracking subtype and TYPE
+            echo -e '\n\n\n'
+            echo "LOOPING THROUGH FASTA FILES"
             for file in ~{sample_name}/*.fasta; do
+                echo -e '\n'
                 echo $file
                 full=$(basename ${file%.*} | cut -d "." -f 1) # A_HA_H1 or A_NP
                 TYPE=$(echo ${full} | cut -d "_" -f 1) # A
@@ -68,6 +74,7 @@ task perform_assembly_irma {
                 subtype=$(echo ${full} | cut -d "_" -f 3) # H1 or none
                 
                 header_name=$(echo ~{sample_name}_${TYPE}_${segment_subtype})
+                echo 'header name:'
                 echo $header_name
                 
                 # add to assembled_gene_segments.csv
@@ -79,21 +86,25 @@ task perform_assembly_irma {
                 # this should be so rare; but wanted to make a note in the failed logic
                 if [ $TYPE == "A" ]; then
                     segment_num=${FluA[$segment]}
-                    echo $segment_num
                     formatted_name_dict+=( [$segment_num]=$header_name )
-                    echo ${formatted_name_dict[$segment_num]}
+                    echo "segment number: $segment_num"
+                    echo "fasta header - in formatted_name_dict: ${formatted_name_dict[$segment_num]}"
                 elif [ $TYPE == "B" ]; then
-                    echo $segment_num
                     segment_num=${FluB[$segment]}
                     formatted_name+=( [$segment_num]=$header_name )
-                    echo ${formatted_name_dict[$segment_num]}
+                    echo "segment number: $segment_num"
+                    echo "fasta header - in formatted_name_dict: ${formatted_name_dict[$segment_num]}"
+            
                 fi
 
             done
 
             # use amended fastas because they ahve the 30x cut off
             # this is new
+            echo -e '\n\n\n'
+            echo "LOOPING THROUGH AMENDED CONSENSUS FASTAS"
             for file in ~{sample_name}/amended_consensus/*.fa; do
+                echo -e '\n'
                 echo ${file}
 
                 # grab segment number
@@ -103,39 +114,40 @@ task perform_assembly_irma {
                 # use associative array to get the formatted name
                 header_name=${formatted_name_dict[$segment_number]}
                 echo "DEBUG: checking header name pulled form the formatted_name_dict"
-                echo ${formatted_name_dict[$segment_number]}
-                echo $segment_number
-                echo $header
+                echo "formatted_name_dict: ${formatted_name_dict[$segment_number]}"
+                echo "segment number: $segment_number"
+                echo "header: $header_name"
 
                 # replace header
                 sed -i "s/>.*/>${header_name}/" ${file}
 
                 # replace IUPAC bases with Ns
-                for base in ${IUPAC[@]}; do
-                    sed -i "/^>/! s/${base}/N/g" $file
-                    echo ''
-                done
+                # for base in ${IUPAC[@]}; do
+                #     sed -i "/^>/! s/${base}/N/g" $file
+                # done
 
                 # remove "-" since these represent gaps relative to refernece
                 # replace periods with Ns
-                sed -i "/^>/! s/-//g" $file
-                sed -i "/^>/! s/\./N/g" $file
+                # sed -i "/^>/! s/-//g" $file
+                # sed -i "/^>/! s/\./N/g" $file
 
                 # rename file
                 new_name=$(echo ${header_name}_irma.fasta)
                 mv "${file}" "${new_name}"
 
                 echo "DEBUG: print contents of final fasta file"
-                echo $new_name
+                echo "fasta file name: $new_name"
                 cat $new_name
 
                 # add file contents to concatenated fasta file
                 cat ${new_name} >> ~{sample_name}_irma_multi.fasta
 
             done
-
+            echo -e '\n\n\n'
             # rename bam and vcf files
+            echo "RENAMING BAM AND VCF FILES"
             for file in ~{sample_name}/*{.vcf,.bam}; do
+                echo $file
                 base_name=$(basename ${file%.*}) # to grab the extenstion
 
                 full=$(basename ${file} | cut -d "." -f 1) # A_HA_H1 or A_NP
@@ -155,22 +167,47 @@ task perform_assembly_irma {
             echo "~{sample_name},no IRMA assembly generated,none,none" >> ~{sample_name}_irma_assembled_gene_segments.csv
 
         fi 
+        echo -e '\n\n\n'
 
+        echo "RENAMING TABLES AND LOGS"
         # copy read_counts file: path = sample_name/tables/READ_COUNTS.txt
         # copy run_info.tx file: path = sample_name/logs/run_info.txt
         # copy NR counts log: pat = sample_name/logs/NR_COUNTS_log.txt
         # rename with sample name in the file name
         read_counts_fn='~{sample_name}/tables/READ_COUNTS.txt'
-        new_fn="${sample_name}_READ_COUNTS.txt"
-        mv ${read_counts_fn} {new_fn}
+        echo "read_counts.txt:"
+        cat $read_counts_fn
+        echo ""
+        new_fn="~{sample_name}_READ_COUNTS.txt"
+        mv ${read_counts_fn} ${new_fn}
+
+        echo "read_counts.txt moved:"
+        cat $new_fn
+        echo ""
 
         run_info_fn='~{sample_name}/logs/run_info.txt'
+        echo "run_info.txt: "
+        cat $run_info_fn
+        echo ""
         new_fn="~{sample_name}_run_info.txt"
-        mv ${run_info_fn} {new_fn}
+        mv ${run_info_fn} ${new_fn}
+
+        echo "run_info.txt moved: "
+        cat $new_fn
+        echo ""
 
         nr_counts_fn="~{sample_name}/logs/NR_COUNTS_log.txt"
+        echo "nr_counts_log.txt: "
+        cat $nr_counts_fn
+        echo ""
         new_fn="~{sample_name}_NR_COUNTS_log.txt"
-        mv ${nr_counts_fn} {new_fn}
+        mv ${nr_counts_fn} ${new_fn}
+
+        echo "nr_counts_log.txt moved: "
+        cat $new_fn
+        echo ""
+
+        echo -e '\n\n\n'
 
     >>>
 

@@ -140,7 +140,7 @@ task concat_assembly_qc_metrics{
     input{
         File python_script
         String sample_name
-        File irma_read_counts_txt
+        File irma_read_counts
         Array[File] bam_stats_csv_array
         Array[File] percent_coverage_csv_array
         
@@ -149,7 +149,7 @@ task concat_assembly_qc_metrics{
     command <<<
         python ~{python_script} \
             --sample_name "~{sample_name}" \
-            --irma_read_counts_txt "~{irma_read_counts_txt}"
+            --irma_read_counts "~{irma_read_counts}" \
             --bam_stats_csv_list "~{sep= " " bam_stats_csv_array}" \
             --percent_coverage_csv_list "~{sep = " " percent_coverage_csv_array}"
     >>>
