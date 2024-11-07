@@ -80,23 +80,21 @@ if __name__ == '__main__':
         'HA_clade', 'HA_short-clade', 'HA_subclade',
         'NA_clade', 
         'complete_segments', 'assembled_segments', 
-        'flu_mapped_reads_samtools', # original way to count up mapped reads
-        'flu_mapped_reads_irma', # from read_counts.txt
-        # 'total_flu_mapped_reads', 
-        'percent_flu_mapped_reads_samtools','reads_cleaned', # original calc
-        'percent_flu_mapped_reads_irma', 'filtered_reads_irma', # from read_counts.txt
-
-        'HA_percent_coverage','HA_mean_depth', 'HA_num_mapped_reads', 
-        'NA_percent_coverage', 'NA_mean_depth', 'NA_num_mapped_reads', 
-        'MP_percent_coverage', 'MP_mean_depth', 'MP_num_mapped_reads',
-        'NP_percent_coverage', 'NP_mean_depth','NP_num_mapped_reads',  
-        'NS_percent_coverage','NS_mean_depth', 'NS_num_mapped_reads', 
-        'PA_percent_coverage', 'PA_mean_depth', 'PA_num_mapped_reads', 
-        'PB1_percent_coverage', 'PB1_mean_depth','PB1_num_mapped_reads', 
-        'PB2_percent_coverage', 'PB2_mean_depth', 'PB2_num_mapped_reads', 
+        'filtered_reads' # comes from the READ_COUNTS.txt '3-match
+        'mapped_reads', # # comes from the READ_COUNTS.txt '1-initial'
+        'alt_mapped_reads' # comes from the READ_COUNTS.txt '3-altmatch'
+        'percent_mapped_reads', # mapped_reads/filtered_reads x 100
+        'HA_percent_coverage','HA_mean_depth', 'HA_mapped_reads', 
+        'NA_percent_coverage', 'NA_mean_depth', 'NA_mapped_reads', 
+        'MP_percent_coverage', 'MP_mean_depth', 'MP_mapped_reads',
+        'NP_percent_coverage', 'NP_mean_depth','NP_mapped_reads',  
+        'NS_percent_coverage','NS_mean_depth', 'NS_mapped_reads', 
+        'PA_percent_coverage', 'PA_mean_depth', 'PA_mapped_reads', 
+        'PB1_percent_coverage', 'PB1_mean_depth','PB1_mapped_reads', 
+        'PB2_percent_coverage', 'PB2_mean_depth', 'PB2_mapped_reads', 
         'read_diff',  'reads_R1_raw', 'reads_R2_raw', 'read_pairs_raw', 'reads_raw', 
         'read_length_R1_raw', 'read_length_R2_raw',
-        'reads_R1_cleaned', 'reads_R2_cleaned', 'read_pairs_cleaned', 
+        'reads_R1_cleaned', 'reads_R2_cleaned', 'read_pairs_cleaned', 'reads_cleaned',
         'read_length_R1_cleaned', 'read_length_R2_cleaned',
         'HA_totalSubstitutions', 'HA_totalDeletions', 'HA_totalInsertions', 'HA_totalFrameShifts',  
         'HA_totalAminoacidSubstitutions', 'HA_totalAminoacidDeletions', 'HA_totalAminoacidInsertions', 
@@ -252,19 +250,9 @@ if __name__ == '__main__':
 
     # add some columns and do a calcuation
     df["analysis_date"] = analysis_date
-    df['percent_flu_mapped_reads_samtools'] = round((df.flu_mapped_reads_samtools / df.reads_cleaned) * 100 , 2)
-    # TODO the percent flu mapped reads we are seeing is much lower than CDC's. 
-    # I think they are somehow dividing by the total flu "classified" reads
-    df['percent_flu_mapped_reads_irma'] = round((df.flu_mapped_reads_irma / df.filtered_reads_irma) * 100 , 2)
-
-# 'flu_mapped_reads_samtools', # original way to count up mapped reads
-        # 'flu_mapped_reads_irma', # from read_counts.txt
-        # 'total_flu_mapped_reads', 
-        # 'percent_flu_mapped_reads','reads_cleaned', # original calc
-        # 'percent_flu_mapped_reads_irma', 'filtered_reads_irma', # from read_counts.txt
-
-
     df['project_name'] = project_name
+    df['percent_mapped_reads'] = round((df.flu_mapped_reads_irma / df.filtered_reads_irma) * 100 , 2)
+
 
     # check columns - if column doesn't exist then add column
     # for if assembly failed for all samples assemlby qc metrics or nextclade
