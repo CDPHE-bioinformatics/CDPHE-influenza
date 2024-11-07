@@ -10,13 +10,6 @@ import "../tasks/nextclade_tasks.wdl" as nextclade_tasks
 import "../tasks/capture_version_tasks.wdl" as capture_version
 # struct defined in capture version task
 
-# # define struct
-# struct VersionInfo {
-#   String software
-#   String docker
-#   String version
-# }
-
 # begin workflow
 workflow influenza_assembly {
 
@@ -36,7 +29,7 @@ workflow influenza_assembly {
         File capture_version_py
     }
 
-    # 1 - Preprocess QC raw fastq files
+    # Preprocess QC raw fastq files
     call fastq_preprocess.assess_quality_fastqc as fastqc_raw {
         input:
             sample_name = sample_name,
@@ -78,7 +71,7 @@ workflow influenza_assembly {
             read_pairs_cleaned = fastqc_cleaned.read_pairs
     }
 
-    # 2- run irma
+    # run irma
     call irma_task.perform_assembly_irma as irma {
         input:
             sample_name = sample_name,
@@ -93,21 +86,11 @@ workflow influenza_assembly {
             python_script = irma_subtyping_results_py
     }
 
-    # add in if irma assembly was successful
+    ### IF IRMA ASSEMBLY SUCCESSFUL RUN POST ASSEMBLY QC 
 
-    # if (irma.irma_assembly_qc == "irma assembly fail") {
-    #     String exit_reason = "no IRMA assemlby generated"
-        
-    #     call exit_wdl {
-    #         input:
-    #         exit_reason = exit_reason
-    #     }
-    # }
-
-    # only allow workflow to proceed if irma assembly is pass
     if (irma.irma_assembly_qc == "irma assembly pass") {
-    # Scatter each segment assembled, run samtools, ivar consensus, calculate percent_coverage 
-    # if HA or NA run nextclade
+    # Scatter over each segment assembled and run samtools, 
+    # calculate percent_coverage, and if HA or NA run nextclade
 
         Array[Int] indexes = range(length(irma.assemblies))
         scatter (idx in indexes) {
@@ -122,15 +105,6 @@ workflow influenza_assembly {
                     fasta = fasta
             }
 
-            
-            # # grab subtyping info
-            # if (grab_segment_info.segment == 'HA') {
-            #     String? HA_subtype = grab_segment_info.subtype
-            # }
-            # if (grab_segment_info.segment == 'NA') {
-            #     String? NA_subtype = grab_segment_info.subytpe
-            # }
-
             call assembly_qc.calc_bam_stats_samtools as bam_stats {
                 input:
                     sample_name = sample_name,
@@ -138,13 +112,6 @@ workflow influenza_assembly {
                     segment_name = grab_segment_info.segment,
                     base_name = base_name
             }
-
-            # call ivar.call_consensus_ivar as ivar_consensus {
-            #     input:
-            #         bam_file = bam,
-            #         sample_name = sample_name,
-            #         base_name = base_name
-            # }
 
             call assembly_qc.calc_percent_coverage as calc_percent_coverage{
                 input:
@@ -169,20 +136,14 @@ workflow influenza_assembly {
                         sample_name = sample_name, 
                         base_name = base_name
                 }
-            # pull out nextclade version info struct here 
-            # VersionInfo nextclade_version_info select_first(nextclade.nextclade_version_info)
             }
         }
-        # create arrays to better handle groups of files
 
+        # create arrays to better handle groups of files
         # IRMA - fasta, bam, vcf
         Array[File] irma_fasta_array = irma.assemblies
         Array[File] irma_bam_array = irma.alignments
         Array[File] irma_vcf_array = irma.vcfs
-
-        # # IVAR - fasta
-        # Array[File] ivar_fasta_array = ivar_consensus.ivar_consensus_fasta
-        # File ivar_parameters_file = select_first(ivar_consensus.ivar_parameters)
 
         # Samtools - mapped reads csv, sorted bam
         Array[File] bam_stats_csv_array = bam_stats.bam_stats_csv
@@ -190,9 +151,7 @@ workflow influenza_assembly {
         Array[File] sam_depth_array = bam_stats.sam_depth
         Array[File] sorted_bam_array = bam_stats.sorted_bam
         Array[File] sorted_bai_array = bam_stats.sorted_bai
-        # VersionInfo samtools_version_info select_first(bam_stats.samtools_version_info)
-
-
+        
         # percent coverage - percent coverage csv
         Array[File] percent_coverage_csv_array = calc_percent_coverage.percent_coverage_csv
 
@@ -204,7 +163,9 @@ workflow influenza_assembly {
         Array[File] nextclade_SigPep_translation_fasta = select_all(nextclade.nextclade_SigPep_translation_fasta)
         Array[File] nextclade_HA_translation_fasta = select_all(nextclade.nextclade_HA_translation_fasta)
         Array[File] nextclade_NA_translation_fasta = select_all(nextclade.nextclade_NA_translation_fasta)
-
+        VersionInfo? nextclade_version_info_struct = select_all(nextclade.nextclade_version_info)[0]
+        # have create an optional nextclade_version_info_struct for createing array of versionInfo structs
+        
         # concantenate post assembly qc metrics (coverage, depth) into a single file
         call assembly_qc.concat_assembly_qc_metrics as concat_assembly_qc_metrics{
             input:
@@ -215,36 +176,23 @@ workflow influenza_assembly {
                 irma_read_counts = irma.irma_read_counts
         }
 
-        # call assembly_qc.make_multifasta as make_ivar_multifasta{
-        #     input:
-        #         fasta_array = ivar_fasta_array,
-        #         sample_name = sample_name
-        # }
-
-        
     }
-    # exit if irma successful loop
-    # do version capture and transfer for all samples regardless if passed irma
+    
+    # EXIT IF ASSEMBLY SUCCESSFUL STATEMENT
+
+    # DO VERSION CAPTURE AND TRANSFER FOR ALL SAMPLES
     # create array of structs
-    # Array[VersionInfo] my
-
     Array[VersionInfo] version_array = flatten(select_all([
-            [
-                fastqc_raw.fastqc_version_info,
-                seqyclean.seqyclean_version_info,
-                irma.IRMA_version_info,
-            ],
-            bam_stats.samtools_version_info,
-            select_all(select_first([
-                nextclade.nextclade_version_info,
-            ])),
-        ]))
+        [
+            fastqc_raw.fastqc_version_info,
+            seqyclean.seqyclean_version_info,
+            irma.IRMA_version_info,
+        ],
+        bam_stats.samtools_version_info,
+        select_all([nextclade_version_info_struct])
 
-        # select_first(ivar_consensus.ivar_version_info),
-        # select_first(ivar_consensus.samtools_version_info),nextclade.nextclade_version_info]
+    ]))
     
-    
-
     # capture version
     call capture_version.capture_workflow_version as capture_workflow_version{
         input:
@@ -262,7 +210,7 @@ workflow influenza_assembly {
     }
         
 
-    # 6 - Transfer some intermediate files and all final files to gcp bucket
+    # Transfer some intermediate files and all final files to gcp bucket
     call transfer.transfer_assembly_wdl as transfer_assembly_wdl {
         input:
             workflow_version = capture_workflow_version.workflow_version,
@@ -294,12 +242,6 @@ workflow influenza_assembly {
             irma_fasta_array = irma_fasta_array,
             irma_bam_array = irma_bam_array,
             irma_vcf_array = irma_vcf_array,
-
-            # ivar
-            # ivar_fasta_array = ivar_fasta_array,
-            # ivar_multifasta = make_ivar_multifasta.multifasta,
-            # ivar_parameters = ivar_parameters_file,
-
 
             # from samtools - sorted bams
             sorted_bam_array = sorted_bam_array,
@@ -345,7 +287,6 @@ workflow influenza_assembly {
         Array[File]? irma_bam_array_out = irma_bam_array
         Array[File]? irma_vcf_array_out = irma_vcf_array
 
-
         # output from irma_subtyping_results
         File? irma_typing = irma_subtyping_results.irma_typing
         String? irma_type = irma_subtyping_results.irma_type
@@ -353,9 +294,6 @@ workflow influenza_assembly {
         String? irma_na_subtype = irma_subtyping_results.irma_na_subtype
 
          # output from post assembly
-        # Array[File?]? ivar_fasta_array_out = ivar_fasta_array
-        # File? ivar_parameters = ivar_parameters_file
-        # File? ivar_multifasta = make_ivar_multifasta.multifasta
         Array[File?]? percent_coverage_csv_array_out = percent_coverage_csv_array
         Array[File?]? sorted_bam_array_out = sorted_bam_array
         Array[File?]? sorted_bai_array_out = sorted_bai_array
@@ -380,18 +318,3 @@ workflow influenza_assembly {
     }
 }
 
-task exit_wdl {
-    input {
-        String exit_reason
-    }
-    
-    command <<<
-        echo "~{exit_reason}" 1>&2
-        
-    >>>
-
-    runtime {
-        return_codes: 0
-        docker: "ubuntu:latest"
-    }
-}
