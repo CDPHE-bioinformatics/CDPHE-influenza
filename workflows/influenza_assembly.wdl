@@ -3,7 +3,6 @@ version 1.0
 # import tasks
 import "../tasks/preprocess_tasks.wdl" as fastq_preprocess
 import "../tasks/irma_task.wdl" as irma_task
-import "../tasks/ivar_task.wdl" as ivar
 import "../tasks/assembly_qc_tasks.wdl" as assembly_qc
 import "../tasks/transfer_tasks.wdl" as transfer
 import "../tasks/nextclade_tasks.wdl" as nextclade_tasks
