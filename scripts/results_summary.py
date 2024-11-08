@@ -252,7 +252,7 @@ if __name__ == '__main__':
     # add some columns and do a calcuation
     df["analysis_date"] = analysis_date
     df['project_name'] = project_name
-    df['percent_mapped_reads'] = round((df.flu_mapped_reads_irma / df.filtered_reads_irma) * 100 , 2)
+    df['percent_mapped_reads'] = round((df.mapped_reads / df.filtered_reads) * 100 , 2)
 
 
     # check columns - if column doesn't exist then add column
