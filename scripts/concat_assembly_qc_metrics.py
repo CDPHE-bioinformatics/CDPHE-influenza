@@ -78,11 +78,14 @@ if __name__ == '__main__':
     read_counts_df = pd.read_csv(read_counts_txt, sep = '\t')
     filtered_reads = read_counts_df[read_counts_df.Record == '1-initial'].Reads.iloc[0]
     mapped_reads = read_counts_df[read_counts_df.Record == '3-match'].Reads.iloc[0]
-    alt_mapped_reads = read_counts_df[read_counts_df.Record == '3-altmatch'].Reads.iloc[0]
+    if '3-altmatch' in read_counts_df.Record.to_list():
+        alt_mapped_reads = read_counts_df[read_counts_df.Record == '3-altmatch'].Reads.iloc[0]
+    else:
+        alt_mapped_reads = 0
     
     for row in range(read_counts_df.shape[0]):
         record = read_counts_df.Record[row]
-        if re.serach(record, '4-'):
+        if re.search(record, '4-'):
             segment = record.split('-')[-1].split('_')[1]
             mapped_reads = read_counts_df[read_counts_df.Record == record ].Reads.iloc[0]
 

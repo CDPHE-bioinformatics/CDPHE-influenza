@@ -122,14 +122,14 @@ task perform_assembly_irma {
                 sed -i "s/>.*/>${header_name}/" ${file}
 
                 # replace IUPAC bases with Ns
-                # for base in ${IUPAC[@]}; do
-                #     sed -i "/^>/! s/${base}/N/g" $file
-                # done
+                for base in ${IUPAC[@]}; do
+                    sed -i "/^>/! s/${base}/N/g" $file
+                done
 
                 # remove "-" since these represent gaps relative to refernece
                 # replace periods with Ns
-                # sed -i "/^>/! s/-//g" $file
-                # sed -i "/^>/! s/\./N/g" $file
+                sed -i "/^>/! s/-//g" $file
+                sed -i "/^>/! s/\./N/g" $file
 
                 # rename file
                 new_name=$(echo ${header_name}_irma.fasta)
@@ -196,17 +196,6 @@ task perform_assembly_irma {
         cat $new_fn
         echo ""
 
-        nr_counts_fn="~{sample_name}/logs/NR_COUNTS_log.txt"
-        echo "nr_counts_log.txt: "
-        cat $nr_counts_fn
-        echo ""
-        new_fn="~{sample_name}_NR_COUNTS_log.txt"
-        mv ${nr_counts_fn} ${new_fn}
-
-        echo "nr_counts_log.txt moved: "
-        cat $new_fn
-        echo ""
-
         echo -e '\n\n\n'
 
     >>>
@@ -216,8 +205,7 @@ task perform_assembly_irma {
         # want some of the irma output files
         File irma_read_counts = "~{sample_name}_READ_COUNTS.txt"
         File irma_run_info = "~{sample_name}_run_info.txt"
-        File irma_nr_counts = "~{sample_name}_NR_COUNTS_log.txt"
-
+    
         File irma_assembled_gene_segments_csv = "~{sample_name}_irma_assembled_gene_segments.csv"
         # Added '_multi' to file name to differentiate from segment fastas
         File? irma_multifasta = "~{sample_name}_irma_multi.fasta"

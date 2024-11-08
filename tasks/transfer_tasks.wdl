@@ -18,8 +18,6 @@ task transfer_assembly_wdl{
 
         File seqyclean_summary
 
-        File preprocess_qc_metrics
-
         File fastqc1_html_cleaned
         File fastqc1_zip_cleaned
         File fastqc2_html_cleaned
@@ -28,7 +26,6 @@ task transfer_assembly_wdl{
         # irma assembly outputs
         File irma_read_counts
         File irma_run_info
-        File irma_nr_counts
         File irma_assembled_gene_segments_csv
         File? irma_multifasta
         Array[File]? irma_fasta_array
@@ -36,16 +33,10 @@ task transfer_assembly_wdl{
         Array[File]? irma_vcf_array
 
         # ivar & sorted bams
-        # Array[File]? ivar_fasta_array
-        # File? ivar_parameters
-        # File? ivar_multifasta
         Array[File]? sam_coverage_array
         Array[File]? sam_depth_array
         Array[File]? sorted_bam_array
         Array[File]? sorted_bai_array
-
-        # post assembly qc outputs
-        File? assembly_qc_metrics
 
         # nextclade
         Array[File]? nextclade_json_array 
@@ -68,6 +59,7 @@ task transfer_assembly_wdl{
     command <<<
         # transfer version capture file
         gsutil -m cp ~{version_capture_file} ~{out_path}/version_capture/
+
         # transfer fastqc raw
         gsutil -m cp ~{fastqc1_html_raw} ~{out_path}/fastqc_raw/
         gsutil -m cp ~{fastqc1_zip_raw} ~{out_path}/fastqc_raw/
@@ -83,28 +75,21 @@ task transfer_assembly_wdl{
         gsutil -m cp ~{fastqc2_html_cleaned} ~{out_path}/fastqc_cleaned/
         gsutil -m cp ~{fastqc2_zip_cleaned} ~{out_path}/fastqc_cleaned/
 
-        # transfer preprocess qc metrics summary
-        gsutil -m cp ~{preprocess_qc_metrics} ~{out_path}/preprocess_qc_metrics/
 
         # transfer irma
         gsutil -m cp ~{irma_read_counts} ~{out_path}/irma_logs/
         gsutil -m cp ~{irma_run_info} ~{out_path}/irma_logs/
-        gsutil -m cp ~{irma_nr_counts} ~{out_path}/irma_logs/
         gsutil -m cp ~{irma_assembled_gene_segments_csv} ~{out_path}/irma_assembly_results/
         gsutil -m cp ~{irma_multifasta} ~{out_path}/irma_assembly_multifastas/
         gsutil -m cp ~{sep = " " irma_fasta_array} ~{out_path}/irma_assemblies/~{sample_name}/
         gsutil -m cp ~{sep = " " irma_bam_array} ~{out_path}/irma_alignments/~{sample_name}/
         gsutil -m cp ~{sep = " " irma_vcf_array} ~{out_path}/irma_vcfs/~{sample_name}/
 
-         # transfer ivar assemblies and sorted bams 
+         # transfer sorted bams 
         gsutil -m cp ~{sep = " " sorted_bam_array} ~{out_path}/sorted_bams/~{sample_name}/
         gsutil -m cp ~{sep = " " sorted_bai_array} ~{out_path}/sorted_bams/~{sample_name}/
         gsutil -m cp ~{sep = " " sam_coverage_array} ~{out_path}/bam_stats/~{sample_name}/
         gsutil -m cp ~{sep = " " sam_depth_array} ~{out_path}/bam_stats/~{sample_name}/
-
-
-        # transfer post assembly qc
-        gsutil -m cp ~assembly_qc_metrics ~{out_path}/assembly_qc_metrics/
 
         # transfer nextclade
         gsutil -m cp ~{sep = " " nextclade_json_array} ~{out_path}/nextclade_out/~{sample_name}/

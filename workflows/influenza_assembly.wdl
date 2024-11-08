@@ -231,12 +231,9 @@ workflow influenza_assembly {
             fastqc2_html_cleaned = fastqc_cleaned.fastqc2_html,
             fastqc2_zip_cleaned = fastqc_cleaned.fastqc2_zip,
 
-            preprocess_qc_metrics = concat_preprocess_qc_metrics.preprocess_qc_metrics,
-
             # irma
             irma_read_counts = irma.irma_read_counts,
             irma_run_info = irma.irma_run_info,
-            irma_nr_counts = irma.irma_nr_counts,
             irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv,
             irma_multifasta = irma.irma_multifasta,
             irma_fasta_array = irma_fasta_array,
@@ -248,7 +245,6 @@ workflow influenza_assembly {
             sorted_bai_array = sorted_bai_array,
             sam_coverage_array = sam_coverage_array,
             sam_depth_array = sam_depth_array,
-            assembly_qc_metrics = concat_assembly_qc_metrics.assembly_qc_metrics_summary,
 
             # nextclade
             nextclade_json_array  = nextclade_json_array,
@@ -280,7 +276,6 @@ workflow influenza_assembly {
         # output from irma
         File? irma_read_counts = irma.irma_read_counts
         File? irma_run_info = irma.irma_run_info
-        File? irm_nr_counts = irma.irma_nr_counts
         File? irma_assembled_gene_segments_csv = irma.irma_assembled_gene_segments_csv
         File? irma_multifasta = irma.irma_multifasta
         Array[File]? irma_fasta_array_out = irma_fasta_array
