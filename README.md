@@ -10,7 +10,7 @@ Next generation sequencing and bioinformatic and genomic analysis at CDPHE is no
 
 
 ## Overview
-This repo contains CDPHE's workflow (`influenza_assembly.wdl` & `influenza_assembly_summary.wdl`) for the whole genome assembly and anlaysis of Influenza A and B clincal specimens or grown viral isolates. This workflow is written in WDL and can be ran on the Terra.bio platform.
+This repo contains CDPHE's workflow (`influenza_assembly.wdl` & `influenza_assembly_summary.wdl`) for the whole genome assembly and anlaysis of Influenza A and B clincal specimens or grown viral isolates. This workflow is written in WDL and can be ran on the Terra.bio platform. The workflow is availabe on Dockerstore: [influenza assembly](https://dockstore.org/workflows/github.com/CDPHE-bioinformatics/CDPHE-influenza/influenza_assembly:main?tab=info) and [influenza assembly summary](https://dockstore.org/workflows/github.com/CDPHE-bioinformatics/CDPHE-influenza/influenza_assembly_summary:main?tab=info)
 
 Sequencing data is generated using an amplicon sequencing approach with the unviersal Influenza A and universal Influenza B primers which bind to highly conserved regions at the terminal 3' and 5' ends of each gene segment. Currently this workflow only accepts 2x150 paired end Illumina read data.
 
@@ -94,6 +94,7 @@ python scripts*:
 2. Output directory stucture:
 ```
 ├── gs://{out_bucket_path}
+# preprocessing
 │   ├── fastqc_raw
 │   │   ├── {sample_name}_R1_fastqc.html
 │   │   ├── {sample_name}_R1_fastqc.zip
@@ -106,33 +107,36 @@ python scripts*:
 │   │   ├── {sample_name}_R2_fsatqc.zip
 |   ├── seqyclean
 │   │   ├── {sample_name}_clean_SummaryStatistics.tsv
+# irma
 |   ├── irma_assembly_mutlifasta
-|   |   |──{sample_name}_all_assembled_segments.fasta #repeat for each sample
+|   |   |──{sample_name}_all_assembled_segments.fasta 
 |   ├── irma_assembly_results
-|   |   |──{sample_name}_irma_assembled_gene_segments.csv #repeat for each sample
+|   |   |──{sample_name}_irma_assembled_gene_segments.csv 
 |   ├── irma_alignments
-|   |   |──{sample_name} #repeat for each sample
+|   |   |──{sample_name} 
 |   |   |   |──{sample_name}_{flu_type}_{segment-subtype}.bam
 |   |   |   |──{sample_name}_A_HA-H1.bam
 |   |   |   |──{sample_name}_A_PB1.bam
 |   ├── irma_assemblies
-|   |   |──{sample_name} #repeat for each sample
+|   |   |──{sample_name} 
 |   |   |   |──{sample_name}_{flu_type}_{segment-subtype}_irma.fasta
-|   |   |   |──{sample_name}_A_HA-H1_irma.fasta # header has full type/subtype description (e.g. >{sample_name}_A_HA-H3)
-|   |   |   |──{sample_name}_A_PB1_irma.fasta # header has full type/subtype description (e.g. >{sample_name}_A_PB1)
+|   |   |   |──{sample_name}_A_HA-H1_irma.fasta 
+|   |   |   |──{sample_name}_A_PB1_irma.fasta
 |   ├── irma_vcfs 
-|   |   |──{sample_name} #repeat for each sample
+|   |   |──{sample_name} 
 |   |   |   |──{sample_name}_{flu_type}_{segment-subtype}.vcf
 |   |   |   |──{sample_name}_A_HA-H1.vcf
 |   |   |   |──{sample_name}_A_PB1.vcf
 |   ├── irma_logs
 |   |   |──{sample_name}_READ_COUNTS.txt 
 |   |   |──{sample_name}_run_info.txt 
+# post assembly
 |   ├── sorted_bams
-|   |   |──{sample_name} #repeat for each sample
+|   |   |──{sample_name} 
 |   |   |   |──{sample_name}_{flu_type}_{segment-subtype}.sorted.bam
 |   |   |   |──{sample_name}_A_HA-H1.sorted.bam 
 |   |   |   |──{sample_name}_A_PB1.sorted.bam 
+# nextclade
 |   ├── nextclade_out
 |   |   |──{sample_name} #repeat for each sample
 |   |   |   |──{sample_name}_na_nextclade.json
@@ -140,19 +144,19 @@ python scripts*:
 |   |   |   |──{sample_name}_na_translation.fasta
 |   |   |   |──{sample_name}_ha_nextclade.json
 |   |   |   |──{sample_name}_ha_nextclade.tsv
-|   |   |   |──{sample_name}_ha_HA1_translation.fasta # note for H5 only a single {sample_name}_ha_translation.fasta is generated.
+|   |   |   |──{sample_name}_ha_HA1_translation.fasta 
 |   |   |   |──{sample_name}_ha_HA2_translation.fasta
 |   |   |   |──{sample_name}_ha_SigPep_translation.fasta
+|   |   |   |──{sample_name}_ha_translation.fasta # only for H5
+# summary results
 │   ├── summary_results
 |   |   ├── {project_name}_sequencing_results.csv
+# version capture
 │   ├── version_capture
 |   |   ├── sample level version capture files (file for each sample)
 |   |   |── set level version capture files
 
 ```
-
-
-
 
 <br/>
 <br/>
@@ -188,3 +192,11 @@ The following are the  IRMA output files that we transfer as intermediate files 
 4. **`READS_COUNTS.txt`** Located in the `tables` directory, this file contains the number of intial reads, filtered reads, mapped reads and alt mapped reads (e.g. reads that mapped to alternative flu subtype).
 
 5. **`run_info.txt`** Located in the `logs` directory, this file lists all the assembly parameters used by IRMA, including those we adjusted.
+
+
+</br>
+<br/>
+
+## Workflow Diagram
+
+![influenza assembly workflow diagram](diagrams/influenza_assembly_workflow_diagram.drawio.png "influenza assembly workflow diagram")
