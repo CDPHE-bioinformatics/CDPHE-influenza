@@ -79,7 +79,8 @@ if __name__ == '__main__':
         'HA_subtype', 'NA_subtype',
         'HA_clade', 'HA_short-clade', 'HA_subclade',
         'NA_clade', 
-        'complete_segments', 'assembled_segments', 
+        'complete_segments', 'assembled_segments',
+        'average_percent_coverage', 'average_mean_depth', # averaged across all gene segments 
         'filtered_reads' # comes from the READ_COUNTS.txt '3-match
         'mapped_reads', # # comes from the READ_COUNTS.txt '1-initial'
         'alt_mapped_reads' # comes from the READ_COUNTS.txt '3-altmatch'
