@@ -5,9 +5,6 @@
 ## Disclaimer
 Next generation sequencing and bioinformatic and genomic analysis at CDPHE is not CLIA validated at this time. These workflows and their outputs are not to be used for diagnostic purposes and should only be used for public health action and surveillance purposes. CDPHE is not responsible for the incorrect or inappropriate use of these workflows or their results.
 
-<br/>
-<br/>
-
 
 ## Overview
 This repo contains CDPHE's workflow (`influenza_assembly.wdl` & `influenza_assembly_summary.wdl`) for the whole genome assembly and anlaysis of Influenza A and B clincal specimens or grown viral isolates. This workflow is written in WDL and can be ran on the Terra.bio platform. The workflow is availabe on Dockerstore: [influenza assembly](https://dockstore.org/workflows/github.com/CDPHE-bioinformatics/CDPHE-influenza/influenza_assembly:main?tab=info) and [influenza assembly summary](https://dockstore.org/workflows/github.com/CDPHE-bioinformatics/CDPHE-influenza/influenza_assembly_summary:main?tab=info)
@@ -30,8 +27,6 @@ Breifly our workflow accomplishes the following:
 
 Numbers 1-5 and 6 occur in `influenza_assembly.wdl` and Numbers 5-6 occur in `influenza_assembly_summary.wdl`.
 
-<br/>
-<br/>
 
 ## INPUTS
 
@@ -58,8 +53,6 @@ python scripts*:
 
 *These files should be added to the terra workspace data
 
-<br/>
-<br/>
 
 ## Outputs 
 
@@ -158,9 +151,6 @@ python scripts*:
 
 ```
 
-<br/>
-<br/>
-
 ## IRMA
 This section describes the parameters we adjusted when running IRMA and describes the outputs of key files. 
 
@@ -194,8 +184,6 @@ The following are the  IRMA output files that we transfer as intermediate files 
 5. **`run_info.txt`** Located in the `logs` directory, this file lists all the assembly parameters used by IRMA, including those we adjusted.
 
 
-</br>
-<br/>
 
 ## Workflow Diagram
 
