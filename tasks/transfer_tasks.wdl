@@ -24,8 +24,8 @@ task transfer_assembly_wdl{
         File fastqc2_zip_cleaned
 
         # irma assembly outputs
-        File irma_read_counts
-        File irma_run_info
+        File? irma_read_counts
+        File? irma_run_info
         File irma_assembled_gene_segments_csv
         File? irma_multifasta
         Array[File]? irma_fasta_array

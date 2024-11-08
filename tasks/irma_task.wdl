@@ -74,8 +74,7 @@ task perform_assembly_irma {
                 subtype=$(echo ${full} | cut -d "_" -f 3) # H1 or none
                 
                 header_name=$(echo ~{sample_name}_${TYPE}_${segment_subtype})
-                echo 'header name:'
-                echo $header_name
+                echo "header name: $header_name"
                 
                 # add to assembled_gene_segments.csv
                 echo "~{sample_name},${TYPE},${segment},${subtype}" >> ~{sample_name}_irma_assembled_gene_segments.csv
@@ -91,7 +90,7 @@ task perform_assembly_irma {
                     echo "fasta header - in formatted_name_dict: ${formatted_name_dict[$segment_num]}"
                 elif [ $TYPE == "B" ]; then
                     segment_num=${FluB[$segment]}
-                    formatted_name+=( [$segment_num]=$header_name )
+                    formatted_name_dict+=( [$segment_num]=$header_name )
                     echo "segment number: $segment_num"
                     echo "fasta header - in formatted_name_dict: ${formatted_name_dict[$segment_num]}"
             
@@ -203,8 +202,8 @@ task perform_assembly_irma {
     output {
 
         # want some of the irma output files
-        File irma_read_counts = "~{sample_name}_READ_COUNTS.txt"
-        File irma_run_info = "~{sample_name}_run_info.txt"
+        File? irma_read_counts = "~{sample_name}_READ_COUNTS.txt"
+        File? irma_run_info = "~{sample_name}_run_info.txt"
     
         File irma_assembled_gene_segments_csv = "~{sample_name}_irma_assembled_gene_segments.csv"
         # Added '_multi' to file name to differentiate from segment fastas

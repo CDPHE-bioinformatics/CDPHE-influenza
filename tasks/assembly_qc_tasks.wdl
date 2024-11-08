@@ -141,7 +141,7 @@ task concat_assembly_qc_metrics{
     input{
         File python_script
         String sample_name
-        File irma_read_counts
+        File? irma_read_counts
         Array[File] bam_stats_csv_array
         Array[File] percent_coverage_csv_array
         
