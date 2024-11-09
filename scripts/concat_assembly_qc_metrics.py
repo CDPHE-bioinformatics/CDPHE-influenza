@@ -74,7 +74,7 @@ if __name__ == '__main__':
 
 
     #### READS MAPPED (FROM READ_COUNTS.txt)
-    print('\n\n\n Pulling reads mapped from READ_COUNTS.txt')
+    print('\n\n\nPulling reads mapped from READ_COUNTS.txt')
     read_counts_df = pd.read_csv(read_counts_txt, sep = '\t')
     filtered_reads = read_counts_df[read_counts_df.Record == '1-initial'].Reads.iloc[0]
     mapped_reads = read_counts_df[read_counts_df.Record == '3-match'].Reads.iloc[0]
@@ -82,16 +82,26 @@ if __name__ == '__main__':
         alt_mapped_reads = read_counts_df[read_counts_df.Record == '3-altmatch'].Reads.iloc[0]
     else:
         alt_mapped_reads = 0
+
+    print(f'filtered reads: {filtered_reads}')
+    print(f'mapped reads: {mapped_reads}')
+    print(f'alt mapped reads: {alt_mapped_reads}')
+    print('')
     
     for row in range(read_counts_df.shape[0]):
         record = read_counts_df.Record[row]
-        if re.search(record, '4-'):
+        # print(record)
+        if re.search('^4-', record):
             segment = record.split('-')[-1].split('_')[1]
             mapped_reads = read_counts_df[read_counts_df.Record == record ].Reads.iloc[0]
 
             # add to DF
-            col_name = f'{segment}_reads_mapped'
+            col_name = f'{segment}_mapped_reads'
             df.at[0, col_name] = mapped_reads
+
+            print(f'{segment}')
+            print(f'{col_name} {mapped_reads}')
+            print('')
 
 
     #### MEAN DEPTH FROM SAMTOOLS (FROM BAM STATS CSV):
