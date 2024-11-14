@@ -85,6 +85,7 @@ if __name__ == '__main__':
 
         print(f'filtered_reads: {filtered_reads}')
         print(f'alt_mapped_reads: {alt_mapped_reads}')
+        print('')
     
     for row in range(read_counts_df.shape[0]):
         record = read_counts_df.Record[row]
@@ -93,13 +94,13 @@ if __name__ == '__main__':
             segment = record.split('-')[-1].split('_')[1]
             mapped_reads = read_counts_df[read_counts_df.Record == record ].Reads.iloc[0]
 
-            print('{segment} : {mapped_reads}')
-
-            print()
-
             # add to DF
             col_name = f'{segment}_mapped_reads'
             df.at[0, col_name] = mapped_reads
+
+            print(f'{segment'})
+            print(f'{col_name} : {mapped_reads}')
+            print('')
 
 
     #### MEAN DEPTH FROM SAMTOOLS (FROM BAM STATS CSV):
