@@ -89,8 +89,7 @@ if __name__ == '__main__':
     
     for row in range(read_counts_df.shape[0]):
         record = read_counts_df.Record[row]
-        if re.search(record, '4-'):
-            print(record)
+        if re.search('4-', record):
             segment = record.split('-')[-1].split('_')[1]
             mapped_reads = read_counts_df[read_counts_df.Record == record ].Reads.iloc[0]
 
@@ -98,7 +97,8 @@ if __name__ == '__main__':
             col_name = f'{segment}_mapped_reads'
             df.at[0, col_name] = mapped_reads
 
-            print(f'{segment'})
+            print(f'{segment}')
+            print(f'{record}')
             print(f'{col_name} : {mapped_reads}')
             print('')
 
