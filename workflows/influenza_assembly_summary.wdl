@@ -12,7 +12,9 @@ workflow influenza_assembly_summary{
         Array[File] preprocess_qc_metrics
         Array[File] irma_typing
         Array[File] assembly_qc_metrics
-        Array[Array[File]] nextclade_tsv
+        # Array[Array[File]] nextclade_tsv
+        Array[File] nextclade_HA_tsv
+        Array[File] nextclade_NA_tsv
         String out_bucket_path
 
         # python scripts
@@ -21,7 +23,8 @@ workflow influenza_assembly_summary{
     }
 
     String project_name = select_first(project_name_array)
-    Array[File] nextclade_tsv_flatten = flatten(select_all(nextclade_tsv))
+    # Array[File] nextclade_tsv_flatten = flatten(select_all(nextclade_tsv))
+    Array[File] nextclade_tsv_flatten = flatten([nextclade_HA_tsv, nextclade_NA_tsv])
 
 
 

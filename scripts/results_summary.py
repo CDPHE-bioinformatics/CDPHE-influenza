@@ -19,7 +19,7 @@ def getOptions(args=sys.argv[1:]):
     # parser.add_argument('--workflow_version')
     parser.add_argument( "--analysis_date")
     parser.add_argument( "--project_name")
-    # parser.add_argument( "--irma_read_counts_txt")
+
 
     options = parser.parse_args(args)
     return options
@@ -81,14 +81,14 @@ if __name__ == '__main__':
         'NA_clade', 
         'complete_segments', 'assembled_segments',
         'average_percent_coverage', 'average_mean_depth', # averaged across all gene segments 
-        'filtered_reads' # comes from the READ_COUNTS.txt '3-match
+        'filtered_reads', # comes from the READ_COUNTS.txt '3-match
         'mapped_reads', # # comes from the READ_COUNTS.txt '1-initial'
-        'alt_mapped_reads' # comes from the READ_COUNTS.txt '3-altmatch'
+        'alt_mapped_reads', # comes from the READ_COUNTS.txt '3-altmatch'
         'percent_mapped_reads', # mapped_reads/filtered_reads x 100
         'HA_percent_coverage','HA_mean_depth', 'HA_mapped_reads', 
         'NA_percent_coverage', 'NA_mean_depth', 'NA_mapped_reads', 
         'MP_percent_coverage', 'MP_mean_depth', 'MP_mapped_reads',
-        'NP_percent_coverage', 'NP_mean_depth','NP_mapped_reads',  
+        'NP_percent_coverage', 'NP_mean_depth','NP_mapped_reads',
         'NS_percent_coverage','NS_mean_depth', 'NS_mapped_reads', 
         'PA_percent_coverage', 'PA_mean_depth', 'PA_mapped_reads', 
         'PB1_percent_coverage', 'PB1_mean_depth','PB1_mapped_reads', 
