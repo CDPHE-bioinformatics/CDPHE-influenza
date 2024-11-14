@@ -82,15 +82,23 @@ if __name__ == '__main__':
         alt_mapped_reads = read_counts_df[read_counts_df.Record == '3-altmatch'].Reads.iloc[0]
     else:
         alt_mapped_reads = 0
+
+        print(f'filtered_reads: {filtered_reads}')
+        print(f'alt_mapped_reads: {alt_mapped_reads}')
     
     for row in range(read_counts_df.shape[0]):
         record = read_counts_df.Record[row]
         if re.search(record, '4-'):
+            print(record)
             segment = record.split('-')[-1].split('_')[1]
             mapped_reads = read_counts_df[read_counts_df.Record == record ].Reads.iloc[0]
 
+            print('{segment} : {mapped_reads}')
+
+            print()
+
             # add to DF
-            col_name = f'{segment}_reads_mapped'
+            col_name = f'{segment}_mapped_reads'
             df.at[0, col_name] = mapped_reads
 
 
