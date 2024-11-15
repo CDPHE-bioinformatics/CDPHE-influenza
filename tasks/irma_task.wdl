@@ -28,7 +28,7 @@ task perform_assembly_irma {
 
         # set config file
         touch irma_config.sh 
-        echo 'MIN_CONS_SUPPORT="30"' >> irma_config.sh
+        # echo 'MIN_CONS_SUPPORT="30"' >> irma_config.sh
         echo 'MIN_LEN="70"' >> irma_config.sh
         # any base with less than 30x depth will be called an N
         # the fasta files in the amended_consensus directory will have the MIN_CONS_SUPPORT added
@@ -36,7 +36,7 @@ task perform_assembly_irma {
         # I will change IUPAC letters to Ns
 
         echo 'DEL_TYPE="DEL"' >> irma_config.sh
-        echo 'MIN_CONS_QUALITY="20"' >> irma_config.sh
+        # echo 'MIN_CONS_QUALITY="20"' >> irma_config.sh
 
         # run IRMA
         IRMA FLU ~{fastq_R1} ~{fastq_R2} ~{sample_name} --external-config irma_config.sh
