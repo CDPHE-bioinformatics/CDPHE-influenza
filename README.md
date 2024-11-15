@@ -84,7 +84,32 @@ python scripts*:
 
     `{segment}_mapped_reads` - the number of mapped reads to the gene segment determined by IRMA
 
-2. Output directory stucture:
+2. Fasta File Headers:
+
+Fasta file headers are renamed from the original IRMA output as follows:*
+```
+> {sample_name}_{TYPE}_{SEGMENT-SUBYTPE}
+
+# examples
+>{sample_name}_A_HA-H1
+>{sample_name}_A_NA-N2
+>{sample_name}_A_PB2
+>{sample_name}_B_HA
+>{sample_name}_B_NA
+>{sample_name}_B_NP
+```
+
+*by renaming the fasta headers the fasta header in the consensus file does not match the reference fasta header in the bam files. To create a match the fasta headers should be changed to match the IRMA format. Examples:
+```
+>A_HA_H1
+>A_NA_N2
+>A_PB2
+>B_HA
+>B_NA
+>B_NP
+```
+
+3. Output directory stucture:
 ```
 ├── gs://{out_bucket_path}
 # preprocessing
