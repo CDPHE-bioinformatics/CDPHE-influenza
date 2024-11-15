@@ -157,17 +157,14 @@ This section describes the parameters we adjusted when running IRMA and describe
 ### IRMA parameters
 We modify the default config file to include the following parameters:
 ```
-MIN_CONS_SUPPORT="30" 
-# Minimum allele coverage depth to call plurality consensus, otherwise calls "N". Setting this value too high can negatively impact final amended consensus.
+MIN_CONS_SUPPORT="50" 
+# Minimum allele coverage depth to call plurality consensus, otherwise calls "N". Setting this value too high can negatively impact final amended consensus. 50 is what is used in CDC's MIRA.
 
 MIN_LEN="70" 
 # Minimum read length to include reads in read gathering. This value should not be greater than the typical read length. We lowered our min length because basespace performs adapter trimming which reduces the read length from the expected 2x150. 
 
 DEL_TYPE="DEL" 
 # Advanced option. If sites are completely missing during read gathering use the reference seed (REF), delete by ambiguation (NNN), or just remove (DEL). Default is old behavior: Uses "NNN" with BLAT and "DEL" otherwise. Can specify per round with space delimiter.
-
-MIN_CONS_QUALITY="20" 
-# Minimum allele average quality to call plurality consensus, otherwise calls "N". Setting this value too high can negatively impact final amended consensus.
 ```
 
 ### IRMA output files
