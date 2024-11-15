@@ -83,15 +83,13 @@ if __name__ == '__main__':
     else:
         alt_mapped_reads = 0
 
-    print(f'filtered reads: {filtered_reads}')
-    print(f'mapped reads: {mapped_reads}')
-    print(f'alt mapped reads: {alt_mapped_reads}')
-    print('')
+        print(f'filtered_reads: {filtered_reads}')
+        print(f'alt_mapped_reads: {alt_mapped_reads}')
+        print('')
     
     for row in range(read_counts_df.shape[0]):
         record = read_counts_df.Record[row]
-        # print(record)
-        if re.search('^4-', record):
+        if re.search('4-', record):
             segment = record.split('-')[-1].split('_')[1]
             mapped_reads = read_counts_df[read_counts_df.Record == record ].Reads.iloc[0]
 
@@ -100,7 +98,8 @@ if __name__ == '__main__':
             df.at[0, col_name] = mapped_reads
 
             print(f'{segment}')
-            print(f'{col_name} {mapped_reads}')
+            print(f'{record}')
+            print(f'{col_name} : {mapped_reads}')
             print('')
 
 
