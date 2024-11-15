@@ -19,7 +19,7 @@ task perform_assembly_irma {
         File? fastq_R2
     }
 
-    String docker = "cdcgov/irma:v1.1.5"
+    String docker = "cdcgov/irma:v1.2.1"
 
     command <<<
         # grab version
