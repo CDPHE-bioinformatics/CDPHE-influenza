@@ -22,7 +22,7 @@ task capture_workflow_version {
     description: "capture version release"
   }
   command <<<
-    Workflow_Version="v0_3_0"
+    Workflow_Version="v1_0_0"
     ~{default='' 'export TZ=' + timezone}
     date +"%Y-%m-%d" > TODAY
     echo "$Workflow_Version" > WORKFLOW_VERSION
