@@ -8,6 +8,7 @@ from datetime import date
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 import sys
+import re
 
 import argparse
 import subprocess
@@ -24,10 +25,8 @@ import subprocess
 
 ### LISTS AND DICTIONARIES ###
 segment_list = ['HA', 'NA', 'MP', 'NP', 'NS', 'PA', 'PB1', 'PB2']
-metric_variables = ['per_cov', 'mean_depth', 'num_mapped_reads', 'seq_len', 'expected_len']
-
-col_headers = ['sample_name', 'total_segments','total_flu_mapped_reads', 'average_per_cov', 'average_mean_depth']
-
+metric_variables = ['percent_coverage', 'mean_depth', 'mapped_reads', 'seq_len', 'expected_len']
+# these will be determined for each segment
 
 #### FUNCTIONS #####
 def getOptions(args=sys.argv[1:]):
@@ -35,22 +34,16 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--sample_name")
     parser.add_argument( "--bam_stats_csv_list")
     parser.add_argument( "--percent_coverage_csv_list")
+    parser.add_argument( "--irma_read_counts")
     options = parser.parse_args(args)
     return options
-
-# def create_list_from_write_lines_input(write_lines_input):
-#     list = []
-#     with open(write_lines_input, 'r') as f:
-#         for line in f:
-#             list.append(line.strip())
-#     return list
 
 def create_list_from_string_input(string_input):
     list = string_input.split(' ')
     return list
 
 def create_col_headers(segment_list, metric_variables):
-    header_list = ['sample_name', 'complete_segments','assembled_segments', 'total_flu_mapped_reads']
+    header_list = ['sample_name']
     for segment in segment_list:
         for metric in metric_variables:
             header_name = "%s_%s" % (segment, metric)
@@ -65,68 +58,116 @@ if __name__ == '__main__':
     sample_name = options.sample_name
     bam_stats_files_string_input = options.bam_stats_csv_list
     percent_coverage_csv_file_string_input= options.percent_coverage_csv_list
+    read_counts_txt = options.irma_read_counts
+
+     # get a list of file paths
+    bam_stats_csv_file_list = create_list_from_string_input(string_input = bam_stats_files_string_input)
+    percent_coverage_csv_file_list = create_list_from_string_input(string_input = percent_coverage_csv_file_string_input)
 
     
-
-    # set up the pandas dataframe
+    ##### set up the pandas dataframe
+    print('Setting up final DF')
     header_list = create_col_headers(segment_list = segment_list, 
                                 metric_variables = metric_variables)
     df = pd.DataFrame(columns = header_list)
     df.at[0, 'sample_name'] = sample_name
 
-    # get a list of file paths
-    bam_stats_csv_file_list = create_list_from_string_input(string_input = bam_stats_files_string_input)
-    percent_coverage_csv_file_list = create_list_from_string_input(string_input = percent_coverage_csv_file_string_input)
+
+    #### READS MAPPED (FROM READ_COUNTS.txt)
+    print('\n\n\nPulling reads mapped from READ_COUNTS.txt')
+    read_counts_df = pd.read_csv(read_counts_txt, sep = '\t')
+    filtered_reads = read_counts_df[read_counts_df.Record == '1-initial'].Reads.iloc[0]
+    mapped_reads = read_counts_df[read_counts_df.Record == '3-match'].Reads.iloc[0]
+    if '3-altmatch' in read_counts_df.Record.to_list():
+        alt_mapped_reads = read_counts_df[read_counts_df.Record == '3-altmatch'].Reads.iloc[0]
+    else:
+        alt_mapped_reads = 0
+
+        print(f'filtered_reads: {filtered_reads}')
+        print(f'alt_mapped_reads: {alt_mapped_reads}')
+        print('')
+    
+    for row in range(read_counts_df.shape[0]):
+        record = read_counts_df.Record[row]
+        if re.search('4-', record):
+            segment = record.split('-')[-1].split('_')[1]
+            mapped_reads = read_counts_df[read_counts_df.Record == record ].Reads.iloc[0]
+
+            # add to DF
+            col_name = f'{segment}_mapped_reads'
+            df.at[0, col_name] = mapped_reads
+
+            print(f'{segment}')
+            print(f'{record}')
+            print(f'{col_name} : {mapped_reads}')
+            print('')
+
+
+    #### MEAN DEPTH FROM SAMTOOLS (FROM BAM STATS CSV):
+    print('\n\nLooping through bam stats csv files')
+    print('pulling out mean depth for each segment')
+    for bam_stats_csv_file in bam_stats_csv_file_list:
+        
+        bam_stats_df = pd.read_csv(bam_stats_csv_file, 
+                                   dtype = {'sample_name' : object},
+                                    na_filter = False )
+        segment_name = bam_stats_df.segment_name[0]
+        print(f'\n{segment_name}')
+
+        for row in range(bam_stats_df.shape[0]):
+            description = bam_stats_df.description[row]
+            if description == 'mean_depth':
+                value = bam_stats_df.value[row]
+
+                # get correct column header name
+                col_name = f"{segment_name}_{description}"
+                df.at[0, col_name] = value
+                print(col_name, value)
 
     
-    # insert bam results into data frame
-    # track number of gene segments assemblied and total mapped reads
-    num_segs = 0
-    total_mapped_reads = 0
-
-    print('/n/n')
-    for bam_stats_csv_file in bam_stats_csv_file_list:
-        num_segs = num_segs + 1
-        bam_stats_df = pd.read_csv(bam_stats_csv_file)
-        # fill in "NAs" the NA gene is being read as NA
-        bam_stats_df = bam_stats_df.fillna('NA')
-        gene_name = bam_stats_df.gene_name[0]
-        for row in range(bam_stats_df.shape[0]):
-            
-            description = bam_stats_df.description[row]
-            value = bam_stats_df.value[row]
-
-            if description == 'num_mapped_reads':
-                total_mapped_reads = total_mapped_reads + value
-
-            # get correct column header name
-            col_name = "%s_%s" % (gene_name, description)
-            df.at[0, col_name] = value
-
-    # insert per cov results into data frame
+    
+    ##### PERCENT COVERAGE
+    print('\n\nLooping through percent coverage files')
+    print('adding up assembled, complete and total percent coverage')
+    
+    assembled_segments = 0
     complete_segments = 0
+    percent_coverage_total = 0
+    
     for percent_coverage_csv_file in percent_coverage_csv_file_list:
-        percent_coverage_df = pd.read_csv(percent_coverage_csv_file)
-        percent_coverage_df = percent_coverage_df.fillna("NA")
-        gene_name = percent_coverage_df.gene_name[0]
+        assembled_segments += 1
+
+        percent_coverage_df = pd.read_csv(percent_coverage_csv_file,
+                                         dtype = {'sample_name' : object},
+                                        na_filter = False )
+        segment_name = percent_coverage_df.segment[0]
+        print(f'\n{segment_name}')
+
         for row in range(percent_coverage_df.shape[0]):
             description = percent_coverage_df.description[row]
             value = percent_coverage_df.value[row]
             
             # get correct column header name
-            col_name = "%s_%s" % (gene_name, description)
+            col_name = f"{segment_name}_{description}"
             df.at[0, col_name] = value
-
+            print(col_name, value)
             # iterate up if percent coverage = description
             # and percent coverage > 90%
-            if description == 'percent_coverage' and value >=90:
-                complete_segments +=1
+            if description == 'percent_coverage':
+                percent_coverage_total = percent_coverage_total + value
+                if value >=90:
+                    complete_segments +=1
 
 
     # add in final columns
-    df.at[0, 'assembled_segments'] = num_segs
-    df.at[0, 'total_flu_mapped_reads'] = total_mapped_reads
+    df.at[0, 'assembled_segments'] = assembled_segments
     df.at[0, 'complete_segments'] = complete_segments
+    df.at[0, 'filtered_reads'] = filtered_reads # from READ_COUNTS.txt
+    df.at[0, 'mapped_reads'] = mapped_reads # from READ_COUNTS.txt
+    df.at[0, 'alt_mapped_reads'] = alt_mapped_reads # from READ_COUNTS.txt
+    
+    df.at[0, 'average_percent_coverage'] = percent_coverage_total/assembled_segments
+    df.at[0, 'average_mean_depth'] = mapped_reads/assembled_segments
 
     # save df
     outfile = f"{sample_name}_assembly_qc_metrics.csv"

@@ -52,22 +52,23 @@ if __name__ == '__main__':
     df = pd.DataFrame()
     df.at[0, 'sample_name'] = sample_name
 
-    df['total_read_diff'] = int(read_pairs_raw) - int(read_pairs_cleaned)
+    df['read_diff'] = int(read_pairs_raw) - int(read_pairs_cleaned)
 
     df['read_length_R1_raw'] = read_length_R1_raw
     df['read_length_R2_raw'] = read_length_R2_raw
-    df['total_reads_R1_raw'] = total_reads_R1_raw
-    df['total_reads_R2_raw'] = total_reads_R1_raw
+    df['reads_R1_raw'] = total_reads_R1_raw
+    df['reads_R2_raw'] = total_reads_R1_raw
     df["read_pairs_raw"] = read_pairs_raw
-    df["total_reads_raw"] = int(read_pairs_raw) * 2
+    df["reads_raw"] = int(read_pairs_raw) * 2
 
     
     df['read_length_R1_cleaned'] = read_length_R1_cleaned
     df['read_length_R2_cleaned'] = read_length_R2_cleaned
-    df['total_reads_R1_cleaned'] = total_reads_R1_cleaned
-    df['total_reads_R2_cleaned'] = total_reads_R1_cleaned
+    df['reads_R1_cleaned'] = total_reads_R1_cleaned
+    df['reads_R2_cleaned'] = total_reads_R1_cleaned
     df["read_pairs_cleaned"] = read_pairs_cleaned
-    df["total_reads_cleaned"] = int(read_pairs_cleaned) * 2
+    df["reads_cleaned"] = int(read_pairs_cleaned) * 2
+    
 
 
     outfile =  "%s_preprocess_qc_metrics.csv" % sample_name

@@ -10,9 +10,8 @@ task results_summary {
         Array[File] preprocess_qc_metrics
         Array[File] irma_typing
         Array[File] assembly_qc_metrics
-        Array[File] na_nextclade_tsv
-        Array[File] ha_nextclade_tsv
-        String workflow_version
+        Array[File] nextclade_tsv_flatten
+        # String workflow_version
         String analysis_date
         File python_script
         String project_name
@@ -26,16 +25,14 @@ task results_summary {
         --preprocess_qc_metrics ~{write_lines(preprocess_qc_metrics)} \
         --irma_typing ~{write_lines(irma_typing)} \
         --assembly_qc_metrics ~{write_lines(assembly_qc_metrics)} \
-        --na_nextclade_tsv ~{write_lines(na_nextclade_tsv)} \
-        --ha_nextclade_tsv ~{write_lines(ha_nextclade_tsv)} \
-        --workflow_version ~{workflow_version}\
+        --nextclade_tsv ~{write_lines(nextclade_tsv_flatten)} \
         --project_name "~{project_name}" \
         --analysis_date "~{analysis_date}" 
 
     >>>
 
     output {
-        File sequencing_results_csv = "~{project_name}_sequencing_results_~{workflow_version}.csv" 
+        File sequencing_results_csv = "~{project_name}_sequencing_results.csv" 
 
     }
 
@@ -48,7 +45,7 @@ task results_summary {
     }
 }
 
-task version_capture_summary {
+task capture_version_summary {
     meta{
         description: "generate version capture files"
     }

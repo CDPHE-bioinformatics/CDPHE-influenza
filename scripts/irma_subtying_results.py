@@ -28,10 +28,10 @@ if __name__ == '__main__':
     sample_name = options.sample_name
 
 
-    df = pd.read_csv(irma_assembled_gene_segments_csv, dtype = {'sample_name' : object})
-    df = df.dropna(how = 'all')
-    df.gene_segment = df.gene_segment.fillna('NA')
-    df = df.fillna('none')
+    df = pd.read_csv(irma_assembled_gene_segments_csv, 
+                     dtype = {'sample_name' : object},
+                     na_filter = False)
+    # use na_filter so that NA segment is not interpreted as Null value
 
     # check for mixed types
     TYPES = df.flu_type.unique().tolist()
@@ -40,17 +40,21 @@ if __name__ == '__main__':
     else:
         TYPE = TYPES[0]
 
+    print(TYPE)
+
     # pull out subtypes
-    HA_subtype = 'none'
-    NA_subtype = 'none'
+    subtyping_dict = dict(zip(df.gene_segment, df.subtype))
+    if "HA" in subtyping_dict.keys():
+        HA_subtype = subtyping_dict["HA"]
+    else:
+        HA_subtype = ""
+    
+    if "NA" in subtyping_dict.keys():
+        NA_subtype = subtyping_dict["NA"]
+    else:
+        NA_subtype = ""
 
-    for row in range(df.shape[0]):
-        gene_segment = df.gene_segment[row] 
-        if gene_segment == 'HA':
-            HA_subtype = df.subtype[row]
-        elif gene_segment == 'NA':
-            NA_subtype = df.subtype[row]
-
+    
     # put all the info together
 
     summary_df = pd.DataFrame()
@@ -62,6 +66,10 @@ if __name__ == '__main__':
     outfile = f'{sample_name}_irma_typing.csv'
     summary_df.to_csv(outfile, index = False)
 
+    print(TYPE, HA_subtype, NA_subtype)
+
+    print(summary_df)
+    
     #write some single line outfiles
     type_outfile = 'TYPE.txt'
     with open(type_outfile, 'w') as f:

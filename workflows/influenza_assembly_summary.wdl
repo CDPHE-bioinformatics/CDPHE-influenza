@@ -12,8 +12,9 @@ workflow influenza_assembly_summary{
         Array[File] preprocess_qc_metrics
         Array[File] irma_typing
         Array[File] assembly_qc_metrics
-        Array[File] na_nextclade_tsv
-        Array[File] ha_nextclade_tsv
+        # Array[Array[File]] nextclade_tsv
+        Array[File] nextclade_HA_tsv
+        Array[File] nextclade_NA_tsv
         String out_bucket_path
 
         # python scripts
@@ -22,6 +23,8 @@ workflow influenza_assembly_summary{
     }
 
     String project_name = select_first(project_name_array)
+    # Array[File] nextclade_tsv_flatten = flatten(select_all(nextclade_tsv))
+    Array[File] nextclade_tsv_flatten = flatten([nextclade_HA_tsv, nextclade_NA_tsv])
 
 
 
@@ -36,22 +39,21 @@ workflow influenza_assembly_summary{
             preprocess_qc_metrics = preprocess_qc_metrics,
             irma_typing = irma_typing,
             assembly_qc_metrics = assembly_qc_metrics,
-            na_nextclade_tsv = na_nextclade_tsv,
-            ha_nextclade_tsv = ha_nextclade_tsv,
+            nextclade_tsv_flatten = nextclade_tsv_flatten,
             analysis_date = capture_workflow_version.analysis_date,
-            workflow_version = capture_workflow_version.workflow_version,
+            # workflow_version = capture_workflow_version.workflow_version,
             python_script = results_summary_py,
             project_name = project_name
         
     }
 
-        call summary.version_capture_summary as version_capture_summary {
-        input:
-            workflow_version = capture_workflow_version.workflow_version,
-            workflow_name = "influenza_assembly_summary",
-            analysis_date = capture_workflow_version.analysis_date,
-            python_script = capture_version_summary_py,
-            project_name = project_name
+    call summary.capture_version_summary as capture_version_summary {
+    input:
+        workflow_version = capture_workflow_version.workflow_version,
+        workflow_name = "influenza_assembly_summary",
+        analysis_date = capture_workflow_version.analysis_date,
+        python_script = capture_version_summary_py,
+        project_name = project_name
         
     }
 
@@ -59,14 +61,14 @@ workflow influenza_assembly_summary{
         input:
             workflow_version = capture_workflow_version.workflow_version,
             sequencing_results_csv = results_summary.sequencing_results_csv,
-            version_capture_influenza_assembly_summary_csv = version_capture_summary.version_capture_influenza_assembly_summary_csv,
+            version_capture_influenza_assembly_summary_csv = capture_version_summary.version_capture_influenza_assembly_summary_csv,
             bucket_path = out_bucket_path
     }
 
     output {
 
         File sequencing_results_csv = results_summary.sequencing_results_csv
-        File version_capture_influenza_assembly_summary_csv = version_capture_summary.version_capture_influenza_assembly_summary_csv
+        File version_capture_influenza_assembly_summary_csv = capture_version_summary.version_capture_influenza_assembly_summary_csv
         String transfer_date = summary_transfer.transfer_date
 
     }

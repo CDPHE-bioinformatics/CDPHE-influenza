@@ -1,11 +1,12 @@
 version 1.0
 
 # define structure
-struct VersionInfo {
-  String software
-  String docker
-  String version
-}
+import "../tasks/capture_version_tasks.wdl" as capture_version
+# struct VersionInfo {
+#   String software
+#   String docker
+#   String version
+# }
 
 # begin tasks
 task assess_quality_fastqc {

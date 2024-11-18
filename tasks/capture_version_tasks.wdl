@@ -6,6 +6,7 @@ struct VersionInfo {
   String version
 }
 
+
 # workaround cromwell bug with read_json of Array
 # https://github.com/openwdl/wdl/issues/409
 struct VersionInfoArray {
@@ -21,7 +22,7 @@ task capture_workflow_version {
     description: "capture version release"
   }
   command <<<
-    Workflow_Version="v0-2-0"
+    Workflow_Version="v1_0_0"
     ~{default='' 'export TZ=' + timezone}
     date +"%Y-%m-%d" > TODAY
     echo "$Workflow_Version" > WORKFLOW_VERSION

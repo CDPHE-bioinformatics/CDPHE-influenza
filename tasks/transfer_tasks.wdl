@@ -18,14 +18,14 @@ task transfer_assembly_wdl{
 
         File seqyclean_summary
 
-        File preprocess_qc_metrics
-
         File fastqc1_html_cleaned
         File fastqc1_zip_cleaned
         File fastqc2_html_cleaned
         File fastqc2_zip_cleaned
 
         # irma assembly outputs
+        File? irma_read_counts
+        File? irma_run_info
         File irma_assembled_gene_segments_csv
         File? irma_multifasta
         Array[File]? irma_fasta_array
@@ -33,25 +33,26 @@ task transfer_assembly_wdl{
         Array[File]? irma_vcf_array
 
         # ivar & sorted bams
-        Array[File]? ivar_fasta_array
-        File? ivar_multifasta
+        Array[File]? sam_coverage_array
+        Array[File]? sam_depth_array
         Array[File]? sorted_bam_array
-
-        # post assembly qc outputs
-        File? assembly_qc_metrics
+        Array[File]? sorted_bai_array
 
         # nextclade
-        File? na_nextclade_json
-        File? na_nextclade_tsv
-        File? na_nextclade_translation_fasta
+        # Array[File]? nextclade_json_array 
+        # Array[File]? nextclade_tsv_array 
+        File? nextclade_HA_json
+        File? nextclade_NA_json
+        File? nextclade_HA_tsv
+        File? nextclade_NA_tsv
+        Array[File]? nextclade_SigPep_translation_fasta
+        Array[File]? nextclade_HA1_translation_fasta
+        Array[File]? nextclade_HA2_translation_fasta
+        Array[File]? nextclade_HA_translation_fasta
+        Array[File]? nextclade_NA_translation_fasta
 
-        File? ha_nextclade_json
-        File? ha_nextclade_tsv
-        File? ha_nextclade_HA1_translation_fasta
-        File? ha_nextclade_HA2_translation_fasta
-        File? ha_nextclade_SigPep_translation_fasta
-
-        File version_capture_file
+        # version
+        File? version_capture_file
 
 
     }
@@ -62,6 +63,7 @@ task transfer_assembly_wdl{
     command <<<
         # transfer version capture file
         gsutil -m cp ~{version_capture_file} ~{out_path}/version_capture/
+
         # transfer fastqc raw
         gsutil -m cp ~{fastqc1_html_raw} ~{out_path}/fastqc_raw/
         gsutil -m cp ~{fastqc1_zip_raw} ~{out_path}/fastqc_raw/
@@ -77,36 +79,32 @@ task transfer_assembly_wdl{
         gsutil -m cp ~{fastqc2_html_cleaned} ~{out_path}/fastqc_cleaned/
         gsutil -m cp ~{fastqc2_zip_cleaned} ~{out_path}/fastqc_cleaned/
 
-        # transfer preprocess qc metrics summary
-        gsutil -m cp ~{preprocess_qc_metrics} ~{out_path}/preprocess_qc_metrics/
 
         # transfer irma
+        gsutil -m cp ~{irma_read_counts} ~{out_path}/irma_logs/
+        gsutil -m cp ~{irma_run_info} ~{out_path}/irma_logs/
         gsutil -m cp ~{irma_assembled_gene_segments_csv} ~{out_path}/irma_assembly_results/
         gsutil -m cp ~{irma_multifasta} ~{out_path}/irma_assembly_multifastas/
         gsutil -m cp ~{sep = " " irma_fasta_array} ~{out_path}/irma_assemblies/~{sample_name}/
         gsutil -m cp ~{sep = " " irma_bam_array} ~{out_path}/irma_alignments/~{sample_name}/
         gsutil -m cp ~{sep = " " irma_vcf_array} ~{out_path}/irma_vcfs/~{sample_name}/
 
-        # transfer ivar assemblies and sorted bams 
+         # transfer sorted bams 
         gsutil -m cp ~{sep = " " sorted_bam_array} ~{out_path}/sorted_bams/~{sample_name}/
-        gsutil -m cp ~{sep = " " ivar_fasta_array} ~{out_path}/ivar_assemblies/~{sample_name}
-        gsutil -m cp ~{ivar_multifasta} ~{out_path}/ivar_assembly_multifasta/
-         
-
-        # transfer post assembly qc
-        gsutil -m cp ~assembly_qc_metrics ~{out_path}/assembly_qc_metrics/
+        gsutil -m cp ~{sep = " " sorted_bai_array} ~{out_path}/sorted_bams/~{sample_name}/
+        gsutil -m cp ~{sep = " " sam_coverage_array} ~{out_path}/bam_stats/~{sample_name}/
+        gsutil -m cp ~{sep = " " sam_depth_array} ~{out_path}/bam_stats/~{sample_name}/
 
         # transfer nextclade
-        gsutil -m cp ~{na_nextclade_json} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{na_nextclade_tsv} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{na_nextclade_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{ha_nextclade_json} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{ha_nextclade_tsv} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{ha_nextclade_HA1_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{ha_nextclade_HA2_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{ha_nextclade_SigPep_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
-        
-
+        gsutil -m cp ~{nextclade_HA_json} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{nextclade_NA_json} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{nextclade_HA_tsv} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{nextclade_NA_tsv} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{sep = " " nextclade_HA_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{sep = " " nextclade_HA1_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{sep = " " nextclade_HA2_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{sep = " " nextclade_SigPep_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{sep = " " nextclade_NA_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
 
         # transfer date
         transferdate=`date`

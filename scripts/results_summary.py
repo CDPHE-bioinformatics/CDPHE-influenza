@@ -5,6 +5,7 @@ import pandas as pd
 import sys
 import argparse
 import subprocess
+import re
 
 
 #### FUNCTIONS #####
@@ -14,11 +15,11 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--preprocess_qc_metrics")
     parser.add_argument( "--irma_typing")
     parser.add_argument( "--assembly_qc_metrics")
-    parser.add_argument( "--na_nextclade_tsv")
-    parser.add_argument( "--ha_nextclade_tsv")
-    parser.add_argument('--workflow_version')
+    parser.add_argument( "--nextclade_tsv")
+    # parser.add_argument('--workflow_version')
     parser.add_argument( "--analysis_date")
     parser.add_argument( "--project_name")
+
 
     options = parser.parse_args(args)
     return options
@@ -44,31 +45,28 @@ if __name__ == '__main__':
     preprocess_qc_metrics_txt = options.preprocess_qc_metrics
     irma_typing_txt = options.irma_typing
     post_qc_metrics_txt = options.assembly_qc_metrics
-    na_nextclade_tsv_txt = options.na_nextclade_tsv
-    ha_nextclade_tsv_txt = options.ha_nextclade_tsv
-    workflow_version = options.workflow_version
+    nextclade_tsv_txt = options.nextclade_tsv
+    # workflow_version = options.workflow_version
     project_name = options.project_name
     analysis_date = options.analysis_date
+    # read_counts_txt = options.irma_read_counts_txt
 
     sample_name_list = create_list_from_write_lines_input(write_lines_input = sample_name_txt)
     preprocess_qc_metrics_list = create_list_from_write_lines_input(write_lines_input = preprocess_qc_metrics_txt)
     irma_typing_list = create_list_from_write_lines_input(write_lines_input = irma_typing_txt)
     post_qc_metrics_list= create_list_from_write_lines_input(write_lines_input = post_qc_metrics_txt)
-    na_nextclade_tsv_list = create_list_from_write_lines_input(write_lines_input = na_nextclade_tsv_txt)
-    ha_nextclade_tsv_list = create_list_from_write_lines_input(write_lines_input = ha_nextclade_tsv_txt)
+    nextclade_tsv_list = create_list_from_write_lines_input(write_lines_input = nextclade_tsv_txt)
+    # read_counts_txt_list = create_list_from_write_lines_input(write_lines_input = read_counts_txt)
+
+
+    # print(nextclade_tsv_txt)
+    # print(nextclade_tsv_list)
    
 
     # create summary metrics file:
     # the issue I have is that if assemlby fails then the the post assembly
     # metrics won't be generated. Plus if the HA or NA segment fail then
-    # we won't ahve the nextclade output. 
-
-    # join dfs like normal and then go back and add non-existent
-    # columns if needed using list of columns and checking for the presence of 
-    # of each column
-
-    # issue with this join method though is that if df doesn't exist, so need to add
-    # if statements to check that the df exists before joining!
+    # we won't have the nextclade output. 
 
     # dropped seq_len and expected length from columns
     # nextclade columns to drop - totalMissing, totalNonACGTNs, totalUnknownAa,
@@ -81,19 +79,23 @@ if __name__ == '__main__':
         'HA_subtype', 'NA_subtype',
         'HA_clade', 'HA_short-clade', 'HA_subclade',
         'NA_clade', 
-        'complete_segments', 'assembled_segments', 
-        'total_flu_mapped_reads', 'percent_flu_mapped_reads','total_reads_cleaned',
-        'HA_percent_coverage','HA_mean_depth', 'HA_num_mapped_reads', 
-        'NA_percent_coverage', 'NA_mean_depth', 'NA_num_mapped_reads', 
-        'MP_percent_coverage', 'MP_mean_depth', 'MP_num_mapped_reads',
-        'NP_percent_coverage', 'NP_mean_depth','NP_num_mapped_reads',  
-        'NS_percent_coverage','NS_mean_depth', 'NS_num_mapped_reads', 
-        'PA_percent_coverage', 'PA_mean_depth', 'PA_num_mapped_reads', 
-        'PB1_percent_coverage', 'PB1_mean_depth','PB1_num_mapped_reads', 
-        'PB2_percent_coverage', 'PB2_mean_depth', 'PB2_num_mapped_reads', 
-        'total_read_diff',  'total_reads_R1_raw', 'total_reads_R2_raw', 'read_pairs_raw', 'total_reads_raw', 
+        'complete_segments', 'assembled_segments',
+        'average_percent_coverage', 'average_mean_depth', # averaged across all gene segments 
+        'filtered_reads', # comes from the READ_COUNTS.txt '3-match
+        'mapped_reads', # # comes from the READ_COUNTS.txt '1-initial'
+        'alt_mapped_reads', # comes from the READ_COUNTS.txt '3-altmatch'
+        'percent_mapped_reads', # mapped_reads/filtered_reads x 100
+        'HA_percent_coverage','HA_mean_depth', 'HA_mapped_reads', 
+        'NA_percent_coverage', 'NA_mean_depth', 'NA_mapped_reads', 
+        'MP_percent_coverage', 'MP_mean_depth', 'MP_mapped_reads',
+        'NP_percent_coverage', 'NP_mean_depth','NP_mapped_reads',
+        'NS_percent_coverage','NS_mean_depth', 'NS_mapped_reads', 
+        'PA_percent_coverage', 'PA_mean_depth', 'PA_mapped_reads', 
+        'PB1_percent_coverage', 'PB1_mean_depth','PB1_mapped_reads', 
+        'PB2_percent_coverage', 'PB2_mean_depth', 'PB2_mapped_reads', 
+        'read_diff',  'reads_R1_raw', 'reads_R2_raw', 'read_pairs_raw', 'reads_raw', 
         'read_length_R1_raw', 'read_length_R2_raw',
-        'total_reads_R1_cleaned', 'total_reads_R2_cleaned', 'read_pairs_cleaned', 
+        'reads_R1_cleaned', 'reads_R2_cleaned', 'read_pairs_cleaned', 'reads_cleaned',
         'read_length_R1_cleaned', 'read_length_R2_cleaned',
         'HA_totalSubstitutions', 'HA_totalDeletions', 'HA_totalInsertions', 'HA_totalFrameShifts',  
         'HA_totalAminoacidSubstitutions', 'HA_totalAminoacidDeletions', 'HA_totalAminoacidInsertions', 
@@ -102,6 +104,7 @@ if __name__ == '__main__':
         ]
 
     # preprocess
+    print('starting preprocess handling')
     preprocess_qc_metrics_df_list = []
     for preprocess_qc_metrics in preprocess_qc_metrics_list:
         df = pd.read_csv(preprocess_qc_metrics, dtype = {'sample_name' : object})
@@ -112,85 +115,116 @@ if __name__ == '__main__':
     preprocess_qc_metrics_df = pd.concat(preprocess_qc_metrics_df_list).set_index('sample_name')
 
     # irma subtyping
+    print('starting irma typing handling')
     irma_typing_df_list = []
     for irma_typing in irma_typing_list:
         df = pd.read_csv(irma_typing, dtype = {'sample_name' : object})
         irma_typing_df_list.append(df)
     irma_typing_df = pd.concat(irma_typing_df_list).set_index('sample_name')
 
-
-    # na nextclade
+     # nextclade
+    print('starting nextclade handling')
     na_nextclade_df_list = []
+    ha_nextclade_df_list = []
+
     # check that files exist
-    if len(na_nextclade_tsv_list) >= 1:
-        for nextclade_tsv in na_nextclade_tsv_list:
-            sample_name = nextclade_tsv.split('/')[-1].split('_nextclade')[0]
+    if len(nextclade_tsv_list) >= 1:
+        for nextclade_tsv in nextclade_tsv_list:
+            print(nextclade_tsv)
+
             df = pd.read_csv(nextclade_tsv, sep ='\t')
-            df['sample_name'] = sample_name
-            df['nextclade_coverage'] = df['coverage']
+            # determine if HA or NA segment using the file name
+            # example file name "sample_A_HA-H1.tsv" or "sample_B_HA.tsv"
+            segment = nextclade_tsv.split('.tsv')[0].split('_')[-1] # this gives you HA-H1 or HA depednig if A or B
+            type = nextclade_tsv.split('.tsv')[0].split('_')[-2] # this gives A or B
+            
+            print(segment)
+            print(type)
 
-            # reorder columns
-            col_keep = ['sample_name', 'clade', 
-                        'totalSubstitutions','totalDeletions', 'totalInsertions', 
-                        'totalFrameShifts', 'totalMissing','totalNonACGTNs', 'totalAminoacidSubstitutions',
-                        'totalAminoacidDeletions', 'totalAminoacidInsertions', 'totalUnknownAa', 
-                        'nextclade_coverage','aaSubstitutions', 'aaDeletions', 'aaInsertions',
-                        'warnings', 'errors']
-            # add "na" prefix to all column headers
-            rename_cols = {}
-            for col in col_keep:
-                if col != 'sample_name':
-                    new_column = f'NA_{col}'
-                    rename_cols[col] = new_column
+            if re.search("NA", segment):
+                # pull sample_name from seqName
+                seq_name = df.seqName[0]
+                print('NA - seq_name: ', seq_name)
+                sample_name = seq_name.split(f'{type}_{segment}')[0].rstrip('_')
+                print('NA - sample_name: ', sample_name)
 
-            df = df[col_keep]
-            df = df.rename(columns = rename_cols)
-            na_nextclade_df_list.append(df)
+                # add and rename columns
+                df['sample_name'] = sample_name
+                df['nextclade_coverage'] = df['coverage']
+
+                # reorder columns
+                col_keep = ['sample_name', 'clade', 
+                            'totalSubstitutions','totalDeletions', 'totalInsertions', 
+                            'totalFrameShifts', 'totalMissing','totalNonACGTNs', 'totalAminoacidSubstitutions',
+                            'totalAminoacidDeletions', 'totalAminoacidInsertions', 'totalUnknownAa', 
+                            'nextclade_coverage','aaSubstitutions', 'aaDeletions', 'aaInsertions',
+                            'warnings', 'errors']
+                # add "na" prefix to all column headers
+                rename_cols = {}
+                for col in col_keep:
+                    if col != 'sample_name':
+                        new_column = f'NA_{col}'
+                        rename_cols[col] = new_column
+
+                df = df[col_keep]
+                df = df.rename(columns = rename_cols)
+                print('rows = ', df.shape[0])
+                na_nextclade_df_list.append(df)
+                print('len na_nextclade_df_list = ', len(na_nextclade_df_list))
+
+            elif re.search('HA', segment):
+                # pull sample_name from seqName
+                seq_name = df.seqName[0]
+                print('HA - seq_name: ', seq_name)
+                sample_name = seq_name.split(f'{type}_{segment}')[0].rstrip('_')
+                print('HA - sample_name: ', sample_name)
+
+                # add column and rename columns
+                df['sample_name'] = sample_name
+                df['nextclade_coverage'] = df['coverage']
+
+                # add missing columns
+                # HA: add short-clade (For bvic only)
+                if "subclade" not in df.columns:
+                    df['subclade'] = ""
+                if "short-clade" not in df.columns:
+                    df['short-clade'] = ""
+                # reorder columns
+                col_keep = ['sample_name', 'clade', 'short-clade', 'subclade', 
+                            'totalSubstitutions','totalDeletions', 'totalInsertions', 
+                            'totalFrameShifts', 'totalMissing','totalNonACGTNs', 'totalAminoacidSubstitutions',
+                            'totalAminoacidDeletions', 'totalAminoacidInsertions', 'totalUnknownAa', 
+                            'nextclade_coverage','aaSubstitutions', 'aaDeletions', 'aaInsertions',
+                            'warnings', 'errors']
+                # add "ha" prefix to all column headers
+                rename_cols = {}
+                for col in col_keep:
+                    if col != 'sample_name':
+                        new_column = f'HA_{col}'
+                        rename_cols[col] = new_column
+
+                df = df[col_keep]
+                df = df.rename(columns = rename_cols)
+
+                print('rows = ', df.shape[0])
+
+                ha_nextclade_df_list.append(df)
+
+                print('len ha_nextclade_df_list = ', len(ha_nextclade_df_list))
+    
+    if len(ha_nextclade_df_list) > 0:
+        ha_nextclade_df = pd.concat(ha_nextclade_df_list).set_index('sample_name')
+    else:
+        ha_nextclade_df = pd.DataFrame()
+    if len(na_nextclade_df_list) > 0:
         na_nextclade_df = pd.concat(na_nextclade_df_list).set_index('sample_name')
     else:
-        # create empty df for joining downstream
         na_nextclade_df = pd.DataFrame()
 
 
-    # ha nextclade
-    ha_nextclade_df_list = []
-    # check that columns exist
-    if len(ha_nextclade_tsv_list) >= 1:
-        for nextclade_tsv in ha_nextclade_tsv_list:
-            sample_name = nextclade_tsv.split('/')[-1].split('_nextclade')[0]
-            df = pd.read_csv(nextclade_tsv, sep ='\t')
-            df['sample_name'] = sample_name
-            df['nextclade_coverage'] = df['coverage']
-            # add missing columns
-            # HA: add short-clade (For bvic only)
-            if "subclade" not in df.columns:
-                df['subclade'] = ""
-            if "short-clade" not in df.columns:
-                df['short-clade'] = ""
-            # reorder columns
-            col_keep = ['sample_name', 'clade', 'short-clade', 'subclade', 
-                        'totalSubstitutions','totalDeletions', 'totalInsertions', 
-                        'totalFrameShifts', 'totalMissing','totalNonACGTNs', 'totalAminoacidSubstitutions',
-                        'totalAminoacidDeletions', 'totalAminoacidInsertions', 'totalUnknownAa', 
-                        'nextclade_coverage','aaSubstitutions', 'aaDeletions', 'aaInsertions',
-                        'warnings', 'errors']
-            # add "ha" prefix to all column headers
-            rename_cols = {}
-            for col in col_keep:
-                if col != 'sample_name':
-                    new_column = f'HA_{col}'
-                    rename_cols[col] = new_column
-
-            df = df[col_keep]
-            df = df.rename(columns = rename_cols)
-            ha_nextclade_df_list.append(df)
-        ha_nextclade_df = pd.concat(ha_nextclade_df_list).set_index('sample_name')
-    else:
-        #create empty df for joining downstream
-        ha_nextclade_df = pd.DataFrame()
-
 
     # post assembly qc metrics
+    print('starting pos assembly handling')
     post_qc_metrics_df_list = []
     if len(post_qc_metrics_list) >= 1:
         for post_qc_metrics in post_qc_metrics_list:
@@ -206,6 +240,7 @@ if __name__ == '__main__':
 
     
     # join all the dfs together
+    print('joining dfs')
     df = pd.DataFrame(sample_name_list, columns = ['sample_name']).set_index('sample_name')
     df = df.join(preprocess_qc_metrics_df, how = 'left')
     df = df.join(irma_typing_df, how = 'left')
@@ -216,10 +251,9 @@ if __name__ == '__main__':
 
     # add some columns and do a calcuation
     df["analysis_date"] = analysis_date
-    df['percent_flu_mapped_reads'] = round((df.total_flu_mapped_reads / df.total_reads_cleaned) * 100 , 2)
-    # TODO the percent flu mapped reads we are seeing is much lower than CDC's. I'm not sure how they are doing the calcuation
     df['project_name'] = project_name
-    df = df[col_order] 
+    df['percent_mapped_reads'] = round((df.mapped_reads / df.filtered_reads) * 100 , 2)
+
 
     # check columns - if column doesn't exist then add column
     # for if assembly failed for all samples assemlby qc metrics or nextclade
@@ -227,10 +261,10 @@ if __name__ == '__main__':
     for column in col_order:
         if column not in df.columns:
             df[column] = pd.NA
-   
+    df = df[col_order] 
     
     # outfile
-    outfile = f'{project_name}_sequencing_results_{workflow_version}.csv' 
+    outfile = f'{project_name}_sequencing_results.csv' 
     df.to_csv(outfile, index = False)
 
 
