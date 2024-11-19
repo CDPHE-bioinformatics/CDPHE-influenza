@@ -103,7 +103,7 @@ task perform_assembly_irma {
 
             done
 
-            # use amended fastas because they ahve the 30x cut off
+            # use amended fastas because they ahve the 50x cut off
             # this is new
             echo -e '\n\n\n'
             echo "LOOPING THROUGH AMENDED CONSENSUS FASTAS"
