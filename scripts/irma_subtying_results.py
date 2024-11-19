@@ -17,7 +17,6 @@ def getOptions(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Parses command.")
     parser.add_argument( "--irma_assembled_gene_segments_csv")
     parser.add_argument( "--sample_name")
-    parser.add_argument( "--irma_runtime_csv")
     options = parser.parse_args(args)
     return options
 
@@ -27,17 +26,12 @@ if __name__ == '__main__':
     options = getOptions()
     irma_assembled_gene_segments_csv = options.irma_assembled_gene_segments_csv
     sample_name = options.sample_name
-    irma_runtime_csv = options.irma_runtime_csv
 
-    irma_runtime_df = pd.read_csv(irma_runtime_csv)
-    irma_version = irma_runtime_df.irma_version[0]
-    irma_module = irma_runtime_df.irma_module[0]
-    irma_docker = irma_runtime_df.irma_docker[0]
 
-    df = pd.read_csv(irma_assembled_gene_segments_csv, dtype = {'sample_name' : object})
-    df = df.dropna(how = 'all')
-    df.gene_segment = df.gene_segment.fillna('NA')
-    df = df.fillna('none')
+    df = pd.read_csv(irma_assembled_gene_segments_csv, 
+                     dtype = {'sample_name' : object},
+                     na_filter = False)
+    # use na_filter so that NA segment is not interpreted as Null value
 
     # check for mixed types
     TYPES = df.flu_type.unique().tolist()
@@ -46,17 +40,21 @@ if __name__ == '__main__':
     else:
         TYPE = TYPES[0]
 
+    print(TYPE)
+
     # pull out subtypes
-    HA_subtype = 'none'
-    NA_subtype = 'none'
+    subtyping_dict = dict(zip(df.gene_segment, df.subtype))
+    if "HA" in subtyping_dict.keys():
+        HA_subtype = subtyping_dict["HA"]
+    else:
+        HA_subtype = ""
+    
+    if "NA" in subtyping_dict.keys():
+        NA_subtype = subtyping_dict["NA"]
+    else:
+        NA_subtype = ""
 
-    for row in range(df.shape[0]):
-        gene_segment = df.gene_segment[row] 
-        if gene_segment == 'HA':
-            HA_subtype = df.subtype[row]
-        elif gene_segment == 'NA':
-            NA_subtype = df.subtype[row]
-
+    
     # put all the info together
 
     summary_df = pd.DataFrame()
@@ -64,13 +62,14 @@ if __name__ == '__main__':
     summary_df['flu_type'] = [TYPE]
     summary_df['HA_subtype'] = [HA_subtype]
     summary_df['NA_subtype'] = [NA_subtype]
-    summary_df['irma_module'] = [irma_module]
-    summary_df['irma_docker'] = [irma_docker]
-    summary_df['irma_version'] = [irma_version]
 
     outfile = f'{sample_name}_irma_typing.csv'
     summary_df.to_csv(outfile, index = False)
 
+    print(TYPE, HA_subtype, NA_subtype)
+
+    print(summary_df)
+    
     #write some single line outfiles
     type_outfile = 'TYPE.txt'
     with open(type_outfile, 'w') as f:
