@@ -30,13 +30,17 @@ task perform_assembly_irma {
         touch irma_config.sh 
         echo 'MIN_CONS_SUPPORT="50"' >> irma_config.sh
         # 50 appears to be what MIRA uses
-        echo 'DEL_TYPE="DEL"' >> irma_config.sh
-        # echo 'MIN_CONS_QUALITY="20"' >> irma_config.sh
-        echo 'MIN_LEN="70"' >> irma_config.sh
-        # any base with less than 30x depth will be called an N
+        # any base with less than 50x depth will be called an N
         # the fasta files in the amended_consensus directory will have the MIN_CONS_SUPPORT added
         # The fasta files in the amended_consensus directory will also have IUPAC for mixed based calls
         # I will change IUPAC letters to Ns
+        
+        echo 'DEL_TYPE="DEL"' >> irma_config.sh
+       
+        # echo 'MIN_CONS_QUALITY="20"' >> irma_config.sh
+        # MIRA appears to leave this as the default value at 0, so comment this out for v1.0.0
+       
+        echo 'MIN_LEN="70"' >> irma_config.sh
 
 
         # run IRMA
