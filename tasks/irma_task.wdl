@@ -166,20 +166,6 @@ task perform_assembly_irma {
 
             done
 
-            echo "\n\n\n"
-            echo "creating dummy files if needed"
-            # if NA_basename and HA_basename txt files are not created...
-            # create dummy file
-            if [ ! -f HA_basename.txt ]; then
-                echo "creating dummy HA_basename.txt file"
-                echo "no HA fasta generated" > "HA_basename.txt"
-            fi
-
-            if [ ! -f NA_basename.txt ]; then
-                echo "creating dummy NA_basename.txt file"
-                echo "no NA fasta generated" > "NA_basename.txt"
-            fi
-
             echo -e '\n\n\n'
             # rename bam and vcf files
             echo "RENAMING BAM AND VCF FILES"
@@ -206,32 +192,49 @@ task perform_assembly_irma {
         fi 
         echo -e '\n\n\n'
 
+        echo "CREATING DUMMY FILES FOR BASENAME IF DONT EXIST"
+        # if NsA_basename and HA_basename txt files are not created...
+        # create dummy file
+        if [ ! -f HA_basename.txt ]; then
+            echo "creating dummy HA_basename.txt file"
+            echo "no HA fasta generated" > "HA_basename.txt"
+        fi
+
+        if [ ! -f NA_basename.txt ]; then
+            echo "creating dummy NA_basename.txt file"
+            echo "no NA fasta generated" > "NA_basename.txt"
+        fi
+
         echo "RENAMING TABLES AND LOGS"
         # copy read_counts file: path = sample_name/tables/READ_COUNTS.txt
         # copy run_info.tx file: path = sample_name/logs/run_info.txt
         # copy NR counts log: pat = sample_name/logs/NR_COUNTS_log.txt
         # rename with sample name in the file name
         read_counts_fn='~{sample_name}/tables/READ_COUNTS.txt'
-        echo "read_counts.txt:"
-        cat $read_counts_fn
-        echo ""
-        new_fn="~{sample_name}_READ_COUNTS.txt"
-        mv ${read_counts_fn} ${new_fn}
+        if [ -f $read_counts_fn ]; then 
+            echo "read_counts.txt:"
+            cat $read_counts_fn
+            echo ""
+            new_fn="~{sample_name}_READ_COUNTS.txt"
+            mv ${read_counts_fn} ${new_fn}
 
-        echo "read_counts.txt moved:"
-        cat $new_fn
-        echo ""
+            echo "read_counts.txt moved:"
+            cat $new_fn
+            echo ""
+        fi
 
         run_info_fn='~{sample_name}/logs/run_info.txt'
-        echo "run_info.txt: "
-        cat $run_info_fn
-        echo ""
-        new_fn="~{sample_name}_run_info.txt"
-        mv ${run_info_fn} ${new_fn}
+        if [ -f $run_info_fn ]; then
+            echo "run_info.txt: "
+            cat $run_info_fn
+            echo ""
+            new_fn="~{sample_name}_run_info.txt"
+            mv ${run_info_fn} ${new_fn}
 
-        echo "run_info.txt moved: "
-        cat $new_fn
-        echo ""
+            echo "run_info.txt moved: "
+            cat $new_fn
+            echo ""
+        fi
 
         echo -e '\n\n\n'
 
