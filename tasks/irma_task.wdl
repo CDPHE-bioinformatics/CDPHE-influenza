@@ -139,6 +139,24 @@ task perform_assembly_irma {
                 new_name=$(echo ${header_name}_irma.fasta)
                 mv "${file}" "${new_name}"
 
+                # if HA or NA rename with generic name to use for nextclade
+                if [ $segment_number == 4 ]; then 
+                    echo "generating HA fasta and HA basename file for nextclade inputs"
+                    echo "value in HA_basename.txt: ${header_name}"
+                    new_name_HA="HA.fasta"
+                    cp "${new_name}" "${new_name_HA}"
+                    echo $header_name > "HA_basename.txt"
+                fi
+
+                if [ $segment_number == 6 ]; then
+                    echo "generating NA fasta and NA basename file for nextclade inputs"
+                    echo "value in NA_basename.txt: ${header_name}"
+                    new_name_NA="NA.fasta"
+                    cp "${new_name}" "${new_name_NA}"
+                    echo $header_name > "NA_basename.txt"
+                fi
+
+
                 echo "DEBUG: print contents of final fasta file"
                 echo "fasta file name: $new_name"
                 cat $new_name
@@ -147,6 +165,21 @@ task perform_assembly_irma {
                 cat ${new_name} >> ~{sample_name}_irma_multi.fasta
 
             done
+
+            echo "\n\n\n"
+            echo "creating dummy files if needed"
+            # if NA_basename and HA_basename txt files are not created...
+            # create dummy file
+            if [ ! -f HA_basename.txt ]; then
+                echo "creating dummy HA_basename.txt file"
+                echo "no HA fasta generated" > "HA_basename.txt"
+            fi
+
+            if [ ! -f NA_basename.txt ]; then
+                echo "creating dummy NA_basename.txt file"
+                echo "no NA fasta generated" > "NA_basename.txt"
+            fi
+
             echo -e '\n\n\n'
             # rename bam and vcf files
             echo "RENAMING BAM AND VCF FILES"
@@ -213,6 +246,10 @@ task perform_assembly_irma {
         File irma_assembled_gene_segments_csv = "~{sample_name}_irma_assembled_gene_segments.csv"
         # Added '_multi' to file name to differentiate from segment fastas
         File? irma_multifasta = "~{sample_name}_irma_multi.fasta"
+        File? HA_fasta = "HA.fasta" # for nextclade
+        String? HA_basename_txt = read_string("HA_basename.txt") # for nextclade
+        File? NA_fasta = "NA.fasta" # for nextclade
+        String? NA_basename_txt = read_string("NA_basename.txt") # for nextclade
         # globs are ordered, so if the diffierent file types all have the same names, these should all be in the same order
         # However this is dependent on all three files being created for every segment and subtype- does that
         # ever not happen? If not, the logic would need to be changed but I don't think it would be difficult
