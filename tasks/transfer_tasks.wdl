@@ -45,11 +45,11 @@ task transfer_assembly_wdl{
         File? nextclade_NA_json
         File? nextclade_HA_tsv
         File? nextclade_NA_tsv
-        Array[File]? nextclade_SigPep_translation_fasta
-        Array[File]? nextclade_HA1_translation_fasta
-        Array[File]? nextclade_HA2_translation_fasta
-        Array[File]? nextclade_HA_translation_fasta
-        Array[File]? nextclade_NA_translation_fasta
+        File? nextclade_SigPep_translation_fasta
+        File? nextclade_HA1_translation_fasta
+        File? nextclade_HA2_translation_fasta
+        File? nextclade_HA_translation_fasta
+        File? nextclade_NA_translation_fasta
 
         # version
         File? version_capture_file
@@ -100,11 +100,11 @@ task transfer_assembly_wdl{
         gsutil -m cp ~{nextclade_NA_json} ~{out_path}/nextclade_out/~{sample_name}/
         gsutil -m cp ~{nextclade_HA_tsv} ~{out_path}/nextclade_out/~{sample_name}/
         gsutil -m cp ~{nextclade_NA_tsv} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{sep = " " nextclade_HA_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{sep = " " nextclade_HA1_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{sep = " " nextclade_HA2_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{sep = " " nextclade_SigPep_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
-        gsutil -m cp ~{sep = " " nextclade_NA_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{nextclade_HA_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{nextclade_HA1_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{nextclade_HA2_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{nextclade_SigPep_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
+        gsutil -m cp ~{nextclade_NA_translation_fasta} ~{out_path}/nextclade_out/~{sample_name}/
 
         # transfer date
         transferdate=`date`

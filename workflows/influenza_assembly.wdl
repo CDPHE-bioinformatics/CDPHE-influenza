@@ -121,33 +121,33 @@ workflow influenza_assembly {
                     base_name = base_name
             }
 
-            # create boolean for ha and na to see if that works
-            Boolean is_ha = grab_segment_info.segment == "HA"
-            Boolean is_na = grab_segment_info.segment == "NA"
+            # # create boolean for ha and na to see if that works
+            # Boolean is_ha = grab_segment_info.segment == "HA"
+            # Boolean is_na = grab_segment_info.segment == "NA"
 
-            if (is_ha) {
-                call nextclade_tasks.nextclade_HA as nextclade_HA {
-                    input:
-                        fasta = fasta,
-                        type = grab_segment_info.type,
-                        segment = grab_segment_info.segment,
-                        subtype = grab_segment_info.subtype,
-                        sample_name = sample_name, 
-                        base_name = base_name
-                }
-            }
+            # if (is_ha) {
+            #     call nextclade_tasks.nextclade_HA as nextclade_HA {
+            #         input:
+            #             fasta = fasta,
+            #             type = grab_segment_info.type,
+            #             segment = grab_segment_info.segment,
+            #             subtype = grab_segment_info.subtype,
+            #             sample_name = sample_name, 
+            #             base_name = base_name
+            #     }
+            # }
 
-            if (is_na) {
-                call nextclade_tasks.nextclade_NA as nextclade_NA {
-                    input:
-                        fasta = fasta,
-                        type = grab_segment_info.type,
-                        segment = grab_segment_info.segment,
-                        subtype = grab_segment_info.subtype,
-                        sample_name = sample_name, 
-                        base_name = base_name
-            }
-        }
+            # if (is_na) {
+            #     call nextclade_tasks.nextclade_NA as nextclade_NA {
+            #         input:
+            #             fasta = fasta,
+            #             type = grab_segment_info.type,
+            #             segment = grab_segment_info.segment,
+            #             subtype = grab_segment_info.subtype,
+            #             sample_name = sample_name, 
+            #             base_name = base_name
+            # }
+        # }
         }
 
         # create arrays to better handle groups of files
@@ -166,21 +166,43 @@ workflow influenza_assembly {
         # percent coverage - percent coverage csv
         Array[File] percent_coverage_csv_array = calc_percent_coverage.percent_coverage_csv
 
-        # nextclade
-        # Array[File] nextclade_json_array = select_all(nextclade.nextclade_json)
-        # Array[File] nextclade_tsv_array = select_all(nextclade.nextclade_tsv)
-        File? nextclade_HA_json_f = select_all(nextclade_HA.nextclade_HA_json)[0]
-        File? nextclade_NA_json_f = select_all(nextclade_NA.nextclade_NA_json)[0]
-        File? nextclade_HA_tsv_f = select_all(nextclade_HA.nextclade_HA_tsv)[0]
-        File? nextclade_NA_tsv_f = select_all(nextclade_NA.nextclade_NA_tsv)[0]
-        Array[File] nextclade_HA1_translation_fasta = select_all(nextclade_HA.nextclade_HA1_translation_fasta)
-        Array[File] nextclade_HA2_translation_fasta = select_all(nextclade_HA.nextclade_HA2_translation_fasta)
-        Array[File] nextclade_SigPep_translation_fasta = select_all(nextclade_HA.nextclade_SigPep_translation_fasta)
-        Array[File] nextclade_HA_translation_fasta = select_all(nextclade_HA.nextclade_HA_translation_fasta)
-        Array[File] nextclade_NA_translation_fasta = select_all(nextclade_NA.nextclade_NA_translation_fasta)
-        VersionInfo? nextclade_version_info_struct = select_all([select_all(nextclade_HA.nextclade_version_info)[0], select_all(nextclade_NA.nextclade_version_info)[0]])[0]
-        # have create an optional nextclade_version_info_struct for createing array of versionInfo structs
+        # # nextclade
+        # # Array[File] nextclade_json_array = select_all(nextclade.nextclade_json)
+        # # Array[File] nextclade_tsv_array = select_all(nextclade.nextclade_tsv)
+        # File? nextclade_HA_json_f = select_all(nextclade_HA.nextclade_HA_json)[0]
+        # File? nextclade_NA_json_f = select_all(nextclade_NA.nextclade_NA_json)[0]
+        # File? nextclade_HA_tsv_f = select_all(nextclade_HA.nextclade_HA_tsv)[0]
+        # File? nextclade_NA_tsv_f = select_all(nextclade_NA.nextclade_NA_tsv)[0]
+        # Array[File] nextclade_HA1_translation_fasta = select_all(nextclade_HA.nextclade_HA1_translation_fasta)
+        # Array[File] nextclade_HA2_translation_fasta = select_all(nextclade_HA.nextclade_HA2_translation_fasta)
+        # Array[File] nextclade_SigPep_translation_fasta = select_all(nextclade_HA.nextclade_SigPep_translation_fasta)
+        # Array[File] nextclade_HA_translation_fasta = select_all(nextclade_HA.nextclade_HA_translation_fasta)
+        # Array[File] nextclade_NA_translation_fasta = select_all(nextclade_NA.nextclade_NA_translation_fasta)
+        # VersionInfo? nextclade_version_info_struct = select_all([select_all(nextclade_HA.nextclade_version_info)[0], select_all(nextclade_NA.nextclade_version_info)[0]])[0]
+        # # have create an optional nextclade_version_info_struct for createing array of versionInfo structs
         
+        # nextclade if irma.HA_fasta and irma.NA_fasta exists. 
+
+        if (defined(irma.HA_fasta)) {
+            call nextclade_tasks.nextclade_HA as nextclade_HA {
+                input:
+                    fasta = irma.HA_fasta,
+                    sample_name = sample_name,
+                    base_name = irma.HA_basename_txt
+            }
+
+        }
+
+        if (defined(irma.NA_fasta)) {
+            call nextclade_tasks.nextclade_NA as nextclade_NA{
+                input:
+                    fasta = irma.NA_fasta,
+                    sample_name = sample_name,
+                    base_name = irma.NA_basename_txt
+            }
+
+        }
+
         # concantenate post assembly qc metrics (coverage, depth) into a single file
         call assembly_qc.concat_assembly_qc_metrics as concat_assembly_qc_metrics{
             input:
@@ -203,10 +225,13 @@ workflow influenza_assembly {
             seqyclean.seqyclean_version_info,
             irma.IRMA_version_info,
         ],
+        select_all([
+            nextclade_HA.nextclade_version_info,
+            nextclade_NA.nextclade_version_info
+        ]),
         bam_stats.samtools_version_info,
-        select_all([nextclade_version_info_struct])
-
     ]))
+
     
     # capture version
     call capture_version.capture_workflow_version as capture_workflow_version{
@@ -264,15 +289,15 @@ workflow influenza_assembly {
             # nextclade
             # nextclade_json_array  = nextclade_json_array,
             # nextclade_tsv_array  = nextclade_tsv_array,
-            nextclade_HA_json = nextclade_HA_json_f,
-            nextclade_NA_json = nextclade_NA_json_f,
-            nextclade_HA_tsv = nextclade_HA_tsv_f,
-            nextclade_NA_tsv = nextclade_NA_tsv_f,
-            nextclade_HA_translation_fasta  = nextclade_HA_translation_fasta,
-            nextclade_HA1_translation_fasta  = nextclade_HA1_translation_fasta ,
-            nextclade_HA2_translation_fasta  = nextclade_HA2_translation_fasta ,
-            nextclade_SigPep_translation_fasta  = nextclade_SigPep_translation_fasta,
-            nextclade_NA_translation_fasta = nextclade_NA_translation_fasta
+            nextclade_HA_json = nextclade_HA.nextclade_HA_json,
+            nextclade_NA_json = nextclade_NA.nextclade_NA_json,
+            nextclade_HA_tsv = nextclade_HA.nextclade_HA_tsv,
+            nextclade_NA_tsv = nextclade_NA.nextclade_NA_tsv,
+            nextclade_HA_translation_fasta  = nextclade_HA.nextclade_HA_translation_fasta,
+            nextclade_HA1_translation_fasta  = nextclade_HA.nextclade_HA1_translation_fasta ,
+            nextclade_HA2_translation_fasta  = nextclade_HA.nextclade_HA2_translation_fasta ,
+            nextclade_SigPep_translation_fasta  = nextclade_HA.nextclade_SigPep_translation_fasta,
+            nextclade_NA_translation_fasta = nextclade_NA.nextclade_NA_translation_fasta
     }
 
 
@@ -318,15 +343,15 @@ workflow influenza_assembly {
         # output from nextclade
         # Array[File]? nextclade_json = nextclade_json_array
         # Array[File]? nextclade_tsv = nextclade_tsv_array
-        File? nextclade_HA_json = nextclade_HA_json_f
-        File? nextclade_NA_json = nextclade_NA_json_f
-        File? nextclade_HA_tsv = nextclade_HA_tsv_f
-        File? nextclade_NA_tsv = nextclade_NA_tsv_f
-        Array[File]? nextclade_HA1_translation_fasta1 = nextclade_HA1_translation_fasta 
-        Array[File]? nextclade_HA2_translation_fasta1 = nextclade_HA2_translation_fasta
-        Array[File]? nextclade_SigPep_translation_fasta1 = nextclade_SigPep_translation_fasta
-        Array[File]? nextclade_HA_translation_fasta1 = nextclade_HA_translation_fasta
-        Array[File]? nextclade_NA_translation_fasta1 = nextclade_NA_translation_fasta
+        File? nextclade_HA_json = nextclade_HA.nextclade_HA_json
+        File? nextclade_NA_json = nextclade_NA.nextclade_NA_json
+        File? nextclade_HA_tsv = nextclade_HA.nextclade_HA_tsv
+        File? nextclade_NA_tsv = nextclade_NA.nextclade_NA_tsv
+        File? nextclade_HA1_translation_fasta = nextclade_HA.nextclade_HA1_translation_fasta 
+        File? nextclade_HA2_translation_fasta = nextclade_HA.nextclade_HA2_translation_fasta
+        File? nextclade_SigPep_translation_fasta = nextclade_HA.nextclade_SigPep_translation_fasta
+        File? nextclade_HA_translation_fasta = nextclade_HA.nextclade_HA_translation_fasta
+        File? nextclade_NA_translation_fasta = nextclade_NA.nextclade_NA_translation_fasta
         
         # version capture
         File? version_capture_file = capture_task_version.version_capture_file
