@@ -77,7 +77,7 @@ if __name__ == '__main__':
     print('\n\n\nPulling reads mapped from READ_COUNTS.txt')
     read_counts_df = pd.read_csv(read_counts_txt, sep = '\t')
     filtered_reads = read_counts_df[read_counts_df.Record == '1-initial'].Reads.iloc[0]
-    mapped_reads = read_counts_df[read_counts_df.Record == '3-match'].Reads.iloc[0]
+    total_mapped_reads = read_counts_df[read_counts_df.Record == '3-match'].Reads.iloc[0]
     if '3-altmatch' in read_counts_df.Record.to_list():
         alt_mapped_reads = read_counts_df[read_counts_df.Record == '3-altmatch'].Reads.iloc[0]
     else:
@@ -163,7 +163,7 @@ if __name__ == '__main__':
     df.at[0, 'assembled_segments'] = assembled_segments
     df.at[0, 'complete_segments'] = complete_segments
     df.at[0, 'filtered_reads'] = filtered_reads # from READ_COUNTS.txt
-    df.at[0, 'mapped_reads'] = mapped_reads # from READ_COUNTS.txt
+    df.at[0, 'mapped_reads'] = total_mapped_reads # from READ_COUNTS.txt
     df.at[0, 'alt_mapped_reads'] = alt_mapped_reads # from READ_COUNTS.txt
     
     df.at[0, 'average_percent_coverage'] = percent_coverage_total/assembled_segments
