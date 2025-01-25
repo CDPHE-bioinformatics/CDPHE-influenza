@@ -236,6 +236,8 @@ task perform_assembly_irma {
             echo ""
         fi
 
+        
+
         echo -e '\n\n\n'
 
     >>>
@@ -260,6 +262,11 @@ task perform_assembly_irma {
         Array[File] alignments = glob("*.bam")
         Array[File] vcfs = glob("*.vcf")
         String irma_assembly_qc = read_string("irma_qc.txt")
+        # pull out all files associated with the seocondary directory
+        # there is a fastq file that all alt match reads. This can be
+        # pulled out and assembled
+        Array[File] secondary = glob('secondary/*')
+
 
         VersionInfo IRMA_version_info = object{
             software: "IRMA",

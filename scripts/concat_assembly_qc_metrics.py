@@ -35,6 +35,7 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument( "--bam_stats_csv_list")
     parser.add_argument( "--percent_coverage_csv_list")
     parser.add_argument( "--irma_read_counts")
+    parser.add_argument( "--irma_typing_file")
     options = parser.parse_args(args)
     return options
 
@@ -59,11 +60,17 @@ if __name__ == '__main__':
     bam_stats_files_string_input = options.bam_stats_csv_list
     percent_coverage_csv_file_string_input= options.percent_coverage_csv_list
     read_counts_txt = options.irma_read_counts
+    irma_typing_file = options.irma_typing_file
 
      # get a list of file paths
     bam_stats_csv_file_list = create_list_from_string_input(string_input = bam_stats_files_string_input)
     percent_coverage_csv_file_list = create_list_from_string_input(string_input = percent_coverage_csv_file_string_input)
 
+
+    # read in irma_typing_file and pull out NA and HA subtypes
+    irma_typing_df = pd.read_csv(irma_typing_file, dtype = {"sample_name" : object})
+    NA_subtype = irma_typing_df.NA_subtype.iloc[0]
+    HA_subtype = irma_typing_df.HA_subtype.ilco[0]
     
     ##### set up the pandas dataframe
     print('Setting up final DF')
@@ -101,6 +108,14 @@ if __name__ == '__main__':
             print(f'{record}')
             print(f'{col_name} : {mapped_reads}')
             print('')
+        if re.search('5-', record):
+            short_record = record.split('-')[-1]
+            mapped_reads = read_counts_df[read_counts_df.Record == record ].Reads.iloc[0]
+            mismatch = f'{short_record}:{mapped_reads}'
+            mismatches.append(mismatch)
+    all_mismatches = '; '.join(mismatches)
+    print(f'potential coinfections: {all_mismatches}')
+    df.at[0, 'potential_coinfections'] = all_mismatches
 
 
     #### MEAN DEPTH FROM SAMTOOLS (FROM BAM STATS CSV):
