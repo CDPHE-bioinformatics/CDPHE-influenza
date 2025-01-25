@@ -153,8 +153,7 @@ task concat_assembly_qc_metrics{
             --sample_name "~{sample_name}" \
             --irma_read_counts "~{irma_read_counts}" \
             --bam_stats_csv_list "~{sep= " " bam_stats_csv_array}" \
-            --percent_coverage_csv_list "~{sep = " " percent_coverage_csv_array}" \
-            --irma_typing_file "~{irma_typing_file}"
+            --percent_coverage_csv_list "~{sep = " " percent_coverage_csv_array}"
     >>>
 
     output{
