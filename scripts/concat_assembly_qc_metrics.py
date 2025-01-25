@@ -94,6 +94,7 @@ if __name__ == '__main__':
         print(f'alt_mapped_reads: {alt_mapped_reads}')
         print('')
     
+    alt_matches = []
     for row in range(read_counts_df.shape[0]):
         record = read_counts_df.Record[row]
         if re.search('4-', record):
@@ -111,11 +112,11 @@ if __name__ == '__main__':
         if re.search('5-', record):
             short_record = record.split('-')[-1]
             mapped_reads = read_counts_df[read_counts_df.Record == record ].Reads.iloc[0]
-            mismatch = f'{short_record}:{mapped_reads}'
-            mismatches.append(mismatch)
-    all_mismatches = '; '.join(mismatches)
-    print(f'potential coinfections: {all_mismatches}')
-    df.at[0, 'potential_coinfections'] = all_mismatches
+            alt_match = f'{short_record}:{mapped_reads}'
+            alt_matches.append(alt_match)
+    all_alt_matches = '; '.join(alt_matches)
+    print(f'potential coinfections: {all_alt_matches}')
+    df.at[0, 'alt_matches'] = all_alt_matches
 
 
     #### MEAN DEPTH FROM SAMTOOLS (FROM BAM STATS CSV):
