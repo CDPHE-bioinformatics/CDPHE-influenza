@@ -84,6 +84,7 @@ if __name__ == '__main__':
         'filtered_reads', # comes from the READ_COUNTS.txt '3-match
         'mapped_reads', # # comes from the READ_COUNTS.txt '1-initial'
         'alt_mapped_reads', # comes from the READ_COUNTS.txt '3-altmatch'
+        'alt_matches', # comes from the READ_COUNTS.txt '5-' rows
         'percent_mapped_reads', # mapped_reads/filtered_reads x 100
         'HA_percent_coverage','HA_mean_depth', 'HA_mapped_reads', 
         'NA_percent_coverage', 'NA_mean_depth', 'NA_mapped_reads', 
