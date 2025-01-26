@@ -76,6 +76,10 @@ python scripts*:
 
     `mapped_reads` - the number of reads mapped(totaled across all gene segments) determined by IRMA
 
+    `alt_reads` - the number of reads mapped to alternative flu type and/or subtype
+
+    `alt_matches` - string seperated by semicolons listing the number of mapped reads for each alternative flu type and/or subtype. This column can be used to help determine if the sample may representa  coinfection
+
     `percent_mapped_reads` - mapped reads/filtered reads x 100
 
     `{segment}_percent_coverage`- the number of non-N bases divided by the length of the seed reference gene segment used by IRMA. The reference gene segments can be found in the IRMA files. 
