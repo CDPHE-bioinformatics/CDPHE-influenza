@@ -144,7 +144,6 @@ task concat_assembly_qc_metrics{
         File? irma_read_counts
         Array[File] bam_stats_csv_array
         Array[File] percent_coverage_csv_array
-        File? irma_typing_file
         
     }
     
