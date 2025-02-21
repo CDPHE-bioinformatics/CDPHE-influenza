@@ -76,37 +76,40 @@ if __name__ == '__main__':
     print('\n\n\nPulling reads mapped from READ_COUNTS.txt')
     read_counts_df = pd.read_csv(read_counts_txt, sep = '\t')
     filtered_reads = read_counts_df[read_counts_df.Record == '1-initial'].Reads.iloc[0]
-    total_mapped_reads = read_counts_df[read_counts_df.Record == '3-match'].Reads.iloc[0]
+    primary_mapped_reads = read_counts_df[read_counts_df.Record == '3-match'].Reads.iloc[0]
     if '3-altmatch' in read_counts_df.Record.to_list():
         alt_mapped_reads = read_counts_df[read_counts_df.Record == '3-altmatch'].Reads.iloc[0]
     else:
         alt_mapped_reads = 0
+    total_mapped_reads = primary_mapped_reads + alt_mapped_reads
 
-        print(f'filtered_reads: {filtered_reads}')
-        print(f'alt_mapped_reads: {alt_mapped_reads}')
-        print('')
+    print(f'filtered_reads: {filtered_reads}')
+    print(f'alt_mapped_reads: {alt_mapped_reads}')
+    print(f'primary_mapped_reads: {primary_mapped_reads}')
+    print(f'total_mapped_reads: {total_mapped_reads}')
     
-    alt_matches = []
+    alt_matches = [] # to hold all the records that start with "5-"
     for row in range(read_counts_df.shape[0]):
         record = read_counts_df.Record[row]
-        if re.search('4-', record):
-            segment = record.split('-')[-1].split('_')[1]
-            mapped_reads = read_counts_df[read_counts_df.Record == record ].Reads.iloc[0]
-
+        mapped_reads = read_counts_df[read_counts_df.Record == record ].Reads.iloc[0]
+        
+        # primary mapped reads
+        if record.startwwith('4-'):
+            segment = record.split('-')[-1].split('_')[1] # hypen removes record number, underscore seperates out segment (e.g. HA)
             # add to DF
             col_name = f'{segment}_mapped_reads'
             df.at[0, col_name] = mapped_reads
-
             print(f'{segment}')
             print(f'{record}')
             print(f'{col_name} : {mapped_reads}')
             print('')
-        if re.search('5-', record):
-            short_record = record.split('-')[-1]
-            mapped_reads = read_counts_df[read_counts_df.Record == record ].Reads.iloc[0]
+       
+       # alternative mapping reads
+        if record.startswith('5-', record):
+            short_record = record.split('-')[-1] # dropping the record number and grabbing the full segmetn info (e.g. A_NA_N4)
             alt_match = f'{short_record}:{mapped_reads}'
             alt_matches.append(alt_match)
-    all_alt_matches = '; '.join(alt_matches)
+    all_alt_matches = '; '.join(alt_matches) # in the final table it will look like A_NA_N4:32; A_HA_H7:200
     print(f'potential coinfections: {all_alt_matches}')
     df.at[0, 'alt_matches'] = all_alt_matches
 
@@ -171,7 +174,8 @@ if __name__ == '__main__':
     df.at[0, 'assembled_segments'] = assembled_segments
     df.at[0, 'complete_segments'] = complete_segments
     df.at[0, 'filtered_reads'] = filtered_reads # from READ_COUNTS.txt
-    df.at[0, 'mapped_reads'] = total_mapped_reads # from READ_COUNTS.txt
+    df.at[0, 'total_mapped_reads'] = total_mapped_reads # from READ_COUNTS.txt (= primary + alt)
+    df.at[0, 'primary_mapped_reads'] = total_mapped_reads # from READ_COUNTS.txt
     df.at[0, 'alt_mapped_reads'] = alt_mapped_reads # from READ_COUNTS.txt
     
     df.at[0, 'average_percent_coverage'] = percent_coverage_total/assembled_segments
