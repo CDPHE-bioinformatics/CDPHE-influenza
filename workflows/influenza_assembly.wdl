@@ -121,33 +121,7 @@ workflow influenza_assembly {
                     base_name = base_name
             }
 
-            # # create boolean for ha and na to see if that works
-            # Boolean is_ha = grab_segment_info.segment == "HA"
-            # Boolean is_na = grab_segment_info.segment == "NA"
-
-            # if (is_ha) {
-            #     call nextclade_tasks.nextclade_HA as nextclade_HA {
-            #         input:
-            #             fasta = fasta,
-            #             type = grab_segment_info.type,
-            #             segment = grab_segment_info.segment,
-            #             subtype = grab_segment_info.subtype,
-            #             sample_name = sample_name, 
-            #             base_name = base_name
-            #     }
-            # }
-
-            # if (is_na) {
-            #     call nextclade_tasks.nextclade_NA as nextclade_NA {
-            #         input:
-            #             fasta = fasta,
-            #             type = grab_segment_info.type,
-            #             segment = grab_segment_info.segment,
-            #             subtype = grab_segment_info.subtype,
-            #             sample_name = sample_name, 
-            #             base_name = base_name
-            # }
-        # }
+            
         }
 
         # create arrays to better handle groups of files
@@ -166,20 +140,6 @@ workflow influenza_assembly {
         # percent coverage - percent coverage csv
         Array[File] percent_coverage_csv_array = calc_percent_coverage.percent_coverage_csv
 
-        # # nextclade
-        # # Array[File] nextclade_json_array = select_all(nextclade.nextclade_json)
-        # # Array[File] nextclade_tsv_array = select_all(nextclade.nextclade_tsv)
-        # File? nextclade_HA_json_f = select_all(nextclade_HA.nextclade_HA_json)[0]
-        # File? nextclade_NA_json_f = select_all(nextclade_NA.nextclade_NA_json)[0]
-        # File? nextclade_HA_tsv_f = select_all(nextclade_HA.nextclade_HA_tsv)[0]
-        # File? nextclade_NA_tsv_f = select_all(nextclade_NA.nextclade_NA_tsv)[0]
-        # Array[File] nextclade_HA1_translation_fasta = select_all(nextclade_HA.nextclade_HA1_translation_fasta)
-        # Array[File] nextclade_HA2_translation_fasta = select_all(nextclade_HA.nextclade_HA2_translation_fasta)
-        # Array[File] nextclade_SigPep_translation_fasta = select_all(nextclade_HA.nextclade_SigPep_translation_fasta)
-        # Array[File] nextclade_HA_translation_fasta = select_all(nextclade_HA.nextclade_HA_translation_fasta)
-        # Array[File] nextclade_NA_translation_fasta = select_all(nextclade_NA.nextclade_NA_translation_fasta)
-        # VersionInfo? nextclade_version_info_struct = select_all([select_all(nextclade_HA.nextclade_version_info)[0], select_all(nextclade_NA.nextclade_version_info)[0]])[0]
-        # # have create an optional nextclade_version_info_struct for createing array of versionInfo structs
         
         # nextclade if irma.HA_fasta and irma.NA_fasta exists. 
 
