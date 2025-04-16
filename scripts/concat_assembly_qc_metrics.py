@@ -94,7 +94,7 @@ if __name__ == '__main__':
         mapped_reads = read_counts_df[read_counts_df.Record == record ].Reads.iloc[0]
         
         # primary mapped reads
-        if record.startwwith('4-'):
+        if record.startswith('4-'):
             segment = record.split('-')[-1].split('_')[1] # hypen removes record number, underscore seperates out segment (e.g. HA)
             # add to DF
             col_name = f'{segment}_mapped_reads'
@@ -105,7 +105,7 @@ if __name__ == '__main__':
             print('')
        
        # alternative mapping reads
-        if record.startswith('5-', record):
+        if record.startswith('5-'):
             short_record = record.split('-')[-1] # dropping the record number and grabbing the full segmetn info (e.g. A_NA_N4)
             alt_match = f'{short_record}:{mapped_reads}'
             alt_matches.append(alt_match)
