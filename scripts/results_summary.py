@@ -81,6 +81,7 @@ if __name__ == '__main__':
         'NA_clade', 
         'complete_segments', 'assembled_segments',
         'average_percent_coverage', 'average_mean_depth', # averaged across all gene segments 
+        'percent_mapped_reads', # total_mapped_reads/filtered_reads x 100
         'filtered_reads', # comes from the READ_COUNTS.txt '1-inital'
         'total_mapped_reads', # # comes from the READ_COUNTS.txt  = '3-match' + '3-nonmatch'
         'primary_mapped_reads', # comes from the READS_COUNTS.txt '3-match'
