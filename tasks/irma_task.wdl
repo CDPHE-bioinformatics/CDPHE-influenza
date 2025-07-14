@@ -55,7 +55,7 @@ task perform_assembly_irma {
         declare -A formatted_name_dict
 
         # IUPAC bases to replace in amended fasta files
-        IUPAC=( "B" "D" "H" "K" "M" "N" "R" "S" "V" "W" "Y" )
+        # IUPAC=( "B" "D" "H" "K" "M" "N" "R" "S" "V" "W" "Y" )
 
         echo ""
         echo "IRMA DONE"
@@ -125,10 +125,10 @@ task perform_assembly_irma {
                 # replace header
                 sed -i "s/>.*/>${header_name}/" ${file}
 
-                # replace IUPAC bases with Ns
-                for base in ${IUPAC[@]}; do
-                    sed -i "/^>/! s/${base}/N/g" $file
-                done
+                # # replace IUPAC bases with Ns
+                # for base in ${IUPAC[@]}; do
+                #     sed -i "/^>/! s/${base}/N/g" $file
+                # done
 
                 # remove "-" since these represent gaps relative to refernece
                 # replace periods with Ns
